@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { signIn } from "next-auth/react";
+import { Eye, EyeOff } from "lucide-react";
 
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Input } from "@/components/ui/Input";
@@ -22,6 +23,7 @@ export default function LoginClient() {
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [toast, setToast] = React.useState<{
     open: boolean;
@@ -82,13 +84,21 @@ export default function LoginClient() {
 
             <div>
               <label className="text-xs font-mono text-foreground/50">Password</label>
-              <div className="mt-2">
+              <div className="mt-2 relative">
                 <Input
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Your password"
+                  className="pr-10"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/70 transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
               <div className="mt-3">
                 <PasswordFeedback password={password} />

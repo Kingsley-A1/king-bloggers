@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { Eye, EyeOff } from "lucide-react";
 
 import { NIGERIAN_STATES, NIGERIA_GEO_MAP } from "../../lib/geo-data";
 import { registerUser } from "../../lib/actions/auth";
@@ -37,6 +38,7 @@ export function RegistrationForm({ className }: RegistrationFormProps) {
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
   const [state, setState] = React.useState<string>("");
   const [lga, setLga] = React.useState<string>("");
   const [busy, setBusy] = React.useState(false);
@@ -144,8 +146,21 @@ export function RegistrationForm({ className }: RegistrationFormProps) {
               </div>
               <div>
                 <label className="text-xs font-mono text-foreground/50">Password</label>
-                <div className="mt-2">
-                  <Input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Minimum 8 characters" />
+                <div className="mt-2 relative">
+                  <Input
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Minimum 8 characters"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/70 transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
                 <div className="mt-3">
                   <PasswordFeedback password={password} />
