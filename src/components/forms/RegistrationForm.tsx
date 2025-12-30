@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, MapPin } from "lucide-react";
 
 import { NIGERIAN_STATES, NIGERIA_GEO_MAP } from "../../lib/geo-data";
 import { registerUser } from "../../lib/actions/auth";
@@ -15,6 +15,7 @@ import { Select } from "../ui/Select";
 import { Spinner } from "../ui/Spinner";
 import { Toast } from "../features/Toast";
 import { PasswordFeedback } from "../ui/PasswordFeedback";
+import { GoogleIcon } from "../ui/GoogleIcon";
 
 export type RegistrationRole = "reader" | "blogger";
 
@@ -170,66 +171,100 @@ export function RegistrationForm({ className }: RegistrationFormProps) {
           ) : null}
 
           {step === 2 ? (
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-mono text-foreground/50">State</label>
-                <div className="mt-2">
-                  <Select value={state} onChange={(e) => {
-                    setState(e.target.value);
-                    setLga("");
-                  }}>
-                    <option value="">Select a state</option>
-                    {NIGERIAN_STATES.map((s) => (
-                      <option key={s.name} value={s.name}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </Select>
+            <div className="space-y-5">
+              <div className="flex items-center gap-2 text-foreground/60 mb-2">
+                <MapPin className="h-4 w-4" />
+                <span className="text-sm font-medium">Your Location (Nigeria)</span>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="text-xs font-mono text-foreground/50">State</label>
+                  <div className="mt-2">
+                    <Select value={state} onChange={(e) => {
+                      setState(e.target.value);
+                      setLga("");
+                    }}>
+                      <option value="">Select a state</option>
+                      {NIGERIAN_STATES.map((s) => (
+                        <option key={s.name} value={s.name}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-mono text-foreground/50">LGA</label>
+                  <div className="mt-2">
+                    <Select value={lga} onChange={(e) => setLga(e.target.value)} disabled={lgaDisabled}>
+                      <option value="">{!state ? "Select state first" : lgas.length === 0 ? "Coming soon" : "Select an LGA"}</option>
+                      {lgas.map((x) => (
+                        <option key={x} value={x}>
+                          {x}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className="text-xs font-mono text-foreground/50">LGA</label>
-                <div className="mt-2">
-                  <Select value={lga} onChange={(e) => setLga(e.target.value)} disabled={lgaDisabled}>
-                    <option value="">{!state ? "Select a state first" : lgas.length === 0 ? "LGA list coming soon" : "Select an LGA"}</option>
-                    {lgas.map((x) => (
-                      <option key={x} value={x}>
-                        {x}
-                      </option>
-                    ))}
-                  </Select>
+              {state && (
+                <div className="text-xs text-foreground/50 bg-foreground/5 rounded-lg px-3 py-2 border border-foreground/10">
+                  📍 {state}{lga ? `, ${lga}` : ""} — Nigeria
                 </div>
-              </div>
+              )}
             </div>
           ) : null}
 
-          <div className="mt-10 flex items-center justify-between gap-3">
-            <GlassButton
-              variant="ghost"
-              onClick={() => setStep((s) => (s === 0 ? 0 : ((s - 1) as 0 | 1 | 2)))}
-              disabled={step === 0 || busy}
-            >
-              Back
-            </GlassButton>
-
-            {step < 2 ? (
+          <div className="mt-10 flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-3">
               <GlassButton
-                variant="primary"
-                onClick={() => setStep((s) => ((s + 1) as 0 | 1 | 2))}
-                disabled={busy || (step === 1 && (!name.trim() || !email || password.length < 8))}
+                variant="ghost"
+                onClick={() => setStep((s) => (s === 0 ? 0 : ((s - 1) as 0 | 1 | 2)))}
+                disabled={step === 0 || busy}
               >
-                Continue
+                Back
               </GlassButton>
-            ) : (
-              <GlassButton variant="primary" onClick={submit} disabled={!email || password.length < 8 || busy}>
-                {busy ? (
-                  <span className="inline-flex items-center gap-2">
-                    <Spinner /> Creating…
-                  </span>
-                ) : (
-                  "Create Account"
-                )}
-              </GlassButton>
+
+              {step < 2 ? (
+                <GlassButton
+                  variant="primary"
+                  onClick={() => setStep((s) => ((s + 1) as 0 | 1 | 2))}
+                  disabled={busy || (step === 1 && (!name.trim() || !email || password.length < 8))}
+                >
+                  Continue
+                </GlassButton>
+              ) : (
+                <GlassButton variant="primary" onClick={submit} disabled={!email || password.length < 8 || busy}>
+                  {busy ? (
+                    <span className="inline-flex items-center gap-2">
+                      <Spinner /> Creating…
+                    </span>
+                  ) : (
+                    "Create Account"
+                  )}
+                </GlassButton>
+              )}
+            </div>
+
+            {step === 0 && (
+              <>
+                <div className="relative my-2">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-foreground/10" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-foreground/50">Or</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void signIn("google")}
+                  className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-full border border-foreground/10 bg-foreground/5 hover:bg-foreground/10 text-foreground font-medium transition-all duration-300 active:scale-[0.98]"
+                >
+                  <GoogleIcon />
+                  <span>Continue with Google</span>
+                </button>
+              </>
             )}
           </div>
         </div>

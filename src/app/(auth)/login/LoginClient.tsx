@@ -13,6 +13,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Toast } from "@/components/features/Toast";
 import { Logo } from "@/components/ui/Logo";
 import { PasswordFeedback } from "@/components/ui/PasswordFeedback";
+import { GoogleIcon } from "@/components/ui/GoogleIcon";
 
 export default function LoginClient() {
   const router = useRouter();
@@ -116,7 +117,7 @@ export default function LoginClient() {
                 )}
               </GlassButton>
 
-              <div className="relative">
+              <div className="relative my-2">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-foreground/10" />
                 </div>
@@ -125,14 +126,19 @@ export default function LoginClient() {
                 </div>
               </div>
 
-              <GlassButton variant="glass" type="button" onClick={() => void signIn("google", { callbackUrl })}>
-                Google
-              </GlassButton>
+              <button
+                type="button"
+                onClick={() => void signIn("google", { callbackUrl })}
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-full border border-foreground/10 bg-foreground/5 hover:bg-foreground/10 text-foreground font-medium transition-all duration-300 active:scale-[0.98]"
+              >
+                <GoogleIcon />
+                <span>Continue with Google</span>
+              </button>
             </div>
           </form>
         </GlassCard>
 
-        <div className="text-center text-sm text-foreground/60">
+        <div className="text-center text-sm text-foreground/60 mt-6">
           No account?{" "}
           <Link className="font-medium text-king-orange hover:underline" href="/register">
             Create one

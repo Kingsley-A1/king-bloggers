@@ -5,20 +5,20 @@
 @layer base {
   :root {
     /* --- LIGHT MODE (Default) --- */
-    /* Apple-grade Light Gray Background */
-    --background-rgb: 245 245 247; 
-    --foreground-rgb: 29 29 31;
+    /* Apple-grade Light Gray Background - Enhanced Contrast */
+    --background-rgb: 250 250 252; 
+    --foreground-rgb: 20 20 22;
     
     /* Core Palette */
     --king-orange: 255 140 0;
     --king-gold: 212 175 55;
     
-    /* Glass Tokens - Light */
-    --glass-bg: rgba(255, 255, 255, 0.65);
-    --glass-bg-hover: rgba(255, 255, 255, 0.8);
-    --glass-border: rgba(0, 0, 0, 0.06);
-    --glass-border-bright: rgba(0, 0, 0, 0.12);
-    --glass-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.05);
+    /* Glass Tokens - Light - Enhanced visibility */
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-bg-hover: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(0, 0, 0, 0.10);
+    --glass-border-bright: rgba(0, 0, 0, 0.18);
+    --glass-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.08);
     
     /* Mesh Gradients - Light */
     --mesh-1: rgba(255, 140, 0, 0.08);
@@ -236,6 +236,47 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Reaction Pop Animation - Instagram/Facebook style */
+@keyframes reactionPop {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.35);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+  75% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes reactionBurst {
+  0% {
+    opacity: 1;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.5);
+  }
+}
+
+.reaction-pop {
+  animation: reactionPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.reaction-active {
+  color: rgb(var(--king-orange)) !important;
 }
 
 /* --- SOVEREIGN DOCUMENTATION STYLES --- */

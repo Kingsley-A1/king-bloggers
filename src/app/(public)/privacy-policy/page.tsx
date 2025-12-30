@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { SectionHeader } from "@/components/features/SectionHeader";
 import { Container } from "@/components/layout/Container";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -6,6 +8,11 @@ export const metadata = {
   title: "Privacy Policy — King Bloggers",
   description:
     "King Bloggers privacy policy: how we collect, use, and protect your data.",
+  openGraph: {
+    title: "Privacy Policy — King Bloggers",
+    description: "How we collect, use, and protect your data on King Bloggers.",
+    images: ["/icons/og.png"],
+  },
 };
 
 const LAST_UPDATED = "January 2025";
@@ -122,13 +129,22 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc pl-5 space-y-2">
               <li>Email: <a href="mailto:hello@kingbloggers.com" className="text-king-orange underline underline-offset-2">hello@kingbloggers.com</a></li>
               <li>Phone/WhatsApp: <a href="tel:09036826272" className="text-king-orange underline underline-offset-2">09036826272</a></li>
-              <li>Visit our <a href="/contact" className="text-king-orange underline underline-offset-2">Contact page</a></li>
+              <li>Visit our <Link href="/contact" className="text-king-orange underline underline-offset-2">Contact page</Link></li>
             </ul>
           </Section>
         </div>
 
-        <div className="mt-10 text-center text-sm text-foreground/50">
-          © {new Date().getFullYear()} King Bloggers. All rights reserved.
+        <div className="mt-10 text-center">
+          <div className="flex flex-wrap justify-center gap-4 mb-4">
+            <Link href="/about" className="text-sm text-foreground/60 hover:text-king-orange transition-colors">About Us</Link>
+            <span className="text-foreground/30">•</span>
+            <Link href="/contact" className="text-sm text-foreground/60 hover:text-king-orange transition-colors">Contact</Link>
+            <span className="text-foreground/30">•</span>
+            <Link href="/docs" className="text-sm text-foreground/60 hover:text-king-orange transition-colors">Documentation</Link>
+          </div>
+          <p className="text-sm text-foreground/50">
+            © {new Date().getFullYear()} King Bloggers. All rights reserved.
+          </p>
         </div>
       </Container>
     </main>

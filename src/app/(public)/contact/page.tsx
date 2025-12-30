@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { SectionHeader } from "@/components/features/SectionHeader";
 import { Container } from "@/components/layout/Container";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -7,6 +9,11 @@ export const metadata = {
   title: "Contact — King Bloggers",
   description:
     "Get in touch with King Bloggers for partnerships, support, and publishing inquiries.",
+  openGraph: {
+    title: "Contact — King Bloggers",
+    description: "Reach us for partnerships, support, advertising, and publishing inquiries.",
+    images: ["/icons/og.png"],
+  },
 };
 
 function ContactCard({
@@ -129,12 +136,19 @@ export default function ContactPage() {
           <p className="text-foreground/60 mb-4">
             Have questions about publishing or using the platform?
           </p>
-          <a
+          <Link
             href="/docs"
             className="inline-flex items-center gap-2 rounded-full bg-foreground/5 border border-foreground/10 px-6 py-3 text-sm font-bold uppercase tracking-widest text-foreground/80 hover:bg-foreground/10 transition-all active:scale-95"
           >
             View Documentation →
-          </a>
+          </Link>
+          <div className="mt-6 flex flex-wrap justify-center gap-4">
+            <Link href="/about" className="text-sm text-foreground/60 hover:text-king-orange transition-colors">About Us</Link>
+            <span className="text-foreground/30">•</span>
+            <Link href="/privacy-policy" className="text-sm text-foreground/60 hover:text-king-orange transition-colors">Privacy Policy</Link>
+            <span className="text-foreground/30">•</span>
+            <Link href="/register" className="text-sm text-foreground/60 hover:text-king-orange transition-colors">Join as Blogger</Link>
+          </div>
         </div>
       </Container>
     </main>
