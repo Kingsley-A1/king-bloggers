@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>King Bloggers | Tech, Art, Culture & Power</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+
+        :root {
+            --king-orange: #FF8C00;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(255, 140, 0, 0.07) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 140, 0, 0.07) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        /* Liquid Glass Effect */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(255, 140, 0, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .nav-glass {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Platform Name Dynamic Transition */
+        #platform-name {
+            display: inline-block;
+            max-width: 400px;
+            opacity: 1;
+            transition: max-width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.4s ease,
+                margin 0.6s ease;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .scrolled #platform-name {
+            max-width: 0;
+            opacity: 0;
+            margin-left: 0;
+            pointer-events: none;
+        }
+
+        .scrolled .logo-container {
+            gap: 0 !important;
+        }
+
+        .text-gradient {
+            background: linear-gradient(to right, #FF8C00, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .category-pill {
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .category-pill:hover {
+            background: var(--king-orange);
+            color: black;
+            box-shadow: 0 0 15px var(--king-orange);
+            border-color: var(--king-orange);
+        }
+
+        /* Mobile Menu Overlay */
+        #mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.5s cubic-bezier(0.77, 0.2, 0.05, 1.0);
+        }
+
+        #mobile-menu.active {
+            transform: translateX(0);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--king-orange);
+            border-radius: 10px;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-reveal {
+            animation: fadeIn 0.8s ease forwards;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <!-- NAVIGATION -->
+    <nav class="nav-glass fixed top-0 w-full z-[100] px-4 md:px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <!-- LOGO & NAME -->
+            <div class="logo-container flex items-center gap-2 md:gap-3 cursor-pointer group">
+                <div class="w-8 h-8 md:w-10 md:h-10 relative flex-shrink-0">
+                    <svg viewBox="0 0 100 100" class="w-full h-full">
+                        <defs>
+                            <linearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:white;stop-opacity:0.2" />
+                                <stop offset="100%" style="stop-color:white;stop-opacity:0.05" />
+                            </linearGradient>
+                        </defs>
+                        <path d="M30 20 L30 80 M30 50 L60 20 M30 50 L60 80" stroke="#FF8C00" stroke-width="8"
+                            fill="none" stroke-linecap="round" />
+                        <path d="M40 15 L50 5 L60 15 L70 5 L80 15" stroke="white" stroke-width="4" fill="none"
+                            stroke-linecap="round" />
+                        <circle cx="50" cy="50" r="45" stroke="url(#glassGrad)" stroke-width="2" fill="none"
+                            opacity="0.5" />
+                    </svg>
+                </div>
+                <span id="platform-name"
+                    class="text-lg md:text-xl font-extrabold tracking-tighter uppercase group-hover:text-gradient">
+                    King<span class="text-orange-500">Bloggers</span>
+                </span>
+            </div>
+
+            <!-- DESKTOP MENU -->
+            <div class="hidden lg:flex gap-8 text-sm font-semibold tracking-wide uppercase opacity-80">
+                <a href="#" class="hover:text-orange-500 transition">Home</a>
+                <a href="#featured" class="hover:text-orange-500 transition">Articles</a>
+                <a href="#about" class="hover:text-orange-500 transition">About</a>
+                <a href="#contact" class="hover:text-orange-500 transition">Contact</a>
+            </div>
+
+            <!-- ACTIONS / HAMBURGER -->
+            <div class="flex items-center gap-4">
+                <button
+                    class="hidden sm:block glass px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest border-orange-500/50 hover:bg-orange-500 hover:text-black transition-all">
+                    Search
+                </button>
+                <button id="menu-toggle" class="lg:hidden text-2xl text-orange-500 focus:outline-none p-2">
+                    <i class="fa-solid fa-bars-staggered"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MOBILE MENU OVERLAY -->
+    <div id="mobile-menu" class="fixed inset-0 bg-black/95 backdrop-blur-2xl z-[110] flex flex-col p-8 lg:hidden">
+        <div class="flex justify-between items-center mb-12">
+            <span class="text-xl font-black uppercase tracking-tighter">Menu</span>
+            <button id="menu-close" class="text-3xl text-orange-500"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="flex flex-col gap-6 text-3xl font-bold">
+            <a href="#" class="mobile-link text-orange-500">Home</a>
+            <a href="#featured" class="mobile-link hover:text-orange-500 transition">The Feed</a>
+            <a href="#about" class="mobile-link hover:text-orange-500 transition">About the King</a>
+            <a href="#contact" class="mobile-link hover:text-orange-500 transition">Contact</a>
+            <a href="#privacy" class="mobile-link hover:text-orange-500 transition">Privacy Policy</a>
+        </div>
+        <div class="mt-auto pt-10 border-t border-white/10 flex gap-6 text-2xl opacity-50">
+            <i class="fa-brands fa-twitter"></i>
+            <i class="fa-brands fa-instagram"></i>
+            <i class="fa-brands fa-linkedin"></i>
+        </div>
+    </div>
+
+    <!-- HERO SECTION -->
+    <header class="pt-32 md:pt-48 pb-16 md:pb-24 px-6">
+        <div class="max-w-5xl mx-auto text-center animate-reveal">
+            <span class="text-orange-500 font-bold tracking-[0.3em] uppercase text-[10px] md:text-xs mb-4 block">The
+                Global Perspective</span>
+            <h1 class="text-4xl md:text-6xl lg:text-8xl font-extrabold mb-6 leading-tight tracking-tight">
+                Authority in <span class="text-gradient">Tech & Art.</span>
+            </h1>
+            <p class="text-base md:text-xl opacity-60 mb-10 max-w-2xl mx-auto leading-relaxed">
+                Exploring the forces that shape our world. High-performance journalism for the digital age.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#featured"
+                    class="bg-orange-600 text-black px-10 py-4 rounded-full font-bold hover:bg-white transition-all shadow-lg shadow-orange-600/20">Enter
+                    the Feed</a>
+                <a href="#newsletter"
+                    class="glass px-10 py-4 rounded-full font-bold hover:bg-white/10 transition-all">Daily Intel</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- CATEGORY STRIP -->
+    <section
+        class="sticky top-[60px] md:top-[68px] z-40 py-6 border-y border-white/5 bg-black/80 backdrop-blur-md transition-all duration-500">
+        <div class="max-w-7xl mx-auto px-6 overflow-x-auto hide-scrollbar flex gap-4 md:gap-6 lg:justify-center">
+            <span
+                class="category-pill border border-white/10 px-6 py-2 rounded-full cursor-pointer text-xs font-bold uppercase tracking-wider">Technology</span>
+            <span
+                class="category-pill border border-white/10 px-6 py-2 rounded-full cursor-pointer text-xs font-bold uppercase tracking-wider">Art
+                & Culture</span>
+            <span
+                class="category-pill border border-white/10 px-6 py-2 rounded-full cursor-pointer text-xs font-bold uppercase tracking-wider">Entertainment</span>
+            <span
+                class="category-pill border border-white/10 px-6 py-2 rounded-full cursor-pointer text-xs font-bold uppercase tracking-wider">Politics</span>
+            <span
+                class="category-pill border border-white/10 px-6 py-2 rounded-full cursor-pointer text-xs font-bold uppercase tracking-wider">Economics</span>
+            <span
+                class="category-pill border border-white/10 px-6 py-2 rounded-full cursor-pointer text-xs font-bold uppercase tracking-wider">Religion</span>
+        </div>
+    </section>
+
+    <!-- BLOG GRID -->
+    <main id="featured" class="max-w-7xl mx-auto px-6 py-20">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
+            <div>
+                <h2 class="text-3xl md:text-4xl font-extrabold">The High-Density Feed</h2>
+                <div class="w-24 h-1.5 bg-orange-500 mt-3 rounded-full"></div>
+            </div>
+            <div class="flex gap-2">
+                <button
+                    class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/5 transition"><i
+                        class="fa-solid fa-chevron-left"></i></button>
+                <button
+                    class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/5 transition"><i
+                        class="fa-solid fa-chevron-right"></i></button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- ROW 1 -->
+            <article class="glass rounded-[32px] overflow-hidden group flex flex-col">
+                <div class="h-64 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&q=80&w=800"
+                        class="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-60">
+                    <span
+                        class="absolute top-6 left-6 bg-orange-600 text-black text-[10px] font-black uppercase px-3 py-1 rounded-full">Technology</span>
+                </div>
+                <div class="p-8 flex-1 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 group-hover:text-orange-400 transition leading-snug">The
+                        Architecture of Decentralization</h3>
+                    <p class="text-sm opacity-50 mb-8 line-clamp-3">Deep dive into how distributed networks are
+                        decoupling power from centralized entities in 2026.</p>
+                    <div class="mt-auto flex justify-between items-center pt-6 border-t border-white/5">
+                        <span class="text-[10px] font-bold opacity-40 uppercase tracking-widest">8 Min Read</span>
+                        <a href="#" class="text-orange-500 font-black uppercase text-xs">Read <i
+                                class="fa-solid fa-arrow-right ml-1"></i></a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="glass rounded-[32px] overflow-hidden group flex flex-col">
+                <div class="h-64 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=800"
+                        class="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-60">
+                    <span
+                        class="absolute top-6 left-6 bg-purple-600 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full">Art
+                        & Culture</span>
+                </div>
+                <div class="p-8 flex-1 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 group-hover:text-purple-400 transition leading-snug">Digital
+                        Brutalism in Modern UI</h3>
+                    <p class="text-sm opacity-50 mb-8 line-clamp-3">Why raw, unpolished interfaces are making a massive
+                        comeback against the hyper-gradient era.</p>
+                    <div class="mt-auto flex justify-between items-center pt-6 border-t border-white/5">
+                        <span class="text-[10px] font-bold opacity-40 uppercase tracking-widest">6 Min Read</span>
+                        <a href="#" class="text-orange-500 font-black uppercase text-xs">Read <i
+                                class="fa-solid fa-arrow-right ml-1"></i></a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="glass rounded-[32px] overflow-hidden group flex flex-col">
+                <div class="h-64 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80&w=800"
+                        class="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-60">
+                    <span
+                        class="absolute top-6 left-6 bg-green-600 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full">Economics</span>
+                </div>
+                <div class="p-8 flex-1 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 group-hover:text-green-400 transition leading-snug">The Sovereign
+                        Currency Shift</h3>
+                    <p class="text-sm opacity-50 mb-8 line-clamp-3">Analyzing the silent migration from traditional fiat
+                        to digital commodity-backed assets.</p>
+                    <div class="mt-auto flex justify-between items-center pt-6 border-t border-white/5">
+                        <span class="text-[10px] font-bold opacity-40 uppercase tracking-widest">12 Min Read</span>
+                        <a href="#" class="text-orange-500 font-black uppercase text-xs">Read <i
+                                class="fa-solid fa-arrow-right ml-1"></i></a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ROW 2 -->
+            <article class="glass rounded-[32px] overflow-hidden group flex flex-col">
+                <div class="h-64 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&q=80&w=800"
+                        class="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-60">
+                    <span
+                        class="absolute top-6 left-6 bg-red-600 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full">Politics</span>
+                </div>
+                <div class="p-8 flex-1 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 group-hover:text-red-400 transition leading-snug">Algorithmic
+                        Governance</h3>
+                    <p class="text-sm opacity-50 mb-8 line-clamp-3">When code becomes the law: the rise of DAO-based
+                        political structures in micro-nations.</p>
+                    <div class="mt-auto flex justify-between items-center pt-6 border-t border-white/5">
+                        <span class="text-[10px] font-bold opacity-40 uppercase tracking-widest">15 Min Read</span>
+                        <a href="#" class="text-orange-500 font-black uppercase text-xs">Read <i
+                                class="fa-solid fa-arrow-right ml-1"></i></a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="glass rounded-[32px] overflow-hidden group flex flex-col">
+                <div class="h-64 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1532367745678-f47bb115d7f1?auto=format&fit=crop&q=80&w=800"
+                        class="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-60">
+                    <span
+                        class="absolute top-6 left-6 bg-blue-600 text-white text-[10px] font-black uppercase px-3 py-1 rounded-full">Religion</span>
+                </div>
+                <div class="p-8 flex-1 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 group-hover:text-blue-400 transition leading-snug">Spirituality
+                        in the Singularity</h3>
+                    <p class="text-sm opacity-50 mb-8 line-clamp-3">How AI consciousness is challenging traditional
+                        theological definitions of the soul.</p>
+                    <div class="mt-auto flex justify-between items-center pt-6 border-t border-white/5">
+                        <span class="text-[10px] font-bold opacity-40 uppercase tracking-widest">9 Min Read</span>
+                        <a href="#" class="text-orange-500 font-black uppercase text-xs">Read <i
+                                class="fa-solid fa-arrow-right ml-1"></i></a>
+                    </div>
+                </div>
+            </article>
+
+            <article class="glass rounded-[32px] overflow-hidden group flex flex-col">
+                <div class="h-64 relative overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=800"
+                        class="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-60">
+                    <span
+                        class="absolute top-6 left-6 bg-yellow-600 text-black text-[10px] font-black uppercase px-3 py-1 rounded-full">Entertainment</span>
+                </div>
+                <div class="p-8 flex-1 flex flex-col">
+                    <h3 class="text-2xl font-bold mb-4 group-hover:text-yellow-400 transition leading-snug">
+                        Hyper-Personalized Cinema</h3>
+                    <p class="text-sm opacity-60 mb-8 line-clamp-3">The end of mass-media: how generative models are
+                        creating movies unique to every viewer.</p>
+                    <div class="mt-auto flex justify-between items-center pt-6 border-t border-white/5">
+                        <span class="text-[10px] font-bold opacity-40 uppercase tracking-widest">5 Min Read</span>
+                        <a href="#" class="text-orange-500 font-black uppercase text-xs">Read <i
+                                class="fa-solid fa-arrow-right ml-1"></i></a>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <!-- ABOUT SECTION -->
+    <section id="about" class="py-24 bg-white/[0.02]">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div class="glass p-8 md:p-12 rounded-[40px]">
+                <h2 class="text-4xl font-black mb-8">About King <span class="text-orange-500">Bloggers</span></h2>
+                <p class="text-lg opacity-60 mb-6 leading-relaxed">
+                    We are more than just a blog. We are a digital sovereign. In an era of fragmented information, we
+                    provide a unified perspective on the most complex intersections of our reality.
+                </p>
+                <p class="text-lg opacity-60 mb-10 leading-relaxed">
+                    Our team of elite analysts and culture-shapers curate content that isn't just news—it's
+                    intelligence.
+                </p>
+                <div class="grid grid-cols-2 gap-8">
+                    <div>
+                        <span class="text-3xl font-black text-orange-500">1.2M+</span>
+                        <p class="text-xs uppercase tracking-widest opacity-40 font-bold mt-2">Monthly Readers</p>
+                    </div>
+                    <div>
+                        <span class="text-3xl font-black text-orange-500">50+</span>
+                        <p class="text-xs uppercase tracking-widest opacity-40 font-bold mt-2">Global Analysts</p>
+                    </div>
+                </div>
+            </div>
+            <div class="relative">
+                <div class="aspect-square glass rounded-[40px] overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=800"
+                        class="w-full h-full object-cover opacity-40 grayscale">
+                </div>
+                <div class="absolute -bottom-6 -right-6 glass p-6 rounded-2xl border-orange-500/30">
+                    <p class="text-sm font-black text-orange-500 italic">"Truth is the only luxury."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section id="contact" class="py-24 px-6">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-black mb-4">Join the Inner Circle</h2>
+                <p class="opacity-50">Inquiries, leaks, or collaborative opportunities.</p>
+            </div>
+            <form class="grid grid-cols-1 md:grid-cols-2 gap-6"
+                onsubmit="event.preventDefault(); alert('Message sent to the High Command.');">
+                <input type="text" placeholder="Full Name"
+                    class="glass px-8 py-4 rounded-2xl outline-none focus:border-orange-500/50" required>
+                <input type="email" placeholder="Email Address"
+                    class="glass px-8 py-4 rounded-2xl outline-none focus:border-orange-500/50" required>
+                <div class="md:col-span-2">
+                    <textarea rows="5" placeholder="Your Message"
+                        class="glass w-full px-8 py-4 rounded-2xl outline-none focus:border-orange-500/50"
+                        required></textarea>
+                </div>
+                <button
+                    class="md:col-span-2 bg-orange-600 text-black py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-white transition-all">Submit
+                    Intel</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- NEWSLETTER -->
+    <section id="newsletter" class="max-w-5xl mx-auto px-6 pb-24">
+        <div class="glass p-8 md:p-16 rounded-[48px] text-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-orange-500/5 pointer-events-none"></div>
+            <h2 class="text-3xl md:text-5xl font-extrabold mb-6">Stay Sovereign.</h2>
+            <p class="opacity-50 mb-10 max-w-lg mx-auto">Weekly deep-dives delivered straight to your encrypted inbox.
+                No noise. Just signal.</p>
+            <form class="flex flex-col md:flex-row gap-4 max-w-2xl mx-auto">
+                <input type="email" placeholder="Your royal email..."
+                    class="flex-1 bg-white/5 border border-white/10 rounded-full px-8 py-4 outline-none focus:border-orange-500/40"
+                    required>
+                <button type="submit"
+                    class="bg-orange-600 text-black px-12 py-4 rounded-full font-black hover:bg-white transition-all uppercase text-xs tracking-widest">Join
+                    Us</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="privacy" class="bg-black border-t border-white/5 pt-24 pb-12">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24">
+                <div class="lg:col-span-2">
+                    <div class="flex items-center gap-3 mb-8">
+                        <svg viewBox="0 0 100 100" class="w-10 h-10">
+                            <path d="M30 20 L30 80 M30 50 L60 20 M30 50 L60 80" stroke="#FF8C00" stroke-width="8"
+                                fill="none" stroke-linecap="round" />
+                        </svg>
+                        <span class="text-2xl font-black uppercase tracking-tighter">King<span
+                                class="text-orange-500">Bloggers</span></span>
+                    </div>
+                    <p class="opacity-40 text-sm max-w-md leading-relaxed mb-8">
+                        The ultimate source for high-performance journalism in the age of rapid evolution. We track the
+                        movements of technology, power, and art across the globe.
+                    </p>
+                    <div class="flex gap-6 text-xl opacity-30">
+                        <i class="fa-brands fa-twitter hover:text-orange-500 transition cursor-pointer"></i>
+                        <i class="fa-brands fa-instagram hover:text-orange-500 transition cursor-pointer"></i>
+                        <i class="fa-brands fa-linkedin hover:text-orange-500 transition cursor-pointer"></i>
+                        <i class="fa-brands fa-github hover:text-orange-500 transition cursor-pointer"></i>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-8 text-xs uppercase tracking-widest text-orange-500">Navigation</h4>
+                    <ul class="space-y-4 text-sm opacity-40 font-semibold">
+                        <li><a href="#" class="hover:text-orange-500 transition">Technology</a></li>
+                        <li><a href="#" class="hover:text-orange-500 transition">Economics</a></li>
+                        <li><a href="#" class="hover:text-orange-500 transition">Politics</a></li>
+                        <li><a href="#" class="hover:text-orange-500 transition">Religion</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-8 text-xs uppercase tracking-widest text-orange-500">Legal</h4>
+                    <ul class="space-y-4 text-sm opacity-40 font-semibold">
+                        <li><a href="#" class="hover:text-orange-500 transition">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-orange-500 transition">Terms of Service</a></li>
+                        <li><a href="#" class="hover:text-orange-500 transition">Cookie Settings</a></li>
+                        <li><a href="#" class="hover:text-orange-500 transition">Ethics Board</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div
+                class="flex flex-col md:flex-row justify-between items-center pt-12 border-t border-white/5 gap-6 text-center">
+                <p class="text-[10px] uppercase font-black tracking-widest opacity-20">© 2026 KING BLOGGERS MEDIA GROUP.
+                    EST. IN THE VOID.</p>
+                <p class="text-[10px] uppercase font-black tracking-widest opacity-20">BUILD VERSION 1.0.2 - LIQUID
+                    GLASS ENGINE</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // MOBILE MENU LOGIC
+        const menuToggle = document.getElementById('menu-toggle');
+        const menuClose = document.getElementById('menu-close');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+
+        const closeMenu = () => {
+            mobileMenu.classList.remove('active');
+            document.body.style.overflow = '';
+        };
+
+        menuClose.addEventListener('click', closeMenu);
+        mobileLinks.forEach(link => link.addEventListener('click', closeMenu));
+
+        // SMART NAV SCROLL EFFECT
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
+                nav.style.paddingTop = '8px';
+                nav.style.paddingBottom = '8px';
+            } else {
+                nav.classList.remove('scrolled');
+                nav.style.paddingTop = '16px';
+                nav.style.paddingBottom = '16px';
+            }
+        });
+
+        // REVEAL ANIMATIONS ON SCROLL
+        const revealItems = document.querySelectorAll('article, #about, #contact form');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        revealItems.forEach(item => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(40px)';
+            item.style.transition = 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+            revealObserver.observe(item);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>King's Studio | Blogger Workspace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+        :root {
+            --king-orange: #FF8C00;
+            --glass-bg: rgba(20, 20, 20, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --preview-bg: #050505;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+            /* App-like feel */
+            height: 100vh;
+            display: flex;
+        }
+
+        /* UTILITIES */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+        }
+
+        .scroll-hide::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .scroll-hide::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scroll-hide::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 2px;
+        }
+
+        .input-ghost {
+            background: transparent;
+            border: none;
+            outline: none;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .input-ghost::placeholder {
+            opacity: 0.2;
+        }
+
+        /* EDITOR STYLES */
+        .editor-textarea {
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.6;
+            resize: none;
+        }
+
+        /* LIVE PREVIEW STYLES */
+        .preview-container {
+            background-image:
+                radial-gradient(circle at 50% 0%, rgba(255, 140, 0, 0.05) 0%, transparent 50%);
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        /* Mobile Simulation Mode */
+        .preview-mode-mobile {
+            max-width: 375px;
+            margin: 20px auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
+            height: calc(100% - 40px);
+            overflow-y: auto;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            background: #000;
+        }
+
+        .preview-mode-mobile::-webkit-scrollbar {
+            display: none;
+        }
+
+        .article-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        /* Category Badge Colors */
+        .badge-tech {
+            background: #FF8C00;
+            color: black;
+        }
+
+        .badge-art {
+            background: #9333EA;
+            color: white;
+        }
+
+        .badge-politics {
+            background: #DC2626;
+            color: white;
+        }
+
+        .badge-religion {
+            background: #2563EB;
+            color: white;
+        }
+
+        .badge-entertainment {
+            background: #EAB308;
+            color: black;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Navigation Active State */
+        .nav-btn.active {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-btn.active i {
+            color: var(--king-orange);
+        }
+
+        .view-section {
+            transition: opacity 0.3s ease;
+        }
+
+        .hidden-view {
+            display: none !important;
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <nav class="w-20 lg:w-64 glass-panel flex flex-col justify-between p-4 z-50">
+        <div>
+            <div class="flex items-center gap-3 mb-10 px-2 text-orange-500">
+                <i class="fa-solid fa-crown text-3xl"></i>
+                <span class="hidden lg:block font-black text-xl tracking-tighter text-white">STUDIO</span>
+            </div>
+
+            <div class="space-y-2">
+                <button onclick="switchView('editor')" id="nav-editor"
+                    class="nav-btn active w-full flex items-center gap-4 px-4 py-3 text-white/40 hover:text-white hover:bg-white/5 rounded-xl transition">
+                    <i class="fa-solid fa-pen-nib"></i>
+                    <span class="hidden lg:block font-bold text-sm">Editor</span>
+                </button>
+                <button onclick="switchView('posts')" id="nav-posts"
+                    class="nav-btn w-full flex items-center gap-4 px-4 py-3 text-white/40 hover:text-white hover:bg-white/5 rounded-xl transition">
+                    <i class="fa-solid fa-box-archive"></i>
+                    <span class="hidden lg:block font-bold text-sm">Library</span>
+                </button>
+                <button onclick="switchView('analytics')" id="nav-analytics"
+                    class="nav-btn w-full flex items-center gap-4 px-4 py-3 text-white/40 hover:text-white hover:bg-white/5 rounded-xl transition">
+                    <i class="fa-solid fa-chart-simple"></i>
+                    <span class="hidden lg:block font-bold text-sm">Analytics</span>
+                </button>
+                <button onclick="switchView('media')" id="nav-media"
+                    class="nav-btn w-full flex items-center gap-4 px-4 py-3 text-white/40 hover:text-white hover:bg-white/5 rounded-xl transition">
+                    <i class="fa-solid fa-images"></i>
+                    <span class="hidden lg:block font-bold text-sm">Media</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="border-t border-white/10 pt-4">
+            <div class="flex items-center gap-3 px-2">
+                <div
+                    class="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-500 to-yellow-500 flex items-center justify-center font-bold text-black text-xs">
+                    K</div>
+                <div class="hidden lg:block">
+                    <p class="text-xs font-bold">The Sovereign</p>
+                    <p class="text-[10px] opacity-40">Pro Author</p>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- VIEW: EDITOR (Default) -->
+    <div id="view-editor" class="view-section flex-1 flex overflow-hidden">
+
+        <!-- LEFT: EDITOR INPUTS -->
+        <section class="flex-1 max-w-2xl border-r border-white/10 flex flex-col bg-black relative z-10">
+            <!-- Toolbar -->
+            <header
+                class="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-black/50 backdrop-blur-md sticky top-0 z-30">
+                <div class="flex items-center gap-4 text-xs font-bold opacity-60">
+                    <span id="save-status"><i class="fa-regular fa-clock mr-2"></i>Draft saved</span>
+                </div>
+                <div class="flex gap-2">
+                    <button
+                        class="text-white/40 hover:text-white px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition">
+                        Save Draft
+                    </button>
+                    <button onclick="publishPost()"
+                        class="bg-orange-600 hover:bg-orange-500 text-black px-6 py-2 rounded-lg font-black uppercase text-xs tracking-widest transition shadow-[0_0_20px_rgba(255,140,0,0.3)]">
+                        Publish
+                    </button>
+                </div>
+            </header>
+
+            <!-- Scrollable Inputs -->
+            <div class="flex-1 overflow-y-auto scroll-hide p-8 space-y-8">
+
+                <!-- Image Uploader -->
+                <div
+                    class="group relative w-full h-48 rounded-2xl border-2 border-dashed border-white/10 hover:border-orange-500/50 transition bg-white/5 flex flex-col items-center justify-center cursor-pointer overflow-hidden">
+                    <input type="file" id="cover-upload" class="absolute inset-0 opacity-0 cursor-pointer z-20"
+                        accept="image/*">
+                    <div class="text-center group-hover:scale-105 transition duration-300 z-10 pointer-events-none">
+                        <i
+                            class="fa-solid fa-cloud-arrow-up text-3xl mb-3 text-white/20 group-hover:text-orange-500 transition"></i>
+                        <p class="text-xs font-bold text-white/40 group-hover:text-white">Upload Cover Image</p>
+                    </div>
+                    <img id="editor-img-preview" src=""
+                        class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-300 pointer-events-none">
+                </div>
+
+                <!-- Meta Data -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="relative">
+                        <label
+                            class="text-[10px] font-black uppercase tracking-widest opacity-40 mb-2 block ml-2">Category</label>
+                        <select id="category-select"
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold focus:border-orange-500 outline-none appearance-none cursor-pointer">
+                            <option value="tech">Technology</option>
+                            <option value="art">Art & Culture</option>
+                            <option value="politics">Politics</option>
+                            <option value="religion">Religion</option>
+                            <option value="entertainment">Entertainment</option>
+                        </select>
+                        <i
+                            class="fa-solid fa-chevron-down absolute right-4 bottom-4 text-xs pointer-events-none opacity-50"></i>
+                    </div>
+                    <div class="relative">
+                        <label
+                            class="text-[10px] font-black uppercase tracking-widest opacity-40 mb-2 block ml-2">Tags</label>
+                        <input type="text" placeholder="#Web3, #Future"
+                            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold focus:border-orange-500 outline-none">
+                    </div>
+                </div>
+
+                <!-- SEO Section -->
+                <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <div
+                        class="flex items-center gap-2 mb-4 text-orange-500 text-xs font-bold uppercase tracking-widest">
+                        <i class="fa-solid fa-globe"></i> SEO Settings
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-[10px] font-bold opacity-40 block mb-1">URL Slug</label>
+                            <div
+                                class="flex items-center bg-black/30 rounded-lg border border-white/10 px-3 py-2 text-xs">
+                                <span class="opacity-40">kingbloggers.com/blog/</span>
+                                <input id="slug-input" type="text" value="future-of-digital-sovereignty"
+                                    class="bg-transparent border-none outline-none text-white flex-1 ml-1 font-mono">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold opacity-40 block mb-1">Meta Description</label>
+                            <textarea id="meta-desc" rows="2"
+                                class="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-xs resize-none outline-none focus:border-orange-500/50"
+                                placeholder="Brief summary for search engines...">In an era defined by rapid technological shifts, the concept of sovereignty is moving from physical borders to digital encryption keys.</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Text Content -->
+                <div class="space-y-4 pt-4 border-t border-white/10">
+                    <input type="text" id="title-input" placeholder="Enter Headline..."
+                        class="input-ghost text-4xl font-black placeholder:text-white/20"
+                        value="The Future of Digital Sovereignty">
+
+                    <!-- Formatting Toolbar -->
+                    <div class="flex gap-2 py-2 sticky top-0 bg-black z-20 overflow-x-auto">
+                        <button
+                            class="w-8 h-8 rounded hover:bg-white/10 flex items-center justify-center text-xs opacity-60 hover:opacity-100"><i
+                                class="fa-solid fa-bold"></i></button>
+                        <button
+                            class="w-8 h-8 rounded hover:bg-white/10 flex items-center justify-center text-xs opacity-60 hover:opacity-100"><i
+                                class="fa-solid fa-italic"></i></button>
+                        <button
+                            class="w-8 h-8 rounded hover:bg-white/10 flex items-center justify-center text-xs opacity-60 hover:opacity-100"><i
+                                class="fa-solid fa-heading"></i></button>
+                        <button
+                            class="w-8 h-8 rounded hover:bg-white/10 flex items-center justify-center text-xs opacity-60 hover:opacity-100"><i
+                                class="fa-solid fa-quote-right"></i></button>
+                        <button
+                            class="w-8 h-8 rounded hover:bg-white/10 flex items-center justify-center text-xs opacity-60 hover:opacity-100"><i
+                                class="fa-solid fa-list-ul"></i></button>
+                        <button
+                            class="w-8 h-8 rounded hover:bg-white/10 flex items-center justify-center text-xs opacity-60 hover:opacity-100"><i
+                                class="fa-solid fa-link"></i></button>
+                    </div>
+
+                    <textarea id="body-input" class="input-ghost editor-textarea text-lg text-white/70 h-[500px]"
+                        placeholder="Start writing your story...">In an era defined by rapid technological shifts, the concept of sovereignty is moving from physical borders to digital encryption keys. 
+
+As we look toward 2026, the intersection of Art and Blockchain suggests a new renaissance...</textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT: LIVE PREVIEW -->
+        <section class="flex-1 bg-[#0a0a0a] relative overflow-hidden flex flex-col z-0">
+            <div class="absolute inset-0 pointer-events-none opacity-20"
+                style="background-image: radial-gradient(#333 1px, transparent 1px); background-size: 20px 20px;"></div>
+
+            <header class="h-16 flex items-center justify-between px-8 border-b border-white/5 bg-[#0a0a0a]">
+
+                <!-- Browser Bar Simulation -->
+                <div
+                    class="hidden lg:flex items-center gap-2 bg-white/5 px-4 py-1.5 rounded-full border border-white/5 w-96">
+                    <i class="fa-solid fa-lock text-[10px] text-green-500"></i>
+                    <span id="browser-url"
+                        class="text-[10px] opacity-40 font-mono truncate">kingbloggers.com/blog/future-of-digital-sovereignty</span>
+                </div>
+
+                <div class="flex gap-4 text-white/20">
+                    <button onclick="setPreviewMode('mobile')" id="btn-mobile" class="hover:text-white transition"><i
+                            class="fa-solid fa-mobile-screen"></i></button>
+                    <button onclick="setPreviewMode('desktop')" id="btn-desktop"
+                        class="text-orange-500 hover:text-white transition"><i class="fa-solid fa-desktop"></i></button>
+                </div>
+            </header>
+
+            <!-- Preview Canvas -->
+            <div id="preview-canvas" class="flex-1 overflow-y-auto scroll-hide p-8 md:p-12 transition-all duration-300">
+
+                <!-- The Dynamic Card -->
+                <article class="w-full max-w-2xl mx-auto animate-float">
+
+                    <!-- Date & Author -->
+                    <div class="flex items-center gap-3 mb-6 opacity-60 text-xs font-bold uppercase tracking-widest">
+                        <span class="text-orange-500">Dec 29, 2025</span>
+                        <span>•</span>
+                        <span>By The Sovereign</span>
+                        <span>•</span>
+                        <span id="read-time-display">1 Min Read</span>
+                    </div>
+
+                    <!-- Title -->
+                    <h1 id="preview-title"
+                        class="text-4xl md:text-6xl font-black leading-[1.1] mb-8 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+                        The Future of Digital Sovereignty
+                    </h1>
+
+                    <!-- Hero Image -->
+                    <div
+                        class="relative w-full aspect-video rounded-[32px] overflow-hidden mb-10 border border-white/10 shadow-2xl bg-white/5">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
+
+                        <!-- Dynamic Badge -->
+                        <span id="preview-badge"
+                            class="absolute top-6 left-6 z-20 badge-tech px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
+                            Technology
+                        </span>
+
+                        <img id="preview-image"
+                            src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1000"
+                            class="w-full h-full object-cover transform hover:scale-105 transition duration-1000">
+                    </div>
+
+                    <!-- Body Content -->
+                    <div id="preview-body"
+                        class="prose prose-invert prose-lg max-w-none text-white/60 leading-relaxed font-light">
+                        <p>In an era defined by rapid technological shifts, the concept of sovereignty is moving from
+                            physical borders to digital encryption keys.</p>
+                        <p>As we look toward 2026, the intersection of Art and Blockchain suggests a new renaissance...
+                        </p>
+                    </div>
+
+                </article>
+
+            </div>
+        </section>
+    </div>
+
+    <!-- VIEW: POSTS LIBRARY -->
+    <div id="view-posts" class="view-section hidden-view flex-1 flex flex-col p-8 md:p-12 overflow-y-auto bg-black">
+        <header class="mb-10 flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-black mb-2">Content Library</h1>
+                <p class="opacity-40 font-mono text-xs">Manage your published works and drafts.</p>
+            </div>
+            <div class="flex gap-4">
+                <input type="text" placeholder="Search posts..."
+                    class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm outline-none focus:border-orange-500 w-64">
+                <button
+                    class="bg-white text-black px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-orange-500 transition">Filter</button>
+            </div>
+        </header>
+
+        <div class="glass border border-white/10 rounded-3xl overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-white/5 text-[10px] uppercase font-black opacity-40">
+                    <tr>
+                        <th class="px-8 py-4">Title</th>
+                        <th class="px-8 py-4">Status</th>
+                        <th class="px-8 py-4">Category</th>
+                        <th class="px-8 py-4">Views</th>
+                        <th class="px-8 py-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-sm">
+                    <tr class="hover:bg-white/5 transition group cursor-pointer">
+                        <td class="px-8 py-4 font-bold flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-white/10 overflow-hidden"><img
+                                    src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=100"
+                                    class="w-full h-full object-cover"></div>
+                            The Future of Digital Sovereignty
+                        </td>
+                        <td class="px-8 py-4"><span
+                                class="bg-orange-500/20 text-orange-500 px-2 py-1 rounded text-[10px] font-black uppercase">Draft</span>
+                        </td>
+                        <td class="px-8 py-4 opacity-60">Technology</td>
+                        <td class="px-8 py-4 opacity-60">-</td>
+                        <td class="px-8 py-4 text-right opacity-40 group-hover:opacity-100"><i
+                                class="fa-solid fa-ellipsis-vertical px-2"></i></td>
+                    </tr>
+                    <tr class="hover:bg-white/5 transition group cursor-pointer">
+                        <td class="px-8 py-4 font-bold flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-white/10 overflow-hidden"><img
+                                    src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=100"
+                                    class="w-full h-full object-cover"></div>
+                            Lagos: The Silicon Lagoon
+                        </td>
+                        <td class="px-8 py-4"><span
+                                class="bg-green-500/20 text-green-500 px-2 py-1 rounded text-[10px] font-black uppercase">Published</span>
+                        </td>
+                        <td class="px-8 py-4 opacity-60">Culture</td>
+                        <td class="px-8 py-4 opacity-60">4,201</td>
+                        <td class="px-8 py-4 text-right opacity-40 group-hover:opacity-100"><i
+                                class="fa-solid fa-ellipsis-vertical px-2"></i></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- VIEW: ANALYTICS -->
+    <div id="view-analytics" class="view-section hidden-view flex-1 flex flex-col p-8 md:p-12 overflow-y-auto bg-black">
+        <header class="mb-10">
+            <h1 class="text-4xl font-black mb-2">Empire Analytics</h1>
+            <p class="opacity-40 font-mono text-xs">Real-time performance metrics.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="glass p-6 rounded-3xl border border-white/10">
+                <div class="text-xs font-bold opacity-40 uppercase tracking-widest mb-4">Total Reads</div>
+                <div class="text-4xl font-black">128.4k</div>
+                <div class="text-green-500 text-xs mt-2 font-bold flex items-center gap-1"><i
+                        class="fa-solid fa-arrow-up"></i> 12% vs last week</div>
+            </div>
+            <div class="glass p-6 rounded-3xl border border-white/10">
+                <div class="text-xs font-bold opacity-40 uppercase tracking-widest mb-4">Avg. Time on Page</div>
+                <div class="text-4xl font-black">4m 12s</div>
+                <div class="text-orange-500 text-xs mt-2 font-bold flex items-center gap-1"><i
+                        class="fa-solid fa-minus"></i> Stable</div>
+            </div>
+            <div class="glass p-6 rounded-3xl border border-white/10">
+                <div class="text-xs font-bold opacity-40 uppercase tracking-widest mb-4">Subscriber Conversion</div>
+                <div class="text-4xl font-black">2.4%</div>
+                <div class="text-green-500 text-xs mt-2 font-bold flex items-center gap-1"><i
+                        class="fa-solid fa-arrow-up"></i> 0.8% vs last week</div>
+            </div>
+        </div>
+
+        <div
+            class="glass p-8 rounded-3xl border border-white/10 h-64 flex items-center justify-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-t from-orange-500/10 to-transparent"></div>
+            <span class="text-xs font-mono opacity-40">Interactive Data Visualization Module (Loading...)</span>
+        </div>
+    </div>
+
+    <!-- VIEW: MEDIA -->
+    <div id="view-media" class="view-section hidden-view flex-1 flex flex-col p-8 md:p-12 overflow-y-auto bg-black">
+        <header class="mb-10 flex justify-between items-center">
+            <div>
+                <h1 class="text-4xl font-black mb-2">Asset Vault</h1>
+                <p class="opacity-40 font-mono text-xs">Your R2 Cloud Storage.</p>
+            </div>
+            <button
+                class="bg-white/10 border border-white/10 text-white px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-white hover:text-black transition flex items-center gap-2">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Upload New
+            </button>
+        </header>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <div
+                class="aspect-square bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center cursor-pointer hover:bg-white/10 transition group">
+                <div class="text-center">
+                    <i class="fa-solid fa-plus text-3xl opacity-30 group-hover:text-orange-500 mb-2 transition"></i>
+                    <p class="text-xs font-bold opacity-40">Add Asset</p>
+                </div>
+            </div>
+            <!-- Mock Assets -->
+            <div class="aspect-square rounded-2xl border border-white/10 overflow-hidden relative group cursor-pointer">
+                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=300"
+                    class="w-full h-full object-cover">
+                <div
+                    class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                    <button class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center"><i
+                            class="fa-solid fa-link text-xs"></i></button>
+                    <button class="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center"><i
+                            class="fa-solid fa-trash text-xs"></i></button>
+                </div>
+            </div>
+            <div class="aspect-square rounded-2xl border border-white/10 overflow-hidden relative group cursor-pointer">
+                <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=300"
+                    class="w-full h-full object-cover">
+                <div
+                    class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2">
+                    <button class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center"><i
+                            class="fa-solid fa-link text-xs"></i></button>
+                    <button class="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center"><i
+                            class="fa-solid fa-trash text-xs"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- NAVIGATION LOGIC ---
+        function switchView(viewName) {
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden-view'));
+            // Show selected view
+            document.getElementById(`view-${viewName}`).classList.remove('hidden-view');
+
+            // Update Sidebar Active State
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`nav-${viewName}`).classList.add('active');
+        }
+
+        // --- PREVIEW RESIZE LOGIC ---
+        function setPreviewMode(mode) {
+            const canvas = document.getElementById('preview-canvas');
+            const btnMobile = document.getElementById('btn-mobile');
+            const btnDesktop = document.getElementById('btn-desktop');
+
+            if (mode === 'mobile') {
+                canvas.classList.add('preview-mode-mobile');
+                btnMobile.classList.add('text-orange-500');
+                btnDesktop.classList.remove('text-orange-500');
+            } else {
+                canvas.classList.remove('preview-mode-mobile');
+                btnDesktop.classList.add('text-orange-500');
+                btnMobile.classList.remove('text-orange-500');
+            }
+        }
+
+        // --- EDITOR LOGIC ---
+        const titleInput = document.getElementById('title-input');
+        const bodyInput = document.getElementById('body-input');
+        const slugInput = document.getElementById('slug-input');
+        const categorySelect = document.getElementById('category-select');
+        const coverUpload = document.getElementById('cover-upload');
+
+        const previewTitle = document.getElementById('preview-title');
+        const previewBody = document.getElementById('preview-body');
+        const previewBadge = document.getElementById('preview-badge');
+        const previewImage = document.getElementById('preview-image');
+        const browserUrl = document.getElementById('browser-url');
+        const editorImgPreview = document.getElementById('editor-img-preview');
+        const readTimeDisplay = document.getElementById('read-time-display');
+        const saveStatus = document.getElementById('save-status');
+
+        // Sync Title & Slug
+        titleInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+            previewTitle.textContent = val || 'Untitled Story';
+
+            // Auto-generate slug if user hasn't manually edited it much
+            const autoSlug = val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+            slugInput.value = autoSlug;
+            browserUrl.textContent = `kingbloggers.com/blog/${autoSlug}`;
+
+            triggerSave();
+        });
+
+        // Sync Slug Manually
+        slugInput.addEventListener('input', (e) => {
+            browserUrl.textContent = `kingbloggers.com/blog/${e.target.value}`;
+        });
+
+        // Sync Body & Read Time
+        bodyInput.addEventListener('input', (e) => {
+            const text = e.target.value;
+            // Simple markdown-ish preview
+            const paragraphs = text.split('\n\n').map(p => `<p class="mb-4">${p}</p>`).join('');
+            previewBody.innerHTML = paragraphs || '<p class="opacity-30">Content will appear here...</p>';
+
+            const words = text.trim().split(/\s+/).length;
+            const time = Math.ceil(words / 200);
+            readTimeDisplay.textContent = `${time} Min Read`;
+            triggerSave();
+        });
+
+        // Sync Category
+        const badgeClasses = {
+            'tech': 'badge-tech', 'art': 'badge-art', 'politics': 'badge-politics',
+            'religion': 'badge-religion', 'entertainment': 'badge-entertainment'
+        };
+        const categoryLabels = { 'tech': 'Technology', 'art': 'Art & Culture', 'politics': 'Politics', 'religion': 'Religion', 'entertainment': 'Entertainment' };
+
+        categorySelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            previewBadge.className = `absolute top-6 left-6 z-20 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg ${badgeClasses[val]}`;
+            previewBadge.textContent = categoryLabels[val];
+        });
+
+        // Image Upload
+        coverUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImage.src = e.target.result;
+                    editorImgPreview.src = e.target.result;
+                    editorImgPreview.classList.remove('opacity-0');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Mock Auto-Save
+        let saveTimeout;
+        function triggerSave() {
+            saveStatus.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Saving...';
+            saveStatus.classList.add('text-orange-500');
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                saveStatus.innerHTML = '<i class="fa-regular fa-clock mr-2"></i>Draft saved';
+                saveStatus.classList.remove('text-orange-500');
+            }, 1000);
+        }
+
+        function publishPost() {
+            const btn = document.querySelector('button[onclick="publishPost()"]');
+            const originalText = btn.textContent;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+            setTimeout(() => {
+                alert('Success! Your article is live.');
+                btn.innerHTML = originalText;
+                btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                // Switch to Posts View to simulate success flow
+                switchView('posts');
+            }, 1500);
+        }
+    </script>
+</body>
+
+</html>

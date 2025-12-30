@@ -1,0 +1,22 @@
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+
+# misc
+.DS_Store
+*.log
+
+# local build output artifacts
+build-output.txt
+
+# local env files (keep .env.example)
+.env
+.env.local
+.env.*.local
+
+# tooling
+.tmp/
+tmp/

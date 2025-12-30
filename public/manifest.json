@@ -1,0 +1,58 @@
+{
+  "id": "com.kingbloggers.app",
+  "name": "King Bloggers",
+  "short_name": "KingBloggers",
+  "description": "Tech, Art, Culture & Power — A sovereign Nigerian media platform.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "portrait-primary",
+  "background_color": "#050505",
+  "theme_color": "#FF8C00",
+  "categories": ["news", "entertainment", "lifestyle", "education"],
+  "lang": "en-NG",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/icons/og.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "King Bloggers Homepage"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Studio",
+      "short_name": "Studio",
+      "description": "Open the Blogger Studio editor",
+      "url": "/blogger/editor?source=pwa-shortcut",
+      "icons": [{ "src": "/icons/icon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your blogger dashboard",
+      "url": "/blogger/dashboard?source=pwa-shortcut",
+      "icons": [{ "src": "/icons/icon.png", "sizes": "192x192" }]
+    }
+  ],
+  "related_applications": [],
+  "handle_links": "preferred"
+}
