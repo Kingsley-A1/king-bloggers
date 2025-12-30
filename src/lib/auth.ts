@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { compare } from "bcryptjs";
 
 import { db } from "../db";
@@ -52,7 +52,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             role: users.role,
           })
           .from(users)
-          .where(eq(users.email, email))
+          .where(eq(sql`lower(${users.email})`, email))
           .limit(1);
 
         const user = rows[0];

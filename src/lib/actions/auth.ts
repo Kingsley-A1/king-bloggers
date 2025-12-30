@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { hash } from "bcryptjs";
 
 import { db } from "@/db";
@@ -29,7 +29,7 @@ export async function registerUser(input: unknown) {
   const existing = await db
     .select({ id: users.id })
     .from(users)
-    .where(eq(users.email, email))
+    .where(eq(sql`lower(${users.email})`, email))
     .limit(1);
 
   if (existing[0]) {
