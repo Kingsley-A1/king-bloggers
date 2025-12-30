@@ -14,12 +14,13 @@ if (process.env.NODE_ENV === "production" && !authSecret) {
 }
 
 const credentialsSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   password: z.string().min(8),
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: authSecret,
+  trustHost: process.env.NODE_ENV === "production",
   providers: [
     ...(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
       ? [

@@ -16,6 +16,8 @@ build-output.txt
 .env
 .env.local
 .env.*.local
+**/.env
+!**/.env.example
 
 # PWA files
 public/sw.js

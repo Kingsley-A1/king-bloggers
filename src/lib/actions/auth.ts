@@ -10,7 +10,7 @@ import { auth, signIn } from "@/lib/auth";
 
 const registerSchema = z.object({
   name: z.string().trim().min(2).max(80).optional(),
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   password: z.string().min(8),
   role: z.enum(["reader", "blogger"]).default("reader"),
   state: z.string().trim().min(2).optional(),
@@ -57,7 +57,7 @@ export async function registerUser(input: unknown) {
 }
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   password: z.string().min(8),
   redirectTo: z.string().optional(),
 });
