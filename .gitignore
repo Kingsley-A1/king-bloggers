@@ -12,13 +12,13 @@ out/
 # local build output artifacts
 build-output.txt
 
-# local env files (keep .env.example)
+
 .env
 .env.local
 .env.*.local
 **/.env
 !**/.env.example
-
+.env.example
 # PWA files
 public/sw.js
 public/sw.js.map
