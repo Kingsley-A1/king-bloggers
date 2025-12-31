@@ -9,9 +9,6 @@ import { db } from "../db";
 import { users } from "../db/schema";
 
 const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
-if (process.env.NODE_ENV === "production" && !authSecret) {
-  throw new Error("Missing AUTH_SECRET (or NEXTAUTH_SECRET) in environment");
-}
 
 const credentialsSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
@@ -19,8 +16,9 @@ const credentialsSchema = z.object({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  debug: process.env.NODE_ENV === "development",
   secret: authSecret,
-  trustHost: process.env.NODE_ENV === "production",
+  trustHost: true,
   providers: [
     ...(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
       ? [
@@ -37,38 +35,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(raw) {
-        const parsed = credentialsSchema.safeParse(raw);
-        if (!parsed.success) return null;
+        try {
+          const parsed = credentialsSchema.safeParse(raw);
+          if (!parsed.success) return null;
 
-        const { email, password } = parsed.data;
+          const { email, password } = parsed.data;
 
-        const rows = await db
-          .select({
-            id: users.id,
-            email: users.email,
-            name: users.name,
-            imageUrl: users.imageUrl,
-            passwordHash: users.passwordHash,
-            role: users.role,
-          })
-          .from(users)
-          .where(eq(sql`lower(${users.email})`, email))
-          .limit(1);
+          const rows = await db
+            .select({
+              id: users.id,
+              email: users.email,
+              name: users.name,
+              imageUrl: users.imageUrl,
+              passwordHash: users.passwordHash,
+              role: users.role,
+            })
+            .from(users)
+            .where(eq(sql`lower(${users.email})`, email))
+            .limit(1);
 
-        const user = rows[0];
-        if (!user) return null;
-        if (!user.passwordHash) return null;
+          const user = rows[0];
+          if (!user || !user.passwordHash) return null;
 
-        const ok = await compare(password, user.passwordHash);
-        if (!ok) return null;
+          const ok = await compare(password, user.passwordHash);
+          if (!ok) return null;
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name ?? undefined,
-          image: user.imageUrl ?? undefined,
-          role: user.role,
-        };
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name ?? undefined,
+            image: user.imageUrl ?? undefined,
+            role: user.role,
+          };
+        } catch (error) {
+          console.error("Auth authorize error:", error);
+          return null;
+        }
       },
     }),
   ],
@@ -77,37 +79,45 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user && typeof (user as { role?: unknown }).role === "string") {
-        token.role = (user as { role: string }).role;
-      }
-
-      if (typeof token.sub === "string") {
-        const rows = await db
-          .select({
-            role: users.role,
-            name: users.name,
-            imageUrl: users.imageUrl,
-          })
-          .from(users)
-          .where(eq(users.id, token.sub))
-          .limit(1);
-        const row = rows[0];
-        if (row) {
-          if (typeof row.role === "string") token.role = row.role;
-          if (typeof row.name === "string") token.name = row.name;
-          token.picture =
-            typeof row.imageUrl === "string" ? row.imageUrl : undefined;
+      try {
+        if (user && typeof (user as { role?: unknown }).role === "string") {
+          token.role = (user as { role: string }).role;
         }
+
+        if (typeof token.sub === "string") {
+          const rows = await db
+            .select({
+              role: users.role,
+              name: users.name,
+              imageUrl: users.imageUrl,
+            })
+            .from(users)
+            .where(eq(users.id, token.sub))
+            .limit(1);
+          const row = rows[0];
+          if (row) {
+            if (typeof row.role === "string") token.role = row.role;
+            if (typeof row.name === "string") token.name = row.name;
+            token.picture =
+              typeof row.imageUrl === "string" ? row.imageUrl : undefined;
+          }
+        }
+      } catch (error) {
+        console.error("Auth JWT callback error:", error);
       }
 
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = typeof token.sub === "string" ? token.sub : "";
-        if (typeof token.role === "string") {
-          session.user.role = token.role;
+      try {
+        if (session.user) {
+          session.user.id = typeof token.sub === "string" ? token.sub : "";
+          if (typeof token.role === "string") {
+            session.user.role = token.role;
+          }
         }
+      } catch (error) {
+        console.error("Auth session callback error:", error);
       }
       return session;
     },
