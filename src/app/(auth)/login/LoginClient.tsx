@@ -23,6 +23,8 @@ export default function LoginClient() {
   const callbackUrl =
     rawCallbackUrl && rawCallbackUrl.startsWith("/") ? rawCallbackUrl : "/";
 
+  const registerHref = `/register?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
@@ -157,7 +159,7 @@ export default function LoginClient() {
           No account?{" "}
           <Link
             className="font-medium text-king-orange hover:underline"
-            href="/register"
+            href={registerHref}
           >
             Create one
           </Link>

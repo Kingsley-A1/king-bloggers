@@ -4,7 +4,17 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Logo } from "@/components/ui/Logo";
 import Link from "next/link";
 
-export default function RegisterPage() {
+export default function RegisterPage({
+  searchParams,
+}: {
+  searchParams?: { callbackUrl?: string };
+}) {
+  const callbackUrl =
+    typeof searchParams?.callbackUrl === "string" ? searchParams.callbackUrl : undefined;
+  const loginHref = callbackUrl
+    ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
+    : "/login";
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 py-14">
       <div className="w-full max-w-[480px] space-y-6">
@@ -19,12 +29,12 @@ export default function RegisterPage() {
           </div>
         </GlassCard>
 
-        <RegistrationForm />
+        <RegistrationForm callbackUrl={callbackUrl} />
 
         <div className="text-center text-sm text-foreground/60">
           Already have an account?{" "}
           <Link
-            href="/login"
+            href={loginHref}
             className="font-medium text-foreground hover:underline"
           >
             Sign in

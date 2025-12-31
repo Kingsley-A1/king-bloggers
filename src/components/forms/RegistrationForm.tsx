@@ -30,9 +30,25 @@ export type RegistrationFormValues = {
 
 export type RegistrationFormProps = {
   className?: string;
+  callbackUrl?: string;
 };
 
-export function RegistrationForm({ className }: RegistrationFormProps) {
+function normalizeCallbackUrl(raw?: string): string | null {
+  if (!raw) return null;
+  if (!raw.startsWith("/")) return null;
+
+  const lower = raw.toLowerCase();
+  if (lower.startsWith("/login")) return null;
+  if (lower.startsWith("/register")) return null;
+  if (lower.startsWith("/api/auth")) return null;
+
+  return raw;
+}
+
+export function RegistrationForm({
+  className,
+  callbackUrl,
+}: RegistrationFormProps) {
   const router = useRouter();
   const [step, setStep] = React.useState<0 | 1 | 2>(0);
   const [role, setRole] = React.useState<RegistrationRole>("reader");
@@ -49,8 +65,17 @@ export function RegistrationForm({ className }: RegistrationFormProps) {
     variant?: "success" | "error";
   }>({ open: false, message: "" });
 
+  const safeCallbackUrl = normalizeCallbackUrl(callbackUrl);
+
   const lgas = state ? NIGERIA_GEO_MAP.get(state) ?? [] : [];
   const lgaDisabled = !state || lgas.length === 0;
+
+  const defaultAfterAuth = role === "blogger" ? "/blogger/editor" : "/profile";
+  const callbackAllowedByRole =
+    safeCallbackUrl && safeCallbackUrl.startsWith("/blogger") && role !== "blogger"
+      ? null
+      : safeCallbackUrl;
+  const afterAuth = callbackAllowedByRole ?? defaultAfterAuth;
 
   async function submit() {
     if (busy) return;
@@ -83,13 +108,14 @@ export function RegistrationForm({ className }: RegistrationFormProps) {
           message: "Account created. Please log in.",
           variant: "success",
         });
-        router.replace("/login");
+        const loginHref = callbackAllowedByRole
+          ? `/login?callbackUrl=${encodeURIComponent(callbackAllowedByRole)}`
+          : "/login";
+        router.replace(loginHref);
         return;
       }
 
-      router.replace(
-        values.role === "blogger" ? "/blogger/editor" : "/profile"
-      );
+      router.replace(afterAuth);
     } catch (error) {
       logDevError("RegistrationForm.submit", error);
       setToast({
@@ -330,7 +356,7 @@ export function RegistrationForm({ className }: RegistrationFormProps) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => void signIn("google")}
+                  onClick={() => void signIn("google", { callbackUrl: afterAuth })}
                   className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-full border border-foreground/10 bg-foreground/5 hover:bg-foreground/10 text-foreground font-medium transition-all duration-300 active:scale-[0.98]"
                 >
                   <GoogleIcon />
