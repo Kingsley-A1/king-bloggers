@@ -7,6 +7,8 @@ import { z } from "zod";
 import { db } from "../../db";
 import { comments, posts } from "../../db/schema";
 import { auth } from "../auth";
+import { rateLimit, rateLimitError } from "../rate-limit";
+import { sanitizeText } from "../sanitize";
 
 const addCommentFormSchema = z.object({
   postId: z.string().uuid(),
@@ -27,10 +29,17 @@ export async function addComment(formData: FormData) {
   const session = await auth();
   if (!session?.user?.id) return;
 
+  // Rate limit check
+  const { limited } = await rateLimit("createComment", session.user.id);
+  if (limited) return;
+
+  // Sanitize comment body to prevent XSS
+  const sanitizedBody = sanitizeText(parsed.data.body);
+
   await db.insert(comments).values({
     postId: parsed.data.postId,
     authorId: session.user.id,
-    body: parsed.data.body,
+    body: sanitizedBody,
   });
 
   if (parsed.data.redirectTo) revalidatePath(parsed.data.redirectTo);

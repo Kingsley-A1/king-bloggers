@@ -49,11 +49,9 @@
     @apply antialiased selection:bg-orange-500/30 selection:text-foreground transition-colors duration-500;
 
     /* Sovereign Mesh Background - Theme Aware */
-    background-image: radial-gradient(
-        circle at 15% 15%,
+    background-image: radial-gradient(circle at 15% 15%,
         var(--mesh-1) 0%,
-        transparent 45%
-      ),
+        transparent 45%),
       radial-gradient(circle at 85% 85%, var(--mesh-1) 0%, transparent 45%),
       radial-gradient(circle at 50% 50%, var(--mesh-2) 0%, transparent 70%);
     background-attachment: fixed;
@@ -92,16 +90,12 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--glass-border);
-    background-image: radial-gradient(
-        circle at 18% 0%,
+    background-image: radial-gradient(circle at 18% 0%,
         rgba(var(--king-orange) / 0.16) 0%,
-        transparent 55%
-      ),
-      radial-gradient(
-        circle at 82% 0%,
+        transparent 55%),
+      radial-gradient(circle at 82% 0%,
         rgba(var(--king-gold) / 0.08) 0%,
-        transparent 60%
-      ),
+        transparent 60%),
       linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 0%, transparent 60%);
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45),
       0 1px 0 rgba(255, 255, 255, 0.06) inset;
@@ -223,11 +217,9 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    to bottom,
-    rgba(var(--king-orange) / 0.2),
-    rgba(var(--king-orange) / 0.6)
-  );
+  background: linear-gradient(to bottom,
+      rgba(var(--king-orange) / 0.2),
+      rgba(var(--king-orange) / 0.6));
   border-radius: 10px;
 }
 
@@ -257,15 +249,19 @@
   0% {
     transform: scale(1);
   }
+
   25% {
     transform: scale(1.35);
   }
+
   50% {
     transform: scale(0.9);
   }
+
   75% {
     transform: scale(1.15);
   }
+
   100% {
     transform: scale(1);
   }
@@ -276,9 +272,11 @@
     opacity: 1;
     transform: scale(0);
   }
+
   50% {
     opacity: 0.8;
   }
+
   100% {
     opacity: 0;
     transform: scale(2.5);
@@ -399,7 +397,58 @@ a:focus:not(:focus-visible) {
 
 /* --- SKELETON LOADERS --- */
 .skeleton {
-  @apply bg-foreground/5 animate-pulse;
+  @apply bg-foreground/5;
+  background: linear-gradient(90deg,
+      rgba(var(--foreground-rgb) / 0.03) 0%,
+      rgba(var(--foreground-rgb) / 0.08) 50%,
+      rgba(var(--foreground-rgb) / 0.03) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Staggered reveal animation for skeleton-to-content transition */
+.skeleton-reveal {
+  animation: skeletonReveal 0.4s ease-out forwards;
+}
+
+@keyframes skeletonReveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- HAPTIC BUTTON EFFECTS --- */
+.haptic-button {
+  @apply transition-all duration-200 ease-out-back;
+}
+
+.haptic-button:hover {
+  @apply scale-[1.02];
+}
+
+.haptic-button:active {
+  @apply scale-95;
+}
+
+/* Glow pulse on hover for primary CTAs */
+.haptic-glow:hover {
+  box-shadow: 0 0 30px rgba(var(--king-orange) / 0.3);
 }
 
 /* --- STAT CARD VARIANT --- */
@@ -413,4 +462,23 @@ a:focus:not(:focus-visible) {
 
 .stat-label {
   @apply text-sm text-foreground/60 mt-1 uppercase tracking-wide;
+}
+
+/* --- SMOOTH 3D TILT TRANSITIONS --- */
+.tilt-transition {
+  transition: transform 0.15s ease-out;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* --- READING MODE STYLES --- */
+.reading-mode-active .glass-nav {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.reading-mode-active footer {
+  display: none;
 }

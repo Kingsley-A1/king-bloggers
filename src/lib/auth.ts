@@ -22,12 +22,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     ...(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET
       ? [
-          Google({
-            clientId: process.env.AUTH_GOOGLE_ID,
-            clientSecret: process.env.AUTH_GOOGLE_SECRET,
-            allowDangerousEmailAccountLinking: false,
-          }),
-        ]
+        Google({
+          clientId: process.env.AUTH_GOOGLE_ID,
+          clientSecret: process.env.AUTH_GOOGLE_SECRET,
+          allowDangerousEmailAccountLinking: false,
+        }),
+      ]
       : []),
     Credentials({
       credentials: {
@@ -78,13 +78,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       try {
-        if (user && typeof (user as { role?: unknown }).role === "string") {
-          token.role = (user as { role: string }).role;
+        // On initial sign-in, populate token with user data from authorize()
+        if (user) {
+          token.role = (user as { role?: string }).role ?? "reader";
+          token.name = user.name ?? undefined;
+          token.picture = user.image ?? undefined;
         }
 
-        if (typeof token.sub === "string") {
+        // Only refresh from DB on signIn or explicit update trigger
+        // This prevents a DB query on EVERY authenticated request
+        if (
+          (trigger === "signIn" || trigger === "update") &&
+          typeof token.sub === "string"
+        ) {
           const rows = await db
             .select({
               role: users.role,
@@ -96,10 +104,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             .limit(1);
           const row = rows[0];
           if (row) {
-            if (typeof row.role === "string") token.role = row.role;
-            if (typeof row.name === "string") token.name = row.name;
-            token.picture =
-              typeof row.imageUrl === "string" ? row.imageUrl : undefined;
+            token.role = row.role ?? "reader";
+            token.name = row.name ?? undefined;
+            token.picture = row.imageUrl ?? undefined;
           }
         }
       } catch (error) {

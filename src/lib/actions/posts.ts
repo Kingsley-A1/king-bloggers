@@ -6,6 +6,8 @@ import { z } from "zod";
 import { db } from "../../db";
 import { posts } from "../../db/schema";
 import { auth } from "../auth";
+import { rateLimit, rateLimitError } from "../rate-limit";
+import { sanitizeHtml, sanitizeText, escapeHtml } from "../sanitize";
 
 function slugify(title: string) {
   return title
@@ -42,22 +44,33 @@ const createPostSchema = z.object({
 export async function createPost(input: unknown) {
   const authorId = await requireBlogger();
 
+  // Rate limit check
+  const { limited, retryAfterMs } = await rateLimit("createPost");
+  if (limited) {
+    return { ok: false as const, error: rateLimitError(retryAfterMs) };
+  }
+
   const parsed = createPostSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false as const, error: "Invalid post payload." };
   }
 
-  const baseSlug = slugify(parsed.data.title) || "post";
+  // Sanitize inputs to prevent XSS attacks
+  const sanitizedTitle = sanitizeText(parsed.data.title);
+  const sanitizedContent = sanitizeHtml(parsed.data.content);
+  const sanitizedExcerpt = parsed.data.excerpt ? sanitizeText(parsed.data.excerpt) : null;
+
+  const baseSlug = slugify(sanitizedTitle) || "post";
   const candidateSlug = `${baseSlug}-${Math.random().toString(36).slice(2, 7)}`;
 
   const inserted = await db
     .insert(posts)
     .values({
       authorId,
-      title: parsed.data.title,
+      title: sanitizedTitle,
       slug: candidateSlug,
-      excerpt: parsed.data.excerpt ?? null,
-      content: parsed.data.content,
+      excerpt: sanitizedExcerpt,
+      content: sanitizedContent,
       category: parsed.data.category,
       coverImageUrl: parsed.data.coverImageUrl ?? null,
       videoUrl: parsed.data.videoUrl ?? null,

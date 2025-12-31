@@ -7,6 +7,7 @@ import { hash } from "bcryptjs";
 import { db } from "@/db";
 import { comments, users } from "@/db/schema";
 import { auth, signIn } from "@/lib/auth";
+import { rateLimit, rateLimitError } from "@/lib/rate-limit";
 
 const registerSchema = z.object({
   name: z.string().trim().min(2).max(80).optional(),
@@ -18,6 +19,12 @@ const registerSchema = z.object({
 });
 
 export async function registerUser(input: unknown) {
+  // Rate limit check - prevent brute force registration attempts
+  const { limited, retryAfterMs } = await rateLimit("register");
+  if (limited) {
+    return { ok: false as const, error: rateLimitError(retryAfterMs) };
+  }
+
   const parsed = registerSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false as const, error: "Invalid registration payload." };
@@ -63,6 +70,12 @@ const loginSchema = z.object({
 });
 
 export async function loginUser(input: unknown) {
+  // Rate limit check - prevent brute force login attempts
+  const { limited, retryAfterMs } = await rateLimit("login");
+  if (limited) {
+    return { ok: false as const, error: rateLimitError(retryAfterMs) };
+  }
+
   const parsed = loginSchema.safeParse(input);
   if (!parsed.success) {
     return { ok: false as const, error: "Invalid login payload." };
