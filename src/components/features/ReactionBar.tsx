@@ -13,10 +13,17 @@ export type ReactionBarProps = {
   initialMyValue: "up" | "down" | null;
 };
 
-export function ReactionBar({ postId, initialUp, initialDown, initialMyValue }: ReactionBarProps) {
+export function ReactionBar({
+  postId,
+  initialUp,
+  initialDown,
+  initialMyValue,
+}: ReactionBarProps) {
   const [up, setUp] = React.useState(initialUp);
   const [down, setDown] = React.useState(initialDown);
-  const [myValue, setMyValue] = React.useState<"up" | "down" | null>(initialMyValue);
+  const [myValue, setMyValue] = React.useState<"up" | "down" | null>(
+    initialMyValue
+  );
   const [busy, setBusy] = React.useState(false);
   const [popUp, setPopUp] = React.useState(false);
   const [popDown, setPopDown] = React.useState(false);
@@ -38,8 +45,7 @@ export function ReactionBar({ postId, initialUp, initialDown, initialMyValue }: 
     let nextMy: "up" | "down" | null = next;
     if (prev === next) nextMy = null;
 
-    const nextUp =
-      (prev === "up" ? up - 1 : up) + (nextMy === "up" ? 1 : 0);
+    const nextUp = (prev === "up" ? up - 1 : up) + (nextMy === "up" ? 1 : 0);
     const nextDown =
       (prev === "down" ? down - 1 : down) + (nextMy === "down" ? 1 : 0);
 
@@ -101,10 +107,7 @@ export function ReactionBar({ postId, initialUp, initialDown, initialMyValue }: 
         )}
       >
         <ThumbsDown
-          className={cn(
-            "h-5 w-5 transition-all",
-            popDown && "reaction-pop"
-          )}
+          className={cn("h-5 w-5 transition-all", popDown && "reaction-pop")}
         />
         <span className="text-sm font-bold tabular-nums">{down}</span>
       </button>

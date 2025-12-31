@@ -14,10 +14,15 @@ export type ShareBarProps = {
 };
 
 export function ShareBar({ title, url, className }: ShareBarProps) {
-  const [copyState, setCopyState] = React.useState<"idle" | "copied" | "failed">("idle");
+  const [copyState, setCopyState] = React.useState<
+    "idle" | "copied" | "failed"
+  >("idle");
 
   async function share() {
-    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+    if (
+      typeof navigator !== "undefined" &&
+      typeof navigator.share === "function"
+    ) {
       try {
         await navigator.share({ title, url });
         return;
@@ -37,13 +42,27 @@ export function ShareBar({ title, url, className }: ShareBarProps) {
 
   return (
     <div className={"flex flex-wrap items-center gap-2 " + (className ?? "")}>
-      <GlassButton variant="glass" size="sm" onClick={() => void share()} className="gap-2">
+      <GlassButton
+        variant="glass"
+        size="sm"
+        onClick={() => void share()}
+        className="gap-2"
+      >
         <Share2 className="h-4 w-4" />
         Share
       </GlassButton>
-      <GlassButton variant="ghost" size="sm" onClick={() => void copy()} className="gap-2">
+      <GlassButton
+        variant="ghost"
+        size="sm"
+        onClick={() => void copy()}
+        className="gap-2"
+      >
         <Copy className="h-4 w-4" />
-        {copyState === "copied" ? "Copied" : copyState === "failed" ? "Copy failed" : "Copy link"}
+        {copyState === "copied"
+          ? "Copied"
+          : copyState === "failed"
+          ? "Copy failed"
+          : "Copy link"}
       </GlassButton>
     </div>
   );

@@ -29,7 +29,10 @@ export function ImageUploader({ onUploaded, className }: ImageUploaderProps) {
       const presign = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fileName: file.name, contentType: file.type || "application/octet-stream" }),
+        body: JSON.stringify({
+          fileName: file.name,
+          contentType: file.type || "application/octet-stream",
+        }),
       });
 
       if (!presign.ok) {
@@ -88,7 +91,9 @@ export function ImageUploader({ onUploaded, className }: ImageUploaderProps) {
           if (file) void uploadFile(file);
         }}
       >
-        <p className="text-sm text-foreground/70">Drag & drop an image here, or choose a file.</p>
+        <p className="text-sm text-foreground/70">
+          Drag & drop an image here, or choose a file.
+        </p>
 
         <div className="mt-6 flex items-center justify-center gap-3">
           <input
@@ -117,7 +122,9 @@ export function ImageUploader({ onUploaded, className }: ImageUploaderProps) {
         </div>
 
         {lastUrl ? (
-          <div className="mt-6 text-xs font-mono text-foreground/60 break-all">{lastUrl}</div>
+          <div className="mt-6 text-xs font-mono text-foreground/60 break-all">
+            {lastUrl}
+          </div>
         ) : null}
       </div>
     </GlassCard>

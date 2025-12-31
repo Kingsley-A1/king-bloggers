@@ -11,7 +11,11 @@ import { Input } from "../ui/Input";
 import { Select } from "../ui/Select";
 import { Spinner } from "../ui/Spinner";
 import { Toast } from "../features/Toast";
-import { safeLocalStorageGet, safeLocalStorageRemove, safeLocalStorageSet } from "../../lib/safe-storage";
+import {
+  safeLocalStorageGet,
+  safeLocalStorageRemove,
+  safeLocalStorageSet,
+} from "../../lib/safe-storage";
 
 const STORAGE_KEY = "king_bloggers_draft_v1";
 
@@ -25,7 +29,14 @@ type Draft = {
   videoUrl?: string;
 };
 
-const CATEGORIES = ["tech", "art_culture", "entertainment", "politics", "economics", "religion"] as const;
+const CATEGORIES = [
+  "tech",
+  "art_culture",
+  "entertainment",
+  "politics",
+  "economics",
+  "religion",
+] as const;
 type Category = (typeof CATEGORIES)[number];
 
 function isCategory(value: string): value is Category {
@@ -63,7 +74,11 @@ export type SovereignEditorProps = {
   onCoverImageUrlChange?: (url: string | null) => void;
 };
 
-export function SovereignEditor({ className, coverImageUrl, onCoverImageUrlChange }: SovereignEditorProps) {
+export function SovereignEditor({
+  className,
+  coverImageUrl,
+  onCoverImageUrlChange,
+}: SovereignEditorProps) {
   const router = useRouter();
   const editorRef = React.useRef<HTMLDivElement | null>(null);
   const [postId, setPostId] = React.useState<string | null>(null);
@@ -73,7 +88,9 @@ export function SovereignEditor({ className, coverImageUrl, onCoverImageUrlChang
   const [category, setCategory] = React.useState<Category>("tech");
   const [videoUrl, setVideoUrl] = React.useState("");
   const [busy, setBusy] = React.useState(false);
-  const [toast, setToast] = React.useState<{ open: boolean; message: string }>(() => ({ open: false, message: "" }));
+  const [toast, setToast] = React.useState<{ open: boolean; message: string }>(
+    () => ({ open: false, message: "" })
+  );
 
   React.useEffect(() => {
     const draft = safeParseDraft(safeLocalStorageGet(STORAGE_KEY));
@@ -172,7 +189,8 @@ export function SovereignEditor({ className, coverImageUrl, onCoverImageUrlChang
 
     setBusy(true);
     try {
-      const computedExcerpt = excerpt.trim() || textFromHtml(html).slice(0, 220);
+      const computedExcerpt =
+        excerpt.trim() || textFromHtml(html).slice(0, 220);
 
       if (!postId) {
         const res = await createPost({
@@ -222,7 +240,8 @@ export function SovereignEditor({ className, coverImageUrl, onCoverImageUrlChang
           title: title.trim(),
           content: html,
           category,
-          excerpt: (excerpt.trim() || textFromHtml(html).slice(0, 220)) || undefined,
+          excerpt:
+            excerpt.trim() || textFromHtml(html).slice(0, 220) || undefined,
           coverImageUrl: coverImageUrl ?? undefined,
           videoUrl: videoUrl.trim() || undefined,
         });
@@ -252,14 +271,29 @@ export function SovereignEditor({ className, coverImageUrl, onCoverImageUrlChang
       <GlassCard className={cn("p-6 md:p-10", className)}>
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div className="space-y-2">
-            <p className="text-xs font-mono text-foreground/50">Sovereign Write</p>
-            <h2 className="text-2xl md:text-3xl font-black tracking-tight">Blogger Studio</h2>
+            <p className="text-xs font-mono text-foreground/50">
+              Sovereign Write
+            </p>
+            <h2 className="text-2xl md:text-3xl font-black tracking-tight">
+              Blogger Studio
+            </h2>
           </div>
           <div className="flex flex-wrap gap-2">
-            <GlassButton variant="glass" onClick={() => exec("bold")}>Bold</GlassButton>
-            <GlassButton variant="glass" onClick={() => exec("italic")}>Italic</GlassButton>
-            <GlassButton variant="glass" onClick={() => exec("underline")}>Underline</GlassButton>
-            <GlassButton variant="glass" onClick={() => exec("formatBlock", "h2")}>H2</GlassButton>
+            <GlassButton variant="glass" onClick={() => exec("bold")}>
+              Bold
+            </GlassButton>
+            <GlassButton variant="glass" onClick={() => exec("italic")}>
+              Italic
+            </GlassButton>
+            <GlassButton variant="glass" onClick={() => exec("underline")}>
+              Underline
+            </GlassButton>
+            <GlassButton
+              variant="glass"
+              onClick={() => exec("formatBlock", "h2")}
+            >
+              H2
+            </GlassButton>
             <GlassButton
               variant="glass"
               onClick={() => {
@@ -276,7 +310,9 @@ export function SovereignEditor({ className, coverImageUrl, onCoverImageUrlChang
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <div className="text-xs font-mono text-foreground/50">Category</div>
+                <div className="text-xs font-mono text-foreground/50">
+                  Category
+                </div>
                 <div className="mt-2">
                   <Select
                     value={category}
@@ -295,11 +331,15 @@ export function SovereignEditor({ className, coverImageUrl, onCoverImageUrlChang
                 </div>
               </div>
               <div>
-                <div className="text-xs font-mono text-foreground/50">Cover Image URL</div>
+                <div className="text-xs font-mono text-foreground/50">
+                  Cover Image URL
+                </div>
                 <div className="mt-2">
                   <Input
                     value={coverImageUrl ?? ""}
-                    onChange={(e) => onCoverImageUrlChange?.(e.target.value || null)}
+                    onChange={(e) =>
+                      onCoverImageUrlChange?.(e.target.value || null)
+                    }
                     placeholder="Paste uploaded image URL"
                   />
                 </div>
@@ -307,7 +347,9 @@ export function SovereignEditor({ className, coverImageUrl, onCoverImageUrlChang
             </div>
 
             <div>
-              <div className="text-xs font-mono text-foreground/50">Video URL (optional)</div>
+              <div className="text-xs font-mono text-foreground/50">
+                Video URL (optional)
+              </div>
               <div className="mt-2">
                 <Input
                   value={videoUrl}
@@ -317,32 +359,52 @@ export function SovereignEditor({ className, coverImageUrl, onCoverImageUrlChang
               </div>
             </div>
 
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Post title" />
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Post title"
+            />
 
-            <Input value={excerpt} onChange={(e) => setExcerpt(e.target.value)} placeholder="Excerpt (optional)" />
+            <Input
+              value={excerpt}
+              onChange={(e) => setExcerpt(e.target.value)}
+              placeholder="Excerpt (optional)"
+            />
 
             <div
               ref={editorRef}
               contentEditable
               suppressContentEditableWarning
-              onInput={(e) => setHtml((e.currentTarget as HTMLDivElement).innerHTML)}
+              onInput={(e) =>
+                setHtml((e.currentTarget as HTMLDivElement).innerHTML)
+              }
               className={cn(
                 "min-h-[320px] rounded-2xl border border-foreground/10 bg-foreground/5 backdrop-blur-xl p-4",
                 "outline-none focus:border-king-orange/60",
-                "prose dark:prose-invert max-w-none",
+                "prose dark:prose-invert max-w-none"
               )}
             />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="text-xs font-mono text-foreground/50">Auto-saves to localStorage</div>
+              <div className="text-xs font-mono text-foreground/50">
+                Auto-saves to localStorage
+              </div>
               <div className="flex gap-2">
-                <GlassButton variant="glass" onClick={saveNow}>Save Draft</GlassButton>
-                <GlassButton variant="ghost" onClick={clear}>Clear</GlassButton>
+                <GlassButton variant="glass" onClick={saveNow}>
+                  Save Draft
+                </GlassButton>
+                <GlassButton variant="ghost" onClick={clear}>
+                  Clear
+                </GlassButton>
               </div>
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
-              <GlassButton variant="glass" onClick={() => void saveToBackend()} disabled={busy}>
+              <GlassButton
+                variant="glass"
+                onClick={() => void saveToBackend()}
+                disabled={busy}
+              >
                 {busy ? (
                   <span className="inline-flex items-center gap-2">
                     <Spinner /> Working…
@@ -353,7 +415,11 @@ export function SovereignEditor({ className, coverImageUrl, onCoverImageUrlChang
                   "Save (Backend)"
                 )}
               </GlassButton>
-              <GlassButton variant="primary" onClick={() => void publishNow()} disabled={busy || !title || !html}>
+              <GlassButton
+                variant="primary"
+                onClick={() => void publishNow()}
+                disabled={busy || !title || !html}
+              >
                 {busy ? (
                   <span className="inline-flex items-center gap-2">
                     <Spinner /> Publishing…
@@ -366,19 +432,29 @@ export function SovereignEditor({ className, coverImageUrl, onCoverImageUrlChang
           </div>
 
           <div className="space-y-4">
-            <div className="text-xs font-mono text-foreground/50">Live Preview</div>
+            <div className="text-xs font-mono text-foreground/50">
+              Live Preview
+            </div>
             <div className="min-h-[420px] rounded-2xl border border-foreground/10 bg-foreground/5 backdrop-blur-xl p-5 overflow-auto">
-              <h1 className="text-2xl font-black tracking-tight">{title || "Untitled"}</h1>
+              <h1 className="text-2xl font-black tracking-tight">
+                {title || "Untitled"}
+              </h1>
               <div
                 className="mt-4 prose dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: html || "<p class='opacity-60'>Start writing…</p>" }}
+                dangerouslySetInnerHTML={{
+                  __html: html || "<p class='opacity-60'>Start writing…</p>",
+                }}
               />
             </div>
           </div>
         </div>
       </GlassCard>
 
-      <Toast open={toast.open} message={toast.message} onClose={() => setToast({ open: false, message: "" })} />
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        onClose={() => setToast({ open: false, message: "" })}
+      />
     </>
   );
 }

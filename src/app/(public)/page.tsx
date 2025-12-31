@@ -2,7 +2,12 @@ import { SectionHeader } from "@/components/features/SectionHeader";
 import { Container } from "@/components/layout/Container";
 import { CategoryNav } from "@/components/layout/CategoryNav";
 import { PostCard } from "@/components/features/PostCard";
-import { listPublishedPosts, badgeVariantForCategory, labelForCategory, readTimeFromContent } from "@/lib/queries/posts";
+import {
+  listPublishedPosts,
+  badgeVariantForCategory,
+  labelForCategory,
+  readTimeFromContent,
+} from "@/lib/queries/posts";
 import { unstable_noStore as noStore } from "next/cache";
 import { GlassButton } from "@/components/ui/GlassButton";
 
@@ -27,7 +32,9 @@ export default async function HomePage() {
         {rows.length === 0 ? (
           <div className="mt-10 glass-card p-8 md:p-10">
             <div className="flex flex-col gap-4">
-              <div className="text-sm text-foreground/70">No posts published yet.</div>
+              <div className="text-sm text-foreground/70">
+                No posts published yet.
+              </div>
               <div>
                 <GlassButton as="a" href="/blogger/editor" variant="primary">
                   Upload Blog
@@ -43,7 +50,10 @@ export default async function HomePage() {
                 href={`/blog/${p.slug}`}
                 title={p.title}
                 excerpt={p.excerpt ?? undefined}
-                badge={{ label: labelForCategory(p.category), variant: badgeVariantForCategory(p.category) }}
+                badge={{
+                  label: labelForCategory(p.category),
+                  variant: badgeVariantForCategory(p.category),
+                }}
                 readTime={readTimeFromContent(p.content)}
                 authorName={p.authorEmail}
                 imageUrl={p.coverImageUrl}

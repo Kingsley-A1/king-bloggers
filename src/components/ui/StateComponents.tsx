@@ -25,7 +25,11 @@ export function ErrorState({
   className,
 }: ErrorStateProps) {
   return (
-    <div className={`flex items-center justify-center min-h-[300px] p-4 ${className ?? ""}`}>
+    <div
+      className={`flex items-center justify-center min-h-[300px] p-4 ${
+        className ?? ""
+      }`}
+    >
       <GlassCard className="p-8 md:p-10 text-center max-w-md w-full">
         <div className="w-16 h-16 mx-auto rounded-full bg-red-500/10 flex items-center justify-center mb-4">
           <AlertTriangle className="h-8 w-8 text-red-500" />
@@ -73,7 +77,11 @@ export function EmptyState({
   className,
 }: EmptyStateProps) {
   return (
-    <div className={`flex items-center justify-center min-h-[200px] p-4 ${className ?? ""}`}>
+    <div
+      className={`flex items-center justify-center min-h-[200px] p-4 ${
+        className ?? ""
+      }`}
+    >
       <div className="text-center max-w-sm">
         {icon && (
           <div className="w-14 h-14 mx-auto rounded-full bg-foreground/5 flex items-center justify-center mb-4 text-foreground/40">
@@ -81,7 +89,9 @@ export function EmptyState({
           </div>
         )}
         <h3 className="text-lg font-bold tracking-tight mb-1">{title}</h3>
-        {message && <p className="text-foreground/60 text-sm mb-4">{message}</p>}
+        {message && (
+          <p className="text-foreground/60 text-sm mb-4">{message}</p>
+        )}
         {action}
       </div>
     </div>
@@ -93,9 +103,16 @@ type LoadingStateProps = {
   className?: string;
 };
 
-export function LoadingState({ message = "Loading...", className }: LoadingStateProps) {
+export function LoadingState({
+  message = "Loading...",
+  className,
+}: LoadingStateProps) {
   return (
-    <div className={`flex items-center justify-center min-h-[200px] p-4 ${className ?? ""}`}>
+    <div
+      className={`flex items-center justify-center min-h-[200px] p-4 ${
+        className ?? ""
+      }`}
+    >
       <div className="text-center">
         <div className="w-10 h-10 mx-auto mb-3 border-2 border-king-orange/30 border-t-king-orange rounded-full animate-spin" />
         <p className="text-sm text-foreground/60">{message}</p>

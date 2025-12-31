@@ -40,7 +40,11 @@ export function Sidebar() {
           <aside className="absolute left-0 top-0 h-full w-[85%] max-w-xs glass-card rounded-none border-r border-foreground/10 bg-background/80 p-6">
             <div className="flex items-center justify-between">
               <Logo />
-              <GlassButton variant="ghost" onClick={() => setOpen(false)} className="px-3">
+              <GlassButton
+                variant="ghost"
+                onClick={() => setOpen(false)}
+                className="px-3"
+              >
                 Close
               </GlassButton>
             </div>
@@ -66,7 +70,7 @@ export function Sidebar() {
           "sticky top-0 h-screen",
           "w-72",
           "border-r border-foreground/10 bg-background/60 backdrop-blur-xl",
-          "p-6",
+          "p-6"
         )}
       >
         <Logo />

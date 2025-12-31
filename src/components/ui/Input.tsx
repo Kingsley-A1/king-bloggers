@@ -13,11 +13,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         className={cn(
           "glass-input w-full placeholder:text-foreground/40",
           "disabled:opacity-50 disabled:cursor-not-allowed",
-          className,
+          className
         )}
         {...props}
       />
     );
-  },
+  }
 );
 Input.displayName = "Input";

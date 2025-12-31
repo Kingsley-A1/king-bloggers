@@ -20,7 +20,8 @@ export default function LoginClient() {
   const search = useSearchParams();
 
   const rawCallbackUrl = search.get("callbackUrl");
-  const callbackUrl = rawCallbackUrl && rawCallbackUrl.startsWith("/") ? rawCallbackUrl : "/";
+  const callbackUrl =
+    rawCallbackUrl && rawCallbackUrl.startsWith("/") ? rawCallbackUrl : "/";
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -43,7 +44,11 @@ export default function LoginClient() {
       });
 
       if (!res || res.error) {
-        setToast({ open: true, message: "Invalid email or password.", variant: "error" });
+        setToast({
+          open: true,
+          message: "Invalid email or password.",
+          variant: "error",
+        });
         return;
       }
 
@@ -72,7 +77,9 @@ export default function LoginClient() {
 
           <form className="space-y-4" onSubmit={submit}>
             <div>
-              <label className="text-xs font-mono text-foreground/50">Email</label>
+              <label className="text-xs font-mono text-foreground/50">
+                Email
+              </label>
               <div className="mt-2">
                 <Input
                   value={email}
@@ -84,7 +91,9 @@ export default function LoginClient() {
             </div>
 
             <div>
-              <label className="text-xs font-mono text-foreground/50">Password</label>
+              <label className="text-xs font-mono text-foreground/50">
+                Password
+              </label>
               <div className="mt-2 relative">
                 <Input
                   value={password}
@@ -107,7 +116,11 @@ export default function LoginClient() {
             </div>
 
             <div className="pt-4 flex flex-col gap-3">
-              <GlassButton variant="primary" type="submit" disabled={!email || password.length < 8 || busy}>
+              <GlassButton
+                variant="primary"
+                type="submit"
+                disabled={!email || password.length < 8 || busy}
+              >
                 {busy ? (
                   <span className="inline-flex items-center gap-2">
                     <Spinner size={16} /> Signing in…
@@ -122,7 +135,9 @@ export default function LoginClient() {
                   <span className="w-full border-t border-foreground/10" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-foreground/50">Or continue with</span>
+                  <span className="bg-background px-2 text-foreground/50">
+                    Or continue with
+                  </span>
                 </div>
               </div>
 
@@ -140,7 +155,10 @@ export default function LoginClient() {
 
         <div className="text-center text-sm text-foreground/60 mt-6">
           No account?{" "}
-          <Link className="font-medium text-king-orange hover:underline" href="/register">
+          <Link
+            className="font-medium text-king-orange hover:underline"
+            href="/register"
+          >
             Create one
           </Link>
         </div>

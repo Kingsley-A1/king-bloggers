@@ -6,7 +6,11 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { safeLocalStorageGet, safeLocalStorageRemove, safeLocalStorageSet } from "@/lib/safe-storage";
+import {
+  safeLocalStorageGet,
+  safeLocalStorageRemove,
+  safeLocalStorageSet,
+} from "@/lib/safe-storage";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -29,7 +33,8 @@ const DISMISSED_KEY = "kb_install_dismissed";
 const DISMISS_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export function InstallAppPrompt({ className }: { className?: string }) {
-  const [deferred, setDeferred] = React.useState<BeforeInstallPromptEvent | null>(null);
+  const [deferred, setDeferred] =
+    React.useState<BeforeInstallPromptEvent | null>(null);
   const [open, setOpen] = React.useState(false);
   const [isIOS, setIsIOS] = React.useState(false);
 
@@ -43,8 +48,9 @@ export function InstallAppPrompt({ className }: { className?: string }) {
 
       // Check if previously dismissed and if 7 days have passed
       const dismissedAt = safeLocalStorageGet(DISMISSED_KEY);
-      const shouldShow = !dismissedAt || Date.now() - Number(dismissedAt) > DISMISS_DURATION;
-      
+      const shouldShow =
+        !dismissedAt || Date.now() - Number(dismissedAt) > DISMISS_DURATION;
+
       if (shouldShow && !isStandalone()) setOpen(true);
     }
 
@@ -55,12 +61,14 @@ export function InstallAppPrompt({ className }: { className?: string }) {
   React.useEffect(() => {
     // iOS has no beforeinstallprompt, but we still want a clean install hint.
     const dismissedAt = safeLocalStorageGet(DISMISSED_KEY);
-    const shouldShow = !dismissedAt || Date.now() - Number(dismissedAt) > DISMISS_DURATION;
+    const shouldShow =
+      !dismissedAt || Date.now() - Number(dismissedAt) > DISMISS_DURATION;
     if (shouldShow && isIOS && !isStandalone()) setOpen(true);
   }, [isIOS]);
 
   async function install() {
-    const returnTo = window.location.pathname + window.location.search + window.location.hash;
+    const returnTo =
+      window.location.pathname + window.location.search + window.location.hash;
     safeLocalStorageSet(RETURN_TO_KEY, returnTo);
 
     if (!deferred) {
@@ -89,7 +97,12 @@ export function InstallAppPrompt({ className }: { className?: string }) {
   if (isStandalone()) return null;
 
   return (
-    <div className={cn("fixed inset-x-0 bottom-4 z-50 px-4 animate-[kingFadeIn_0.5s_ease-out]", className)}>
+    <div
+      className={cn(
+        "fixed inset-x-0 bottom-4 z-50 px-4 animate-[kingFadeIn_0.5s_ease-out]",
+        className
+      )}
+    >
       <div className="mx-auto max-w-2xl">
         <GlassCard className="p-4 md:p-5 border-king-orange/20 shadow-lg shadow-king-orange/10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -114,8 +127,8 @@ export function InstallAppPrompt({ className }: { className?: string }) {
                   {deferred
                     ? "Get the premium, distraction-free app experience."
                     : isIOS
-                      ? "Tap Share → Add to Home Screen."
-                      : "Install is not available on this browser."}
+                    ? "Tap Share → Add to Home Screen."
+                    : "Install is not available on this browser."}
                 </div>
               </div>
             </div>
@@ -140,7 +153,8 @@ export function InstallAppPrompt({ className }: { className?: string }) {
 }
 
 export function rememberLastUrl() {
-  const href = window.location.pathname + window.location.search + window.location.hash;
+  const href =
+    window.location.pathname + window.location.search + window.location.hash;
   safeLocalStorageSet(LAST_URL_KEY, href);
 }
 

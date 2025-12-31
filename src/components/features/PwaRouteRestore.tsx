@@ -3,7 +3,11 @@
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { readAndClearInstallReturnTo, readLastUrl, rememberLastUrl } from "./InstallAppPrompt";
+import {
+  readAndClearInstallReturnTo,
+  readLastUrl,
+  rememberLastUrl,
+} from "./InstallAppPrompt";
 
 function isStandalone() {
   const nav = navigator as unknown as { standalone?: boolean };

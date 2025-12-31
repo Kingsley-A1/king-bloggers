@@ -12,11 +12,11 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
         className={cn(
           "glass-input w-full min-h-32 placeholder:text-foreground/40",
           "disabled:opacity-50 disabled:cursor-not-allowed",
-          className,
+          className
         )}
         {...props}
       />
     );
-  },
+  }
 );
 TextArea.displayName = "TextArea";

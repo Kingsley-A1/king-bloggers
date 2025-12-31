@@ -83,7 +83,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       if (typeof token.sub === "string") {
         const rows = await db
-          .select({ role: users.role, name: users.name, imageUrl: users.imageUrl })
+          .select({
+            role: users.role,
+            name: users.name,
+            imageUrl: users.imageUrl,
+          })
           .from(users)
           .where(eq(users.id, token.sub))
           .limit(1);
@@ -91,7 +95,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (row) {
           if (typeof row.role === "string") token.role = row.role;
           if (typeof row.name === "string") token.name = row.name;
-          token.picture = typeof row.imageUrl === "string" ? row.imageUrl : undefined;
+          token.picture =
+            typeof row.imageUrl === "string" ? row.imageUrl : undefined;
         }
       }
 

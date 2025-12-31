@@ -8,7 +8,7 @@ export type PostCardSkeletonProps = {
 
 export function PostCardSkeleton({ className }: PostCardSkeletonProps) {
   return (
-    <GlassCard className={"overflow-hidden " + (className ?? "")}> 
+    <GlassCard className={"overflow-hidden " + (className ?? "")}>
       <div className="aspect-[16/9] w-full rounded-none skeleton" />
 
       <div className="p-6 md:p-8 space-y-4">

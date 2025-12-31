@@ -11,7 +11,8 @@ export const metadata = {
     "Get in touch with King Bloggers for partnerships, support, and publishing inquiries.",
   openGraph: {
     title: "Contact — King Bloggers",
-    description: "Reach us for partnerships, support, advertising, and publishing inquiries.",
+    description:
+      "Reach us for partnerships, support, advertising, and publishing inquiries.",
     images: ["/icons/og.png"],
   },
 };
@@ -33,8 +34,20 @@ function ContactCard({
 
 function SocialIcon({ d }: { d: string }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d={d} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d={d}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -97,7 +110,8 @@ export default function ContactPage() {
             <div className="space-y-2 text-foreground/70">
               <p className="font-bold">🇳🇬 Nigeria</p>
               <p className="text-sm text-foreground/50">
-                Headquartered in Lagos, serving readers and bloggers nationwide across all 774 LGAs.
+                Headquartered in Lagos, serving readers and bloggers nationwide
+                across all 774 LGAs.
               </p>
             </div>
           </ContactCard>
@@ -107,13 +121,31 @@ export default function ContactPage() {
         <GlassCard className="p-8 md:p-10 mt-8">
           <div className="text-center">
             <h3 className="text-lg font-black mb-2">Follow Us</h3>
-            <p className="text-sm text-foreground/60 mb-6">Stay connected on social media</p>
+            <p className="text-sm text-foreground/60 mb-6">
+              Stay connected on social media
+            </p>
             <div className="flex flex-wrap justify-center gap-3">
               {[
-                { href: "https://instagram.com/king_bloggers", label: "Instagram", icon: "M7 7h10v10H7z M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2 M16 11.5a4 4 0 1 1-8 0 4 4 0 0 1 8 0" },
-                { href: "https://facebook.com/king_bloggers", label: "Facebook", icon: "M14 9h3V6h-3a4 4 0 0 0-4 4v3H7v3h3v5h3v-5h3l1-3h-4v-3a1 1 0 0 1 1-1Z" },
-                { href: "https://x.com/king_bloggers", label: "X (Twitter)", icon: "M4 4l16 16 M20 4L4 20" },
-                { href: "https://tiktok.com/@king_bloggers", label: "TikTok", icon: "M14 3v10a4 4 0 1 1-4-4" },
+                {
+                  href: "https://instagram.com/king_bloggers",
+                  label: "Instagram",
+                  icon: "M7 7h10v10H7z M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2 M16 11.5a4 4 0 1 1-8 0 4 4 0 0 1 8 0",
+                },
+                {
+                  href: "https://facebook.com/king_bloggers",
+                  label: "Facebook",
+                  icon: "M14 9h3V6h-3a4 4 0 0 0-4 4v3H7v3h3v5h3v-5h3l1-3h-4v-3a1 1 0 0 1 1-1Z",
+                },
+                {
+                  href: "https://x.com/king_bloggers",
+                  label: "X (Twitter)",
+                  icon: "M4 4l16 16 M20 4L4 20",
+                },
+                {
+                  href: "https://tiktok.com/@king_bloggers",
+                  label: "TikTok",
+                  icon: "M14 3v10a4 4 0 1 1-4-4",
+                },
               ].map((s) => (
                 <a
                   key={s.label}
@@ -143,11 +175,26 @@ export default function ContactPage() {
             View Documentation →
           </Link>
           <div className="mt-6 flex flex-wrap justify-center gap-4">
-            <Link href="/about" className="text-sm text-foreground/60 hover:text-king-orange transition-colors">About Us</Link>
+            <Link
+              href="/about"
+              className="text-sm text-foreground/60 hover:text-king-orange transition-colors"
+            >
+              About Us
+            </Link>
             <span className="text-foreground/30">•</span>
-            <Link href="/privacy-policy" className="text-sm text-foreground/60 hover:text-king-orange transition-colors">Privacy Policy</Link>
+            <Link
+              href="/privacy-policy"
+              className="text-sm text-foreground/60 hover:text-king-orange transition-colors"
+            >
+              Privacy Policy
+            </Link>
             <span className="text-foreground/30">•</span>
-            <Link href="/register" className="text-sm text-foreground/60 hover:text-king-orange transition-colors">Join as Blogger</Link>
+            <Link
+              href="/register"
+              className="text-sm text-foreground/60 hover:text-king-orange transition-colors"
+            >
+              Join as Blogger
+            </Link>
           </div>
         </div>
       </Container>

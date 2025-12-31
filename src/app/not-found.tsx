@@ -15,9 +15,12 @@ export default function NotFound() {
               <Logo size={44} />
               <div className="min-w-0">
                 <div className="text-xs font-mono text-foreground/50">404</div>
-                <h1 className="mt-1 text-2xl md:text-3xl font-black tracking-tight">Page not found</h1>
+                <h1 className="mt-1 text-2xl md:text-3xl font-black tracking-tight">
+                  Page not found
+                </h1>
                 <p className="mt-2 text-sm text-foreground/60">
-                  The page you’re looking for doesn’t exist, was moved, or needs a different link.
+                  The page you’re looking for doesn’t exist, was moved, or needs
+                  a different link.
                 </p>
               </div>
             </div>

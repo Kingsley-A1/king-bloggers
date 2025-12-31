@@ -17,7 +17,10 @@ export type PublishedPostListItem = {
   authorEmail: string;
 };
 
-export async function listPublishedPosts(input?: { category?: PostCategory; limit?: number }) {
+export async function listPublishedPosts(input?: {
+  category?: PostCategory;
+  limit?: number;
+}) {
   const limit = input?.limit ?? 30;
 
   const where = input?.category

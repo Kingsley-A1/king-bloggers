@@ -72,8 +72,11 @@ export const postReactions = pgTable(
       .defaultNow(),
   },
   (t) => ({
-    postUserUnique: uniqueIndex("post_reactions_post_user_unique").on(t.postId, t.userId),
-  }),
+    postUserUnique: uniqueIndex("post_reactions_post_user_unique").on(
+      t.postId,
+      t.userId
+    ),
+  })
 );
 
 export const comments = pgTable("comments", {

@@ -74,7 +74,9 @@ export default async function ReaderProfilePage() {
                   <div className="text-xs font-mono opacity-50">
                     {new Date(c.createdAt).toLocaleString()}
                   </div>
-                  <div className="mt-2 whitespace-pre-wrap leading-relaxed">{c.body}</div>
+                  <div className="mt-2 whitespace-pre-wrap leading-relaxed">
+                    {c.body}
+                  </div>
                 </div>
               ))
             )}

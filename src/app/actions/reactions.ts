@@ -6,7 +6,10 @@ import { db } from "@/db";
 import { postReactions } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-export async function setReaction(input: { postId: string; value: "up" | "down" | "none" }) {
+export async function setReaction(input: {
+  postId: string;
+  value: "up" | "down" | "none";
+}) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) {
@@ -18,7 +21,9 @@ export async function setReaction(input: { postId: string; value: "up" | "down" 
   const existing = await db
     .select({ id: postReactions.id, value: postReactions.value })
     .from(postReactions)
-    .where(and(eq(postReactions.postId, postId), eq(postReactions.userId, userId)))
+    .where(
+      and(eq(postReactions.postId, postId), eq(postReactions.userId, userId))
+    )
     .limit(1);
 
   const row = existing[0];
@@ -40,6 +45,9 @@ export async function setReaction(input: { postId: string; value: "up" | "down" 
     return { ok: true as const };
   }
 
-  await db.update(postReactions).set({ value }).where(eq(postReactions.id, row.id));
+  await db
+    .update(postReactions)
+    .set({ value })
+    .where(eq(postReactions.id, row.id));
   return { ok: true as const };
 }

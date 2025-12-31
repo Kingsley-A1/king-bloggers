@@ -38,7 +38,12 @@ export function Navbar() {
 
   return (
     <>
-      <header className={cn("sticky top-0 z-40 glass-nav transition-all duration-300", compact ? "py-2" : "py-4")}>
+      <header
+        className={cn(
+          "sticky top-0 z-40 glass-nav transition-all duration-300",
+          compact ? "py-2" : "py-4"
+        )}
+      >
         <Container className="flex items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-3">
             <Logo variant="full" size={compact ? 32 : 36} />
@@ -67,7 +72,12 @@ export function Navbar() {
                 <UserRound className="h-4 w-4" />
               </Link>
             ) : (
-              <GlassButton as="a" href="/register" variant="glass" className="px-4">
+              <GlassButton
+                as="a"
+                href="/register"
+                variant="glass"
+                className="px-4"
+              >
                 Login
               </GlassButton>
             )}

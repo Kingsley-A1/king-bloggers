@@ -5,7 +5,12 @@ import { Container } from "@/components/layout/Container";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { auth } from "@/lib/auth";
 import { listCommentsForPost } from "@/lib/queries/comments";
-import { getPublishedPostBySlug, badgeVariantForCategory, labelForCategory, readTimeFromContent } from "@/lib/queries/posts";
+import {
+  getPublishedPostBySlug,
+  badgeVariantForCategory,
+  labelForCategory,
+  readTimeFromContent,
+} from "@/lib/queries/posts";
 import { Badge } from "@/components/ui/Badge";
 import { notFound } from "next/navigation";
 import { getReactionSummary } from "@/lib/queries/reactions";
@@ -33,7 +38,9 @@ export default async function BlogPostPage({ params }: PageProps) {
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "https";
-  const url = host ? `${proto}://${host}/blog/${post.slug}` : `/blog/${post.slug}`;
+  const url = host
+    ? `${proto}://${host}/blog/${post.slug}`
+    : `/blog/${post.slug}`;
 
   return (
     <main className="min-h-screen py-14">
@@ -49,11 +56,18 @@ export default async function BlogPostPage({ params }: PageProps) {
         <GlassCard className="mt-6 p-8 md:p-12">
           <div className="flex flex-col gap-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <Badge variant={badgeVariantForCategory(post.category)}>{labelForCategory(post.category)}</Badge>
-              <div className="text-xs font-mono text-foreground/50">{readTimeFromContent(post.content)}</div>
+              <Badge variant={badgeVariantForCategory(post.category)}>
+                {labelForCategory(post.category)}
+              </Badge>
+              <div className="text-xs font-mono text-foreground/50">
+                {readTimeFromContent(post.content)}
+              </div>
             </div>
 
-            <SectionHeader title={post.title} subtitle={post.excerpt ?? undefined} />
+            <SectionHeader
+              title={post.title}
+              subtitle={post.excerpt ?? undefined}
+            />
             <div className="flex flex-wrap items-center justify-between gap-3">
               <ReactionBar
                 postId={post.id}
@@ -67,22 +81,38 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {post.videoUrl ? (
             <div className="mt-10">
-              <BlogVideoPlayer src={post.videoUrl} title={post.title} poster={post.coverImageUrl} />
+              <BlogVideoPlayer
+                src={post.videoUrl}
+                title={post.title}
+                poster={post.coverImageUrl}
+              />
             </div>
           ) : null}
 
-          <div className="mt-10 post-content" dangerouslySetInnerHTML={{ __html: post.content }} />
+          <div
+            className="mt-10 post-content"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
         </GlassCard>
 
         <div className="mt-8">
-          <CommentSection postId={post.id} canComment={canComment} comments={comments} redirectTo={`/blog/${post.slug}`} />
+          <CommentSection
+            postId={post.id}
+            canComment={canComment}
+            comments={comments}
+            redirectTo={`/blog/${post.slug}`}
+          />
         </div>
 
         <div className="mt-8">
           <GlassCard className="p-6 md:p-8">
             <div className="flex flex-col gap-3">
-              <div className="text-lg font-black tracking-tight">Reshare this post</div>
-              <div className="text-sm text-foreground/60">Share it to your friends, groups, or socials.</div>
+              <div className="text-lg font-black tracking-tight">
+                Reshare this post
+              </div>
+              <div className="text-sm text-foreground/60">
+                Share it to your friends, groups, or socials.
+              </div>
               <ShareBar title={post.title} url={url} />
             </div>
           </GlassCard>

@@ -6,20 +6,20 @@
   :root {
     /* --- LIGHT MODE (Default) --- */
     /* Apple-grade Light Gray Background - Enhanced Contrast */
-    --background-rgb: 250 250 252; 
+    --background-rgb: 250 250 252;
     --foreground-rgb: 20 20 22;
-    
+
     /* Core Palette */
     --king-orange: 255 140 0;
     --king-gold: 212 175 55;
-    
+
     /* Glass Tokens - Light - Enhanced visibility */
     --glass-bg: rgba(255, 255, 255, 0.85);
     --glass-bg-hover: rgba(255, 255, 255, 0.95);
-    --glass-border: rgba(0, 0, 0, 0.10);
+    --glass-border: rgba(0, 0, 0, 0.1);
     --glass-border-bright: rgba(0, 0, 0, 0.18);
     --glass-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.08);
-    
+
     /* Mesh Gradients - Light */
     --mesh-1: rgba(255, 140, 0, 0.08);
     --mesh-2: rgba(212, 175, 55, 0.05);
@@ -29,14 +29,14 @@
     /* --- DARK MODE --- */
     --background-rgb: 5 5 5;
     --foreground-rgb: 255 255 255;
-    
+
     /* Glass Tokens - Dark */
     --glass-bg: rgba(255, 255, 255, 0.03);
     --glass-bg-hover: rgba(255, 255, 255, 0.06);
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-border-bright: rgba(255, 255, 255, 0.15);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    
+
     /* Mesh Gradients - Dark */
     --mesh-1: rgba(255, 140, 0, 0.15);
     --mesh-2: rgba(212, 175, 55, 0.05);
@@ -49,8 +49,11 @@
     @apply antialiased selection:bg-orange-500/30 selection:text-foreground transition-colors duration-500;
 
     /* Sovereign Mesh Background - Theme Aware */
-    background-image:
-      radial-gradient(circle at 15% 15%, var(--mesh-1) 0%, transparent 45%),
+    background-image: radial-gradient(
+        circle at 15% 15%,
+        var(--mesh-1) 0%,
+        transparent 45%
+      ),
       radial-gradient(circle at 85% 85%, var(--mesh-1) 0%, transparent 45%),
       radial-gradient(circle at 50% 50%, var(--mesh-2) 0%, transparent 70%);
     background-attachment: fixed;
@@ -75,12 +78,12 @@
     background: var(--glass-bg-hover);
     border-color: var(--glass-border-bright);
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px -2px rgba(0,0,0,0.12);
+    box-shadow: 0 12px 40px -2px rgba(0, 0, 0, 0.12);
   }
-  
+
   /* Dark mode specific hover shadow override */
   .dark .glass-card:hover {
-    box-shadow: 0 12px 40px -2px rgba(0,0,0,0.5);
+    box-shadow: 0 12px 40px -2px rgba(0, 0, 0, 0.5);
   }
 
   /* Navigation Glass: Higher blur, specific for sticky headers */
@@ -89,12 +92,18 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--glass-border);
-    background-image:
-      radial-gradient(circle at 18% 0%, rgba(var(--king-orange) / 0.16) 0%, transparent 55%),
-      radial-gradient(circle at 82% 0%, rgba(var(--king-gold) / 0.08) 0%, transparent 60%),
+    background-image: radial-gradient(
+        circle at 18% 0%,
+        rgba(var(--king-orange) / 0.16) 0%,
+        transparent 55%
+      ),
+      radial-gradient(
+        circle at 82% 0%,
+        rgba(var(--king-gold) / 0.08) 0%,
+        transparent 60%
+      ),
       linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 0%, transparent 60%);
-    box-shadow:
-      0 18px 40px rgba(0, 0, 0, 0.45),
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45),
       0 1px 0 rgba(255, 255, 255, 0.06) inset;
   }
 
@@ -106,7 +115,7 @@
     @apply rounded-full transition-all duration-300 active:scale-95 font-bold uppercase tracking-widest text-xs;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   }
-  
+
   .glass-button:hover {
     background: var(--glass-bg-hover);
     border-color: var(--glass-border-bright);
@@ -172,7 +181,8 @@
   }
 
   .post-content code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+      "Liberation Mono", "Courier New", monospace;
     font-size: 0.95em;
     background: rgb(var(--foreground-rgb) / 0.06);
     padding: 0.15em 0.35em;
@@ -181,7 +191,7 @@
 
   .post-content pre {
     background: rgb(var(--foreground-rgb) / 0.06);
-    border: 1px solid rgb(var(--foreground-rgb) / 0.10);
+    border: 1px solid rgb(var(--foreground-rgb) / 0.1);
     border-radius: 0.9rem;
     padding: 1rem;
     overflow: auto;
@@ -213,7 +223,11 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, rgba(var(--king-orange) / 0.2), rgba(var(--king-orange) / 0.6));
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--king-orange) / 0.2),
+    rgba(var(--king-orange) / 0.6)
+  );
   border-radius: 10px;
 }
 

@@ -11,11 +11,7 @@ export type AvatarProps = {
 };
 
 function initialsFromName(name: string) {
-  const parts = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2);
+  const parts = name.trim().split(/\s+/).filter(Boolean).slice(0, 2);
 
   if (parts.length === 0) return "?";
 
@@ -23,13 +19,19 @@ function initialsFromName(name: string) {
   return letters.join("");
 }
 
-export function Avatar({ src, alt = "Avatar", name, size = 40, className }: AvatarProps) {
+export function Avatar({
+  src,
+  alt = "Avatar",
+  name,
+  size = 40,
+  className,
+}: AvatarProps) {
   return (
     <div
       className={cn(
         "relative inline-flex items-center justify-center overflow-hidden rounded-full",
         "border border-foreground/10 bg-foreground/5 backdrop-blur-xl",
-        className,
+        className
       )}
       style={{ width: size, height: size }}
     >

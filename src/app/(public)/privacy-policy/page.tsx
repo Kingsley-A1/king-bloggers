@@ -17,7 +17,13 @@ export const metadata = {
 
 const LAST_UPDATED = "January 2025";
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="rounded-xl border border-foreground/10 bg-foreground/5 p-6 md:p-8">
       <h2 className="text-lg font-black mb-3 flex items-center gap-2">
@@ -49,13 +55,18 @@ export default function PrivacyPolicyPage() {
         <div className="space-y-6">
           <Section title="1. Information We Collect">
             <p>
-              <strong>Account Information:</strong> When you register, we collect your name, email address, phone number, and location (state & LGA) to create and manage your account.
+              <strong>Account Information:</strong> When you register, we
+              collect your name, email address, phone number, and location
+              (state & LGA) to create and manage your account.
             </p>
             <p>
-              <strong>Content:</strong> Posts, comments, and media you submit through the platform are stored on our servers.
+              <strong>Content:</strong> Posts, comments, and media you submit
+              through the platform are stored on our servers.
             </p>
             <p>
-              <strong>Usage Data:</strong> We may collect anonymized analytics about how you use the platform (pages visited, time spent, etc.) to improve our services.
+              <strong>Usage Data:</strong> We may collect anonymized analytics
+              about how you use the platform (pages visited, time spent, etc.)
+              to improve our services.
             </p>
           </Section>
 
@@ -72,24 +83,31 @@ export default function PrivacyPolicyPage() {
 
           <Section title="3. Data Sharing">
             <p>
-              We do <strong>not</strong> sell your personal data. We may share limited information with:
+              We do <strong>not</strong> sell your personal data. We may share
+              limited information with:
             </p>
             <ul className="list-disc pl-5 space-y-2">
-              <li>Service providers (hosting, analytics) who assist in operating the platform under strict confidentiality</li>
-              <li>Legal authorities if required by law or to protect our rights</li>
+              <li>
+                Service providers (hosting, analytics) who assist in operating
+                the platform under strict confidentiality
+              </li>
+              <li>
+                Legal authorities if required by law or to protect our rights
+              </li>
             </ul>
           </Section>
 
           <Section title="4. Data Security">
             <p>
-              We implement industry-standard security measures including encrypted connections (HTTPS), secure authentication (NextAuth), and regular security audits. However, no method of transmission over the internet is 100% secure.
+              We implement industry-standard security measures including
+              encrypted connections (HTTPS), secure authentication (NextAuth),
+              and regular security audits. However, no method of transmission
+              over the internet is 100% secure.
             </p>
           </Section>
 
           <Section title="5. Cookies & Local Storage">
-            <p>
-              King Bloggers uses cookies and local storage to:
-            </p>
+            <p>King Bloggers uses cookies and local storage to:</p>
             <ul className="list-disc pl-5 space-y-2">
               <li>Keep you logged in (session cookies)</li>
               <li>Remember your theme preference (dark/light mode)</li>
@@ -106,41 +124,92 @@ export default function PrivacyPolicyPage() {
               <li>Withdraw consent for optional data processing</li>
             </ul>
             <p>
-              To exercise these rights, contact us via our <a href="/contact" className="text-king-orange underline underline-offset-2">contact page</a>.
+              To exercise these rights, contact us via our{" "}
+              <a
+                href="/contact"
+                className="text-king-orange underline underline-offset-2"
+              >
+                contact page
+              </a>
+              .
             </p>
           </Section>
 
-          <Section title="7. Children&apos;s Privacy">
+          <Section title="7. Children's Privacy">
             <p>
-              King Bloggers is not intended for users under 13 years of age. We do not knowingly collect personal information from children.
+              King Bloggers is not intended for users under 13 years of age. We
+              do not knowingly collect personal information from children.
             </p>
           </Section>
 
           <Section title="8. Changes to This Policy">
             <p>
-              We may update this privacy policy from time to time. Changes will be posted on this page with an updated revision date. Continued use of the platform after changes constitutes acceptance of the revised policy.
+              We may update this privacy policy from time to time. Changes will
+              be posted on this page with an updated revision date. Continued
+              use of the platform after changes constitutes acceptance of the
+              revised policy.
             </p>
           </Section>
 
           <Section title="9. Contact Us">
             <p>
-              If you have any questions about this privacy policy, please reach out:
+              If you have any questions about this privacy policy, please reach
+              out:
             </p>
             <ul className="list-disc pl-5 space-y-2">
-              <li>Email: <a href="mailto:hello@kingbloggers.com" className="text-king-orange underline underline-offset-2">hello@kingbloggers.com</a></li>
-              <li>Phone/WhatsApp: <a href="tel:09036826272" className="text-king-orange underline underline-offset-2">09036826272</a></li>
-              <li>Visit our <Link href="/contact" className="text-king-orange underline underline-offset-2">Contact page</Link></li>
+              <li>
+                Email:{" "}
+                <a
+                  href="mailto:hello@kingbloggers.com"
+                  className="text-king-orange underline underline-offset-2"
+                >
+                  hello@kingbloggers.com
+                </a>
+              </li>
+              <li>
+                Phone/WhatsApp:{" "}
+                <a
+                  href="tel:09036826272"
+                  className="text-king-orange underline underline-offset-2"
+                >
+                  09036826272
+                </a>
+              </li>
+              <li>
+                Visit our{" "}
+                <Link
+                  href="/contact"
+                  className="text-king-orange underline underline-offset-2"
+                >
+                  Contact page
+                </Link>
+              </li>
             </ul>
           </Section>
         </div>
 
         <div className="mt-10 text-center">
           <div className="flex flex-wrap justify-center gap-4 mb-4">
-            <Link href="/about" className="text-sm text-foreground/60 hover:text-king-orange transition-colors">About Us</Link>
+            <Link
+              href="/about"
+              className="text-sm text-foreground/60 hover:text-king-orange transition-colors"
+            >
+              About Us
+            </Link>
             <span className="text-foreground/30">•</span>
-            <Link href="/contact" className="text-sm text-foreground/60 hover:text-king-orange transition-colors">Contact</Link>
+            <Link
+              href="/contact"
+              className="text-sm text-foreground/60 hover:text-king-orange transition-colors"
+            >
+              Contact
+            </Link>
             <span className="text-foreground/30">•</span>
-            <Link href="/docs" className="text-sm text-foreground/60 hover:text-king-orange transition-colors">Documentation</Link>
+            <Link
+              href="/docs"
+              className="text-sm text-foreground/60 hover:text-king-orange transition-colors"
+            >
+              Documentation
+            </Link>
           </div>
           <p className="text-sm text-foreground/50">
             © {new Date().getFullYear()} King Bloggers. All rights reserved.

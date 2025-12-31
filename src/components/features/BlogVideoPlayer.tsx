@@ -33,7 +33,12 @@ export type BlogVideoPlayerProps = {
   className?: string;
 };
 
-export function BlogVideoPlayer({ src, title = "Video", poster, className }: BlogVideoPlayerProps) {
+export function BlogVideoPlayer({
+  src,
+  title = "Video",
+  poster,
+  className,
+}: BlogVideoPlayerProps) {
   const youTube = isYouTube(src);
   const embed = youTube ? toYouTubeEmbed(src) : null;
 
@@ -62,7 +67,9 @@ export function BlogVideoPlayer({ src, title = "Video", poster, className }: Blo
       </div>
       <div className="p-4">
         <div className="text-sm font-bold">{title}</div>
-        <div className="text-xs text-foreground/60">Watch in portrait or rotate to landscape for full screen.</div>
+        <div className="text-xs text-foreground/60">
+          Watch in portrait or rotate to landscape for full screen.
+        </div>
       </div>
     </GlassCard>
   );

@@ -46,9 +46,7 @@ export const metadata: Metadata = {
   applicationName: "King Bloggers",
   manifest: "/manifest.json",
   icons: {
-    icon: [
-      { url: "/icons/icon.png", sizes: "192x192", type: "image/png" },
-    ],
+    icon: [{ url: "/icons/icon.png", sizes: "192x192", type: "image/png" }],
     apple: [{ url: "/icons/icon.png", sizes: "192x192", type: "image/png" }],
   },
   openGraph: {
@@ -73,8 +71,7 @@ export const metadata: Metadata = {
     site: "@king_bloggers",
     creator: "@king_bloggers",
     title: "King Bloggers — Tech, Art, Culture & Power",
-    description:
-      "A sovereign Nigerian media platform for stories that matter.",
+    description: "A sovereign Nigerian media platform for stories that matter.",
     images: [`${APP_URL}/icons/og.png`],
   },
   robots: {
@@ -99,7 +96,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${plusJakartaSans.variable} ${jetBrainsMono.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${plusJakartaSans.variable} ${jetBrainsMono.variable}`}
+      suppressHydrationWarning
+    >
       <body className="font-sans">
         <ThemeProvider
           attribute="class"

@@ -10,11 +10,12 @@ import {
 } from "./GlassButton";
 import { Spinner } from "./Spinner";
 
-export type FormSubmitButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: GlassButtonVariant;
-  size?: GlassButtonSize;
-  pendingText?: string;
-};
+export type FormSubmitButtonProps =
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    variant?: GlassButtonVariant;
+    size?: GlassButtonSize;
+    pendingText?: string;
+  };
 
 export function FormSubmitButton({
   pendingText = "Working…",

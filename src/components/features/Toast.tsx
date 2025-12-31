@@ -15,13 +15,17 @@ export type ToastProps = {
   className?: string;
 };
 
-export function Toast({ open, message, variant = "success", onClose, className }: ToastProps) {
+export function Toast({
+  open,
+  message,
+  variant = "success",
+  onClose,
+  className,
+}: ToastProps) {
   if (!open) return null;
 
   const styles =
-    variant === "success"
-      ? "border-king-orange/25"
-      : "border-foreground/20";
+    variant === "success" ? "border-king-orange/25" : "border-foreground/20";
 
   return (
     <div className="fixed inset-x-0 bottom-5 z-50 flex justify-center px-4">
@@ -31,7 +35,7 @@ export function Toast({ open, message, variant = "success", onClose, className }
           "glass-card max-w-xl w-full p-4 md:p-5",
           styles,
           "flex items-center justify-between gap-4",
-          className,
+          className
         )}
       >
         <p className="text-sm text-foreground/80">{message}</p>

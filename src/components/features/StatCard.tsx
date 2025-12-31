@@ -16,7 +16,13 @@ export type StatCardProps = {
   className?: string;
 };
 
-export function StatCard({ label, value, icon, trend, className }: StatCardProps) {
+export function StatCard({
+  label,
+  value,
+  icon,
+  trend,
+  className,
+}: StatCardProps) {
   return (
     <GlassCard className={cn("p-6", className)}>
       <div className="flex items-start justify-between gap-4">
@@ -36,13 +42,15 @@ export function StatCard({ label, value, icon, trend, className }: StatCardProps
           <span
             className={cn(
               "inline-flex items-center gap-2",
-              trend.direction === "up" ? "text-king-orange" : "text-foreground/60",
+              trend.direction === "up"
+                ? "text-king-orange"
+                : "text-foreground/60"
             )}
           >
             <span
               className={cn(
                 "inline-block h-2 w-2 rounded-full",
-                trend.direction === "up" ? "bg-king-orange" : "bg-foreground/30",
+                trend.direction === "up" ? "bg-king-orange" : "bg-foreground/30"
               )}
             />
             {trend.label}

@@ -28,7 +28,12 @@ export function AnalyticsChart({ points, className }: AnalyticsChartProps) {
   const line = toPolyline(points, width, height);
 
   return (
-    <div className={cn("w-full overflow-hidden rounded-2xl border border-foreground/10 bg-foreground/5 p-4", className)}>
+    <div
+      className={cn(
+        "w-full overflow-hidden rounded-2xl border border-foreground/10 bg-foreground/5 p-4",
+        className
+      )}
+    >
       <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-28">
         <defs>
           <linearGradient id="kingLine" x1="0" y1="0" x2="1" y2="0">

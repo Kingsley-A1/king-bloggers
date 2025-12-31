@@ -14,12 +14,18 @@ export async function POST(req: Request) {
     json = await req.json();
   } catch (error) {
     void error;
-    return NextResponse.json({ ok: false, error: "Invalid JSON." }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "Invalid JSON." },
+      { status: 400 }
+    );
   }
 
   const parsed = payloadSchema.safeParse(json);
   if (!parsed.success) {
-    return NextResponse.json({ ok: false, error: "Invalid email." }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "Invalid email." },
+      { status: 400 }
+    );
   }
 
   await db

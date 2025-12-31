@@ -10,7 +10,12 @@ export type CategoryPillProps = {
   className?: string;
 };
 
-export function CategoryPill({ label, href, active = false, className }: CategoryPillProps) {
+export function CategoryPill({
+  label,
+  href,
+  active = false,
+  className,
+}: CategoryPillProps) {
   return (
     <Link
       href={href}
@@ -22,7 +27,7 @@ export function CategoryPill({ label, href, active = false, className }: Categor
           ? "border-king-orange/40 bg-king-orange/10 text-king-orange"
           : "border-foreground/10 bg-foreground/5 text-foreground/70 hover:bg-foreground/10 hover:border-foreground/20",
         "active:scale-95",
-        className,
+        className
       )}
     >
       {label}

@@ -37,7 +37,10 @@ export default async function middleware(req: NextRequest) {
     return loginRedirect(req, callback);
   }
 
-  const role = typeof (token as { role?: unknown }).role === "string" ? (token as { role: string }).role : undefined;
+  const role =
+    typeof (token as { role?: unknown }).role === "string"
+      ? (token as { role: string }).role
+      : undefined;
   if (isBlogger && role !== "blogger") {
     const url = req.nextUrl.clone();
     url.pathname = "/";

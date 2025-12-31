@@ -25,7 +25,10 @@ export default async function BloggerDashboardPage() {
       <main className="min-h-screen py-10 md:py-14">
         <Container>
           <GlassCard className="p-8 md:p-12">
-            <SectionHeader title="Dashboard" subtitle="You must be logged in." />
+            <SectionHeader
+              title="Dashboard"
+              subtitle="You must be logged in."
+            />
           </GlassCard>
         </Container>
       </main>
@@ -35,8 +38,14 @@ export default async function BloggerDashboardPage() {
   const [totals] = await db
     .select({
       totalPosts: sql<number>`count(*)`.mapWith(Number),
-      publishedPosts: sql<number>`sum(case when ${posts.status} = 'published' then 1 else 0 end)`.mapWith(Number),
-      draftPosts: sql<number>`sum(case when ${posts.status} = 'draft' then 1 else 0 end)`.mapWith(Number),
+      publishedPosts:
+        sql<number>`sum(case when ${posts.status} = 'published' then 1 else 0 end)`.mapWith(
+          Number
+        ),
+      draftPosts:
+        sql<number>`sum(case when ${posts.status} = 'draft' then 1 else 0 end)`.mapWith(
+          Number
+        ),
     })
     .from(posts)
     .where(eq(posts.authorId, userId));
@@ -53,7 +62,9 @@ export default async function BloggerDashboardPage() {
 
   const activityRows = await db
     .select({
-      day: sql<string>`date_trunc('day', ${posts.createdAt})::string`.mapWith(String),
+      day: sql<string>`date_trunc('day', ${posts.createdAt})::string`.mapWith(
+        String
+      ),
       count: sql<number>`count(*)`.mapWith(Number),
     })
     .from(posts)
@@ -85,13 +96,24 @@ export default async function BloggerDashboardPage() {
         </GlassCard>
 
         <section className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <StatCard label="Total Posts" value={String(totals?.totalPosts ?? 0)} />
-          <StatCard label="Published" value={String(totals?.publishedPosts ?? 0)} />
-          <StatCard label="Comments" value={String(commentTotals?.totalComments ?? 0)} />
+          <StatCard
+            label="Total Posts"
+            value={String(totals?.totalPosts ?? 0)}
+          />
+          <StatCard
+            label="Published"
+            value={String(totals?.publishedPosts ?? 0)}
+          />
+          <StatCard
+            label="Comments"
+            value={String(commentTotals?.totalComments ?? 0)}
+          />
         </section>
 
         <div className="mt-8 glass-card p-6 md:p-8">
-          <div className="text-xs font-mono text-foreground/50">Last 10 days (posts created)</div>
+          <div className="text-xs font-mono text-foreground/50">
+            Last 10 days (posts created)
+          </div>
           <div className="mt-4">
             <AnalyticsChart points={points} />
           </div>

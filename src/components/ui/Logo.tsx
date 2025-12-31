@@ -29,8 +29,12 @@ export function Logo({ size = 32, variant = "full", className }: LogoProps) {
       </div>
       {variant === "full" ? (
         <div className="leading-tight">
-          <div className="text-base font-black tracking-wide">King Bloggers</div>
-          <div className="hidden sm:block text-xs opacity-60">Tech, Art, Culture & Power</div>
+          <div className="text-base font-black tracking-wide">
+            King Bloggers
+          </div>
+          <div className="hidden sm:block text-xs opacity-60">
+            Tech, Art, Culture & Power
+          </div>
         </div>
       ) : null}
     </div>

@@ -19,7 +19,9 @@ export type UpdateMyProfileResult =
   | { ok: true; roleChanged: boolean }
   | { ok: false; error: string };
 
-export async function updateMyProfile(input: unknown): Promise<UpdateMyProfileResult> {
+export async function updateMyProfile(
+  input: unknown
+): Promise<UpdateMyProfileResult> {
   const session = await auth();
   if (!session?.user?.id) {
     return { ok: false, error: "Unauthorized." };
@@ -53,5 +55,8 @@ export async function updateMyProfile(input: unknown): Promise<UpdateMyProfileRe
     })
     .where(eq(users.id, session.user.id));
 
-  return { ok: true, roleChanged: Boolean(next.role && next.role !== current.role) };
+  return {
+    ok: true,
+    roleChanged: Boolean(next.role && next.role !== current.role),
+  };
 }

@@ -15,7 +15,12 @@ export type MobileMenuProps = {
   className?: string;
 };
 
-export function MobileMenu({ open, onClose, links, className }: MobileMenuProps) {
+export function MobileMenu({
+  open,
+  onClose,
+  links,
+  className,
+}: MobileMenuProps) {
   if (!open) return null;
 
   return (
@@ -31,7 +36,7 @@ export function MobileMenu({ open, onClose, links, className }: MobileMenuProps)
           "absolute right-0 top-0 h-full w-[85%] max-w-sm",
           "glass-card rounded-none border-l border-foreground/10 bg-background/80 backdrop-blur-2xl",
           "p-6",
-          className,
+          className
         )}
       >
         <div className="flex items-center justify-between">
