@@ -10,7 +10,8 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:migrate:video-reactions": "node scripts/migrate-video-reactions.mjs"
+    "db:migrate:video-reactions": "node scripts/migrate-video-reactions.mjs",
+    "db:migrate:add-users-name": "node scripts/migrate-add-users-name.mjs"
   },
   "dependencies": {
     "@auth/core": "^0.41.1",
