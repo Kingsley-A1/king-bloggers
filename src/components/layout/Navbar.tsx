@@ -11,6 +11,7 @@ import { Logo } from "../ui/Logo";
 import { Container } from "./Container";
 import { MobileMenu } from "./MobileMenu";
 import { ThemeToggle } from "../features/ThemeToggle";
+import { NotificationBell } from "../features/NotificationBell";
 
 const LINKS = [
   { label: "Home", href: "/" },
@@ -63,6 +64,7 @@ export function Navbar() {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
+            {signedIn && <NotificationBell />}
             {signedIn ? (
               <Link
                 href="/profile"

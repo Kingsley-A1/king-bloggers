@@ -1,44 +1,60 @@
-import { and, count, eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { postReactions } from "@/db/schema";
+import type { ReactionCounts, ReactionSummary, ReactionValue } from "@/lib/reactions";
 
-export type ReactionValue = "up" | "down";
+// Re-export shared types from the client-safe module
+export {
+  REACTION_CONFIG,
+  emptyReactionCounts,
+  getTopReactions,
+  type ReactionCounts,
+  type ReactionSummary,
+  type ReactionValue,
+} from "@/lib/reactions";
 
+/**
+ * Get rich reaction summary for a post in a single optimized query.
+ * Returns counts for each reaction type and user's reaction.
+ */
 export async function getReactionSummary(
   postId: string,
   userId?: string | null
-) {
-  const [upRow] = await db
-    .select({ value: count() })
+): Promise<ReactionSummary> {
+  const result = await db
+    .select({
+      upCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'up' THEN 1 END)`.mapWith(Number),
+      downCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'down' THEN 1 END)`.mapWith(Number),
+      fireCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'fire' THEN 1 END)`.mapWith(Number),
+      gemCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'gem' THEN 1 END)`.mapWith(Number),
+      crownCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'crown' THEN 1 END)`.mapWith(Number),
+      insightfulCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'insightful' THEN 1 END)`.mapWith(Number),
+      lolCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'lol' THEN 1 END)`.mapWith(Number),
+      myValue: userId
+        ? sql<string | null>`MAX(CASE WHEN ${postReactions.userId} = ${userId} THEN ${postReactions.value}::text END)`
+        : sql<null>`NULL`,
+    })
     .from(postReactions)
-    .where(
-      and(eq(postReactions.postId, postId), eq(postReactions.value, "up"))
-    );
+    .where(eq(postReactions.postId, postId));
 
-  const [downRow] = await db
-    .select({ value: count() })
-    .from(postReactions)
-    .where(
-      and(eq(postReactions.postId, postId), eq(postReactions.value, "down"))
-    );
+  const row = result[0];
+  
+  const counts: ReactionCounts = {
+    up: row?.upCount ?? 0,
+    down: row?.downCount ?? 0,
+    fire: row?.fireCount ?? 0,
+    gem: row?.gemCount ?? 0,
+    crown: row?.crownCount ?? 0,
+    insightful: row?.insightfulCount ?? 0,
+    lol: row?.lolCount ?? 0,
+  };
 
-  let myValue: ReactionValue | null = null;
-  if (userId) {
-    const mine = await db
-      .select({ value: postReactions.value })
-      .from(postReactions)
-      .where(
-        and(eq(postReactions.postId, postId), eq(postReactions.userId, userId))
-      )
-      .limit(1);
-
-    myValue = (mine[0]?.value as ReactionValue | undefined) ?? null;
-  }
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
   return {
-    up: Number(upRow?.value ?? 0),
-    down: Number(downRow?.value ?? 0),
-    myValue,
+    counts,
+    total,
+    myValue: (row?.myValue as ReactionValue | undefined) ?? null,
   };
 }

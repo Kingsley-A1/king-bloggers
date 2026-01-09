@@ -4,13 +4,14 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Logo } from "@/components/ui/Logo";
 import Link from "next/link";
 
-export default function RegisterPage({
+export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams?: { callbackUrl?: string };
+  searchParams?: Promise<{ callbackUrl?: string }>;
 }) {
+  const params = await searchParams;
   const callbackUrl =
-    typeof searchParams?.callbackUrl === "string" ? searchParams.callbackUrl : undefined;
+    typeof params?.callbackUrl === "string" ? params.callbackUrl : undefined;
   const loginHref = callbackUrl
     ? `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`
     : "/login";

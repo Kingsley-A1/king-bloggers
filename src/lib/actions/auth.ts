@@ -22,7 +22,7 @@ export async function registerUser(input: unknown) {
   // Rate limit check - prevent brute force registration attempts
   const { limited, retryAfterMs } = await rateLimit("register");
   if (limited) {
-    return { ok: false as const, error: rateLimitError(retryAfterMs) };
+    return { ok: false as const, error: await rateLimitError(retryAfterMs) };
   }
 
   const parsed = registerSchema.safeParse(input);
@@ -73,7 +73,7 @@ export async function loginUser(input: unknown) {
   // Rate limit check - prevent brute force login attempts
   const { limited, retryAfterMs } = await rateLimit("login");
   if (limited) {
-    return { ok: false as const, error: rateLimitError(retryAfterMs) };
+    return { ok: false as const, error: await rateLimitError(retryAfterMs) };
   }
 
   const parsed = loginSchema.safeParse(input);

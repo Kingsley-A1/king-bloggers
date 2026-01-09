@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ThumbsDown, ThumbsUp, Heart } from "lucide-react";
+import { ThumbsDown, Heart } from "lucide-react";
 
 import { setReaction } from "@/app/actions/reactions";
 import { cn } from "@/lib/utils";

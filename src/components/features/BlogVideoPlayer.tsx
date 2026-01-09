@@ -54,7 +54,6 @@ export function BlogVideoPlayer({
             allowFullScreen
           />
         ) : (
-          // eslint-disable-next-line jsx-a11y/media-has-caption
           <video
             className="h-full w-full object-contain bg-black"
             controls

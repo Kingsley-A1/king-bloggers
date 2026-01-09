@@ -1,16 +1,22 @@
 import { SectionHeader } from "@/components/features/SectionHeader";
-import { PostCard } from "@/components/features/PostCard";
 import { Container } from "@/components/layout/Container";
 import { CategoryNav } from "@/components/layout/CategoryNav";
-import { unstable_noStore as noStore } from "next/cache";
+import { CategoryInfiniteFeed } from "@/components/features/CategoryInfiniteFeed";
 import { GlassButton } from "@/components/ui/GlassButton";
 import {
   badgeVariantForCategory,
   labelForCategory,
   listPublishedPosts,
   readTimeFromContent,
+  formatCount,
   type PostCategory,
 } from "@/lib/queries/posts";
+
+// ============================================
+// 👑 KING BLOGGERS V2 - Category Feed Page
+// ============================================
+// Infinite scroll with cursor pagination
+// ============================================
 
 export async function CategoryFeedPage({
   category,
@@ -19,9 +25,27 @@ export async function CategoryFeedPage({
   category: PostCategory;
   activeHref: string;
 }) {
-  noStore();
-  const rows = await listPublishedPosts({ category, limit: 30 });
+  const { items: rows, nextCursor, hasMore } = await listPublishedPosts({ category, limit: 12 });
   const title = labelForCategory(category);
+
+  // Transform posts for the infinite feed component
+  const initialPosts = rows.map((p) => ({
+    id: p.id,
+    slug: p.slug,
+    title: p.title,
+    excerpt: p.excerpt ?? undefined,
+    content: p.content,
+    coverImageUrl: p.coverImageUrl,
+    category: p.category,
+    authorEmail: p.authorEmail,
+    viewCount: formatCount(p.viewCount),
+    reactionCount: p.reactionCount,
+    badge: {
+      label: labelForCategory(p.category),
+      variant: badgeVariantForCategory(p.category),
+    },
+    readTime: readTimeFromContent(p.content),
+  }));
 
   return (
     <main className="min-h-screen py-14">
@@ -49,22 +73,13 @@ export async function CategoryFeedPage({
             </div>
           </div>
         ) : (
-          <section className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {rows.map((p) => (
-              <PostCard
-                key={p.slug}
-                href={`/blog/${p.slug}`}
-                title={p.title}
-                excerpt={p.excerpt ?? undefined}
-                badge={{
-                  label: labelForCategory(p.category),
-                  variant: badgeVariantForCategory(p.category),
-                }}
-                readTime={readTimeFromContent(p.content)}
-                authorName={p.authorEmail}
-                imageUrl={p.coverImageUrl}
-              />
-            ))}
+          <section className="mt-10">
+            <CategoryInfiniteFeed
+              category={category}
+              initialPosts={initialPosts}
+              initialCursor={nextCursor}
+              initialHasMore={hasMore}
+            />
           </section>
         )}
       </Container>

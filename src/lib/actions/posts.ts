@@ -7,7 +7,7 @@ import { db } from "../../db";
 import { posts } from "../../db/schema";
 import { auth } from "../auth";
 import { rateLimit, rateLimitError } from "../rate-limit";
-import { sanitizeHtml, sanitizeText, escapeHtml } from "../sanitize";
+import { sanitizeHtml, sanitizeText } from "../sanitize";
 
 function slugify(title: string) {
   return title
@@ -47,7 +47,7 @@ export async function createPost(input: unknown) {
   // Rate limit check
   const { limited, retryAfterMs } = await rateLimit("createPost");
   if (limited) {
-    return { ok: false as const, error: rateLimitError(retryAfterMs) };
+    return { ok: false as const, error: await rateLimitError(retryAfterMs) };
   }
 
   const parsed = createPostSchema.safeParse(input);
@@ -113,10 +113,31 @@ export async function updatePost(input: unknown) {
 
   const { postId, ...patch } = parsed.data;
 
+  // BE-001: Sanitize content on update to prevent XSS bypass
+  const sanitizedPatch: Record<string, unknown> = {};
+  if (patch.title !== undefined) {
+    sanitizedPatch.title = sanitizeText(patch.title);
+  }
+  if (patch.content !== undefined) {
+    sanitizedPatch.content = sanitizeHtml(patch.content);
+  }
+  if (patch.excerpt !== undefined) {
+    sanitizedPatch.excerpt = patch.excerpt ? sanitizeText(patch.excerpt) : null;
+  }
+  if (patch.category !== undefined) {
+    sanitizedPatch.category = patch.category;
+  }
+  if (patch.coverImageUrl !== undefined) {
+    sanitizedPatch.coverImageUrl = patch.coverImageUrl;
+  }
+  if (patch.videoUrl !== undefined) {
+    sanitizedPatch.videoUrl = patch.videoUrl;
+  }
+
   const updated = await db
     .update(posts)
     .set({
-      ...patch,
+      ...sanitizedPatch,
       updatedAt: new Date(),
     })
     .where(and(eq(posts.id, postId), eq(posts.authorId, authorId)))
@@ -151,4 +172,31 @@ export async function publishPost(input: unknown) {
   if (!row) return { ok: false as const, error: "Post not found." };
 
   return { ok: true as const, slug: row.slug };
+}
+
+// ============================================
+// BE-004: Delete Post Feature
+// ============================================
+const deletePostSchema = z.object({
+  postId: z.string().uuid(),
+});
+
+export async function deletePost(input: unknown) {
+  const authorId = await requireBlogger();
+
+  const parsed = deletePostSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false as const, error: "Invalid delete payload." };
+  }
+
+  const deleted = await db
+    .delete(posts)
+    .where(and(eq(posts.id, parsed.data.postId), eq(posts.authorId, authorId)))
+    .returning({ id: posts.id });
+
+  if (!deleted[0]) {
+    return { ok: false as const, error: "Post not found or not authorized." };
+  }
+
+  return { ok: true as const };
 }

@@ -90,8 +90,9 @@ export async function rateLimit(
 
 /**
  * Helper to format rate limit error message
+ * Must be async since this file has "use server" directive
  */
-export function rateLimitError(retryAfterMs?: number): string {
+export async function rateLimitError(retryAfterMs?: number): Promise<string> {
     if (!retryAfterMs) return "Too many requests. Please try again later.";
     const seconds = Math.ceil(retryAfterMs / 1000);
     return `Too many requests. Please try again in ${seconds} second${seconds === 1 ? "" : "s"}.`;

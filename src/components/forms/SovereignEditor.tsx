@@ -92,6 +92,7 @@ export function SovereignEditor({
     () => ({ open: false, message: "" })
   );
 
+  // Restore draft on mount - intentionally only run once
   React.useEffect(() => {
     const draft = safeParseDraft(safeLocalStorageGet(STORAGE_KEY));
     setPostId(draft.postId ?? null);
@@ -103,6 +104,7 @@ export function SovereignEditor({
     if (draft.coverImageUrl && !coverImageUrl) {
       onCoverImageUrlChange?.(draft.coverImageUrl);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {

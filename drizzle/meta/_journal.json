@@ -15,6 +15,13 @@
       "when": 1767064695100,
       "tag": "0001_noisy_cerebro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767976631508,
+      "tag": "0002_polite_brother_voodoo",
+      "breakpoints": true
     }
   ]
 }

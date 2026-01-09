@@ -1,21 +1,45 @@
 import { SectionHeader } from "@/components/features/SectionHeader";
 import { Container } from "@/components/layout/Container";
 import { CategoryNav } from "@/components/layout/CategoryNav";
-import { PostCard } from "@/components/features/PostCard";
+import { InfiniteFeed } from "@/components/features/InfiniteFeed";
+import { loadMorePosts } from "@/app/actions/feed";
 import {
   listPublishedPosts,
   badgeVariantForCategory,
   labelForCategory,
   readTimeFromContent,
+  formatCount,
 } from "@/lib/queries/posts";
-import { unstable_noStore as noStore } from "next/cache";
 import { GlassButton } from "@/components/ui/GlassButton";
 
-export const dynamic = "force-dynamic";
+// ============================================
+// 👑 KING BLOGGERS V2 - Home Page
+// ============================================
+// Infinite scroll feed with cursor pagination
+// ============================================
+export const revalidate = 30;
 
 export default async function HomePage() {
-  noStore();
-  const rows = await listPublishedPosts({ limit: 30 });
+  const { items: rows, nextCursor, hasMore } = await listPublishedPosts({ limit: 12 });
+
+  // Transform posts for the infinite feed component
+  const initialPosts = rows.map((p) => ({
+    id: p.id,
+    slug: p.slug,
+    title: p.title,
+    excerpt: p.excerpt ?? undefined,
+    content: p.content,
+    coverImageUrl: p.coverImageUrl,
+    category: p.category,
+    authorEmail: p.authorEmail,
+    viewCount: formatCount(p.viewCount),
+    reactionCount: p.reactionCount,
+    badge: {
+      label: labelForCategory(p.category),
+      variant: badgeVariantForCategory(p.category),
+    },
+    readTime: readTimeFromContent(p.content),
+  }));
 
   return (
     <main className="min-h-screen py-14">
@@ -43,22 +67,13 @@ export default async function HomePage() {
             </div>
           </div>
         ) : (
-          <section className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {rows.map((p) => (
-              <PostCard
-                key={p.slug}
-                href={`/blog/${p.slug}`}
-                title={p.title}
-                excerpt={p.excerpt ?? undefined}
-                badge={{
-                  label: labelForCategory(p.category),
-                  variant: badgeVariantForCategory(p.category),
-                }}
-                readTime={readTimeFromContent(p.content)}
-                authorName={p.authorEmail}
-                imageUrl={p.coverImageUrl}
-              />
-            ))}
+          <section className="mt-10">
+            <InfiniteFeed
+              initialPosts={initialPosts}
+              initialCursor={nextCursor}
+              initialHasMore={hasMore}
+              loadMoreAction={loadMorePosts}
+            />
           </section>
         )}
       </Container>

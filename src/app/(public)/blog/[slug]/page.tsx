@@ -10,14 +10,19 @@ import {
   badgeVariantForCategory,
   labelForCategory,
   readTimeFromContent,
+  trackPostView,
+  formatCount,
 } from "@/lib/queries/posts";
 import { Badge } from "@/components/ui/Badge";
 import { notFound } from "next/navigation";
 import { getReactionSummary } from "@/lib/queries/reactions";
-import { ReactionBar } from "@/components/features/ReactionBar";
+import { ReactionBar } from "@/components/features/ReactionBarV2";
 import { ShareBar } from "@/components/features/ShareBar";
 import { BlogVideoPlayer } from "@/components/features/BlogVideoPlayer";
+import { BookmarkButton } from "@/components/features/BookmarkButton";
+import { isBookmarked } from "@/lib/actions/bookmarks";
 import { headers } from "next/headers";
+import { Eye } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +35,14 @@ export default async function BlogPostPage({ params }: PageProps) {
   const post = await getPublishedPostBySlug(slug);
   if (!post) notFound();
 
+  // Track view (async, non-blocking)
+  void trackPostView(post.id);
+
   const session = await auth();
   const canComment = Boolean(session?.user?.id);
   const comments = await listCommentsForPost(post.id);
   const reaction = await getReactionSummary(post.id, session?.user?.id);
+  const bookmarked = session?.user?.id ? await isBookmarked(post.id) : false;
 
   const h = await headers();
   const host = h.get("x-forwarded-host") ?? h.get("host");
@@ -59,8 +68,13 @@ export default async function BlogPostPage({ params }: PageProps) {
               <Badge variant={badgeVariantForCategory(post.category)}>
                 {labelForCategory(post.category)}
               </Badge>
-              <div className="text-xs font-mono text-foreground/50">
-                {readTimeFromContent(post.content)}
+              <div className="flex items-center gap-3 text-xs font-mono text-foreground/50">
+                <span className="flex items-center gap-1">
+                  <Eye className="h-3 w-3" />
+                  {formatCount(post.viewCount)} views
+                </span>
+                <span>•</span>
+                <span>{readTimeFromContent(post.content)}</span>
               </div>
             </div>
 
@@ -69,12 +83,17 @@ export default async function BlogPostPage({ params }: PageProps) {
               subtitle={post.excerpt ?? undefined}
             />
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <ReactionBar
-                postId={post.id}
-                initialUp={reaction.up}
-                initialDown={reaction.down}
-                initialMyValue={reaction.myValue}
-              />
+              <div className="flex items-center gap-3">
+                <ReactionBar
+                  postId={post.id}
+                  initialCounts={reaction.counts}
+                  initialMyValue={reaction.myValue}
+                />
+                <BookmarkButton
+                  postId={post.id}
+                  initialBookmarked={bookmarked}
+                />
+              </div>
               <ShareBar title={post.title} url={url} />
             </div>
           </div>
