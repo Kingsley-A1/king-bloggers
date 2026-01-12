@@ -41,7 +41,11 @@ const header = `export type GeoState = {\n  name: string;\n  lgas: string[];\n};
 
 const content =
   header +
-  `export const NIGERIAN_STATES: GeoState[] = ${JSON.stringify(ordered, null, 2)};\n\n` +
+  `export const NIGERIAN_STATES: GeoState[] = ${JSON.stringify(
+    ordered,
+    null,
+    2
+  )};\n\n` +
   `export const NIGERIA_GEO_MAP = new Map<string, string[]>(\n  NIGERIAN_STATES.map((s) => [s.name, s.lgas]),\n);\n`;
 
 fs.writeFileSync(outPath, content);

@@ -4,7 +4,6 @@ import { CategoryNav } from "@/components/layout/CategoryNav";
 import { ForYouFeed } from "@/components/features/ForYouFeed";
 import { loadFeed } from "@/lib/personalization/feed-actions";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { SearchBar } from "@/components/features/SearchBar";
 import { auth } from "@/lib/auth";
 
 // ============================================
@@ -31,13 +30,6 @@ export default async function HomePage() {
             title="King Bloggers"
             subtitle={`Built for ${name} -- A sovereign feed for Tech, Art, Culture, and Power and more...`}
           />
-          {/* Hero Search Bar */}
-          <div className="mt-6 max-w-2xl">
-            <SearchBar
-              variant="hero"
-              placeholder="Search articles, topics, creators..."
-            />
-          </div>
         </div>
 
         {items.length === 0 ? (

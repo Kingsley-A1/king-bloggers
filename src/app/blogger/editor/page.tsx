@@ -286,7 +286,7 @@ function EditorContent() {
   // Start new blog
   function startNewBlog() {
     clearDraft();
-    router.push("/bloggers/editor?new=true");
+    router.push("/blogger/editor?new=true");
     setToast({ open: true, message: "Starting fresh!", variant: "success" });
   }
 
@@ -771,6 +771,36 @@ function EditorContent() {
           />
         </div>
 
+        {/* Upload / Publish Actions - Sticky on Mobile */}
+        <div className="mt-6 p-4 rounded-xl bg-foreground/5 border border-foreground/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <GlassButton
+            variant="primary"
+            size="lg"
+            onClick={quickPublish}
+            disabled={busy || !canPublish}
+            className="flex-1 gap-2 text-base font-bold py-3"
+          >
+            {busy ? (
+              <Spinner size={18} />
+            ) : (
+              <>
+                <Send className="h-5 w-5" />
+                {isEditing ? "Update & Publish" : "Upload Blog"}
+              </>
+            )}
+          </GlassButton>
+          <GlassButton
+            variant="glass"
+            size="lg"
+            onClick={saveDraft}
+            disabled={busy || !title.trim()}
+            className="gap-2"
+          >
+            <Save className="h-5 w-5" />
+            Save Draft
+          </GlassButton>
+        </div>
+
         {/* Status Bar */}
         <div className="mt-6 pt-4 border-t border-foreground/10 flex items-center justify-between text-xs text-foreground/50">
           <span>{postId ? "✓ Synced to cloud" : "Auto-saving locally..."}</span>
@@ -779,6 +809,20 @@ function EditorContent() {
               ? "✓ Ready to publish"
               : "Add title + content to publish"}
           </span>
+        </div>
+
+        {/* Back to Home Link */}
+        <div className="mt-8 text-center">
+          <GlassButton
+            as="a"
+            href="/"
+            variant="ghost"
+            size="sm"
+            className="gap-2 text-foreground/60 hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </GlassButton>
         </div>
       </Container>
 

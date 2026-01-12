@@ -10,8 +10,8 @@ import {
   readingHistory,
   userInterests,
   userAuthorAffinity,
-  type PostCategory,
 } from "@/db/schema";
+import type { PostCategory } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 import type { RankedPost } from "./types";
@@ -34,7 +34,7 @@ const RANKING_WEIGHTS = {
 
 /**
  * Get personalized "For You" feed for the current user.
- * Falls back to trending for anonymous users.
+ * Falls back to trending for anonymous users or on DB errors.
  */
 export async function getForYouFeed(input?: {
   limit?: number;
@@ -53,49 +53,58 @@ export async function getForYouFeed(input?: {
     return getTrendingFeed({ limit, cursor: input?.cursor });
   }
 
-  // Get user's interest profile
-  const interestRows = await db
-    .select({
-      category: userInterests.category,
-      score: userInterests.score,
-    })
-    .from(userInterests)
-    .where(eq(userInterests.userId, userId));
-
+  // Wrap personalization queries in try-catch for graceful fallback on DB timeouts
   const interestMap = new Map<PostCategory, number>();
-  for (const row of interestRows) {
-    interestMap.set(row.category, row.score);
-  }
-
-  // Get user's author affinities
-  const affinityRows = await db
-    .select({
-      authorId: userAuthorAffinity.authorId,
-      score: userAuthorAffinity.score,
-    })
-    .from(userAuthorAffinity)
-    .where(eq(userAuthorAffinity.userId, userId));
-
   const affinityMap = new Map<string, number>();
-  for (const row of affinityRows) {
-    affinityMap.set(row.authorId, row.score);
+  let excludeIds: string[] = [];
+  let followedIds = new Set<string>();
+
+  try {
+    // Get user's interest profile
+    const interestRows = await db
+      .select({
+        category: userInterests.category,
+        score: userInterests.score,
+      })
+      .from(userInterests)
+      .where(eq(userInterests.userId, userId));
+
+    for (const row of interestRows) {
+      interestMap.set(row.category, row.score);
+    }
+
+    // Get user's author affinities
+    const affinityRows = await db
+      .select({
+        authorId: userAuthorAffinity.authorId,
+        score: userAuthorAffinity.score,
+      })
+      .from(userAuthorAffinity)
+      .where(eq(userAuthorAffinity.userId, userId));
+
+    for (const row of affinityRows) {
+      affinityMap.set(row.authorId, row.score);
+    }
+
+    // Get IDs of posts user has already read (completed)
+    const readPostIds = await db
+      .select({ postId: readingHistory.postId })
+      .from(readingHistory)
+      .where(
+        and(eq(readingHistory.userId, userId), eq(readingHistory.completed, true))
+      );
+    excludeIds = readPostIds.map((r) => r.postId);
+
+    // Get followed author IDs for boost
+    const followedRows = await db
+      .select({ followingId: follows.followingId })
+      .from(follows)
+      .where(eq(follows.followerId, userId));
+    followedIds = new Set(followedRows.map((r) => r.followingId));
+  } catch (error) {
+    // Log but continue - personalization will be less accurate but feed still works
+    console.warn("[For You] Personalization query failed, using defaults:", error);
   }
-
-  // Get IDs of posts user has already read (completed)
-  const readPostIds = await db
-    .select({ postId: readingHistory.postId })
-    .from(readingHistory)
-    .where(
-      and(eq(readingHistory.userId, userId), eq(readingHistory.completed, true))
-    );
-  const excludeIds = readPostIds.map((r) => r.postId);
-
-  // Get followed author IDs for boost
-  const followedRows = await db
-    .select({ followingId: follows.followingId })
-    .from(follows)
-    .where(eq(follows.followerId, userId));
-  const followedIds = new Set(followedRows.map((r) => r.followingId));
 
   // Build cursor condition
   let cursorCondition = sql`1=1`;

@@ -3,7 +3,6 @@ import { Container } from "@/components/layout/Container";
 import { CategoryNav } from "@/components/layout/CategoryNav";
 import { CategoryInfiniteFeed } from "@/components/features/CategoryInfiniteFeed";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { SearchBar } from "@/components/features/SearchBar";
 import {
   badgeVariantForCategory,
   labelForCategory,
@@ -65,10 +64,6 @@ export async function CategoryFeedPage({
             title={title}
             subtitle={`Latest ${title} stories from the sovereign feed.`}
           />
-          {/* Category Search Bar */}
-          <div className="mt-6 max-w-xl">
-            <SearchBar variant="inline" placeholder={`Search in ${title}...`} />
-          </div>
         </div>
 
         {rows.length === 0 ? (

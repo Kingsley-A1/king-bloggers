@@ -225,7 +225,7 @@ export function SearchBar({
     const SpeechRecognitionConstructor =
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).webkitSpeechRecognition ||
-      (window as any).SpeechRecognition;
+      (window as unknown as { SpeechRecognition: unknown }).SpeechRecognition;
 
     if (!SpeechRecognitionConstructor) return;
 

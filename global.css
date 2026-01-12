@@ -46,6 +46,7 @@
     color: rgb(var(--foreground-rgb));
     background-color: rgb(var(--background-rgb));
     min-height: 100vh;
+    overflow-x: hidden;
     @apply antialiased selection:bg-orange-500/30 selection:text-foreground transition-colors duration-500;
 
     /* Sovereign Mesh Background - Theme Aware */
