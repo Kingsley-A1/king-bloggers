@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useRef } from "react";
 
-import { trackReadingProgress, trackEngagement } from "@/lib/personalization/track-engagement";
+import {
+  trackReadingProgress,
+  trackEngagement,
+} from "@/lib/personalization/track-engagement";
 
 // ============================================
 // 👑 KING BLOGGERS - Reading Tracker
@@ -23,13 +26,16 @@ export function ReadingTracker({ postId }: ReadingTrackerProps) {
   const startTime = useRef(Date.now());
   const maxScrollDepth = useRef(0);
   const lastReportedDepth = useRef(0);
-  const reportIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const reportIntervalRef = useRef<ReturnType<typeof setInterval> | undefined>(
+    undefined
+  );
 
   // Calculate current scroll depth based on page scroll
   const getScrollDepth = useCallback((): number => {
     const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    
+    const docHeight =
+      document.documentElement.scrollHeight - window.innerHeight;
+
     if (docHeight <= 0) return 100;
     return Math.min(100, Math.round((scrollTop / docHeight) * 100));
   }, []);
@@ -74,7 +80,7 @@ export function ReadingTracker({ postId }: ReadingTrackerProps) {
   useEffect(() => {
     const handleBeforeUnload = () => {
       const timeSpent = Math.round((Date.now() - startTime.current) / 1000);
-      
+
       // Use sendBeacon for reliable delivery on page close
       navigator.sendBeacon?.(
         "/api/track-reading",
@@ -120,8 +126,9 @@ export function useReadingTracker(postId: string) {
 
   const getScrollDepth = useCallback((): number => {
     const scrollTop = window.scrollY;
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    
+    const docHeight =
+      document.documentElement.scrollHeight - window.innerHeight;
+
     if (docHeight <= 0) return 100;
     return Math.min(100, Math.round((scrollTop / docHeight) * 100));
   }, []);

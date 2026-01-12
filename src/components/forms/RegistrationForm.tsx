@@ -3,7 +3,20 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Eye, EyeOff, MapPin, BookOpen, Pen, Crown, Sparkles, Check, Mail, Lock, User, Loader2 } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  MapPin,
+  BookOpen,
+  Pen,
+  Crown,
+  Sparkles,
+  Check,
+  Mail,
+  Lock,
+  User,
+  Loader2,
+} from "lucide-react";
 
 import { NIGERIAN_STATES, NIGERIA_GEO_MAP } from "../../lib/geo-data";
 import { registerUser } from "../../lib/actions/auth";
@@ -84,7 +97,9 @@ export function RegistrationForm({
 
   const defaultAfterAuth = role === "blogger" ? "/bloggers/editor" : "/profile";
   const callbackAllowedByRole =
-    safeCallbackUrl && safeCallbackUrl.startsWith("/blogger") && role !== "blogger"
+    safeCallbackUrl &&
+    safeCallbackUrl.startsWith("/blogger") &&
+    role !== "blogger"
       ? null
       : safeCallbackUrl;
   const afterAuth = callbackAllowedByRole ?? defaultAfterAuth;
@@ -182,33 +197,41 @@ export function RegistrationForm({
                       <Check className="w-4 h-4 text-black" />
                     </div>
                   )}
-                  
+
                   {/* Icon */}
-                  <div className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors",
-                    role === "reader" 
-                      ? "bg-king-orange/20" 
-                      : "bg-foreground/5 group-hover:bg-foreground/10"
-                  )}>
-                    <BookOpen className={cn(
-                      "w-6 h-6 transition-colors",
-                      role === "reader" ? "text-king-orange" : "text-foreground/60"
-                    )} />
+                  <div
+                    className={cn(
+                      "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors",
+                      role === "reader"
+                        ? "bg-king-orange/20"
+                        : "bg-foreground/5 group-hover:bg-foreground/10"
+                    )}
+                  >
+                    <BookOpen
+                      className={cn(
+                        "w-6 h-6 transition-colors",
+                        role === "reader"
+                          ? "text-king-orange"
+                          : "text-foreground/60"
+                      )}
+                    />
                   </div>
-                  
+
                   {/* Title */}
-                  <div className={cn(
-                    "text-lg font-black transition-colors",
-                    role === "reader" && "text-king-orange"
-                  )}>
+                  <div
+                    className={cn(
+                      "text-lg font-black transition-colors",
+                      role === "reader" && "text-king-orange"
+                    )}
+                  >
                     Reader
                   </div>
-                  
+
                   {/* Description */}
                   <p className="mt-2 text-sm text-foreground/60">
                     Explore the kingdom&apos;s finest content
                   </p>
-                  
+
                   {/* Features */}
                   <ul className="mt-4 space-y-2">
                     {[
@@ -217,7 +240,10 @@ export function RegistrationForm({
                       "Follow your favorite creators",
                       "React & comment on posts",
                     ].map((feature) => (
-                      <li key={feature} className="flex items-center gap-2 text-xs text-foreground/50">
+                      <li
+                        key={feature}
+                        className="flex items-center gap-2 text-xs text-foreground/50"
+                      >
                         <Sparkles className="w-3 h-3 text-king-gold" />
                         {feature}
                       </li>
@@ -244,41 +270,53 @@ export function RegistrationForm({
                       <Check className="w-4 h-4 text-black" />
                     </div>
                   )}
-                  
+
                   {/* Crown Badge */}
                   <div className="absolute top-3 right-3">
-                    <Crown className={cn(
-                      "w-4 h-4 transition-colors",
-                      role === "blogger" ? "text-king-gold" : "text-foreground/20"
-                    )} />
+                    <Crown
+                      className={cn(
+                        "w-4 h-4 transition-colors",
+                        role === "blogger"
+                          ? "text-king-gold"
+                          : "text-foreground/20"
+                      )}
+                    />
                   </div>
-                  
+
                   {/* Icon */}
-                  <div className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors",
-                    role === "blogger" 
-                      ? "bg-king-gold/20" 
-                      : "bg-foreground/5 group-hover:bg-foreground/10"
-                  )}>
-                    <Pen className={cn(
-                      "w-6 h-6 transition-colors",
-                      role === "blogger" ? "text-king-gold" : "text-foreground/60"
-                    )} />
+                  <div
+                    className={cn(
+                      "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors",
+                      role === "blogger"
+                        ? "bg-king-gold/20"
+                        : "bg-foreground/5 group-hover:bg-foreground/10"
+                    )}
+                  >
+                    <Pen
+                      className={cn(
+                        "w-6 h-6 transition-colors",
+                        role === "blogger"
+                          ? "text-king-gold"
+                          : "text-foreground/60"
+                      )}
+                    />
                   </div>
-                  
+
                   {/* Title */}
-                  <div className={cn(
-                    "text-lg font-black transition-colors",
-                    role === "blogger" && "text-king-gold"
-                  )}>
+                  <div
+                    className={cn(
+                      "text-lg font-black transition-colors",
+                      role === "blogger" && "text-king-gold"
+                    )}
+                  >
                     Blogger
                   </div>
-                  
+
                   {/* Description */}
                   <p className="mt-2 text-sm text-foreground/60">
                     Become a content sovereign
                   </p>
-                  
+
                   {/* Features */}
                   <ul className="mt-4 space-y-2">
                     {[
@@ -287,7 +325,10 @@ export function RegistrationForm({
                       "Analytics dashboard",
                       "Build your audience",
                     ].map((feature) => (
-                      <li key={feature} className="flex items-center gap-2 text-xs text-foreground/50">
+                      <li
+                        key={feature}
+                        className="flex items-center gap-2 text-xs text-foreground/50"
+                      >
                         <Sparkles className="w-3 h-3 text-king-gold" />
                         {feature}
                       </li>
@@ -331,12 +372,16 @@ export function RegistrationForm({
                     autoComplete="email"
                     disabled={busy}
                     className={cn(
-                      email && !isValidEmail && "border-red-500/50 focus:border-red-500"
+                      email &&
+                        !isValidEmail &&
+                        "border-red-500/50 focus:border-red-500"
                     )}
                   />
                 </div>
                 {email && !isValidEmail && (
-                  <p className="mt-1 text-[10px] text-red-500">Enter a valid email</p>
+                  <p className="mt-1 text-[10px] text-red-500">
+                    Enter a valid email
+                  </p>
                 )}
               </div>
               <div>
@@ -507,7 +552,9 @@ export function RegistrationForm({
                   ) : (
                     <GoogleIcon />
                   )}
-                  <span>{googleBusy ? "Connecting…" : "Continue with Google"}</span>
+                  <span>
+                    {googleBusy ? "Connecting…" : "Continue with Google"}
+                  </span>
                 </button>
               </>
             )}

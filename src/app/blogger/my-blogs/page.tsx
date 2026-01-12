@@ -71,14 +71,22 @@ export default function MyBlogsPage() {
         setPosts(data.posts);
       }
     } catch {
-      setToast({ open: true, message: "Failed to load posts", variant: "error" });
+      setToast({
+        open: true,
+        message: "Failed to load posts",
+        variant: "error",
+      });
     } finally {
       setLoading(false);
     }
   }
 
   async function handleDelete(postId: string) {
-    if (!confirm("Are you sure you want to delete this post? This cannot be undone.")) {
+    if (
+      !confirm(
+        "Are you sure you want to delete this post? This cannot be undone."
+      )
+    ) {
       return;
     }
 
@@ -94,7 +102,11 @@ export default function MyBlogsPage() {
         throw new Error("Delete failed");
       }
     } catch {
-      setToast({ open: true, message: "Failed to delete post", variant: "error" });
+      setToast({
+        open: true,
+        message: "Failed to delete post",
+        variant: "error",
+      });
     } finally {
       setDeleting(null);
     }
@@ -200,7 +212,11 @@ export default function MyBlogsPage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <Badge
-                            variant={post.status === "published" ? "published" : "draft"}
+                            variant={
+                              post.status === "published"
+                                ? "published"
+                                : "draft"
+                            }
                           >
                             {post.status}
                           </Badge>
@@ -208,7 +224,9 @@ export default function MyBlogsPage() {
                             {categoryLabel(post.category)}
                           </Badge>
                         </div>
-                        <h3 className="font-bold text-lg truncate">{post.title}</h3>
+                        <h3 className="font-bold text-lg truncate">
+                          {post.title}
+                        </h3>
                         {post.excerpt && (
                           <p className="text-sm text-foreground/60 line-clamp-1 mt-1">
                             {post.excerpt}
@@ -220,7 +238,9 @@ export default function MyBlogsPage() {
                       <div className="relative">
                         <button
                           onClick={() =>
-                            setActiveMenu(activeMenu === post.id ? null : post.id)
+                            setActiveMenu(
+                              activeMenu === post.id ? null : post.id
+                            )
                           }
                           className="p-2 rounded-lg hover:bg-foreground/10 transition-colors"
                         >

@@ -33,7 +33,10 @@ export default async function HomePage() {
           />
           {/* Hero Search Bar */}
           <div className="mt-6 max-w-2xl">
-            <SearchBar variant="hero" placeholder="Search articles, topics, creators..." />
+            <SearchBar
+              variant="hero"
+              placeholder="Search articles, topics, creators..."
+            />
           </div>
         </div>
 

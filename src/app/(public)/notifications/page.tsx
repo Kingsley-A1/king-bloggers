@@ -152,7 +152,9 @@ function NotificationCard({
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const [notifications, setNotifications] = React.useState<NotificationWithDetails[]>([]);
+  const [notifications, setNotifications] = React.useState<
+    NotificationWithDetails[]
+  >([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {

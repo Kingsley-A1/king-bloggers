@@ -84,11 +84,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      className=""
-      suppressHydrationWarning
-    >
+    <html lang="en" className="" suppressHydrationWarning>
       <body className="font-sans">
         <ThemeProvider
           attribute="class"

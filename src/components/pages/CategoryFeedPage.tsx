@@ -67,10 +67,7 @@ export async function CategoryFeedPage({
           />
           {/* Category Search Bar */}
           <div className="mt-6 max-w-xl">
-            <SearchBar
-              variant="inline"
-              placeholder={`Search in ${title}...`}
-            />
+            <SearchBar variant="inline" placeholder={`Search in ${title}...`} />
           </div>
         </div>
 

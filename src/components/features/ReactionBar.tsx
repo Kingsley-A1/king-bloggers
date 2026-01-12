@@ -16,23 +16,35 @@ import { cn } from "@/lib/utils";
 // Sound effect for like (create a simple pop sound using Web Audio API)
 function playLikeSound() {
   try {
-    const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
+    const AudioContext =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof window.AudioContext })
+        .webkitAudioContext;
     const audioContext = new AudioContext();
-    
+
     // Create oscillator for a short "pop" sound
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
-    
+
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
-    
+
     oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.05);
-    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
-    
+    oscillator.frequency.exponentialRampToValueAtTime(
+      1200,
+      audioContext.currentTime + 0.05
+    );
+    oscillator.frequency.exponentialRampToValueAtTime(
+      600,
+      audioContext.currentTime + 0.1
+    );
+
     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-    
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.01,
+      audioContext.currentTime + 0.15
+    );
+
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.15);
   } catch {
@@ -44,20 +56,20 @@ function playLikeSound() {
 function LikeParticle({ index }: { index: number }) {
   const angle = (index / 6) * Math.PI * 2;
   const distance = 40 + Math.random() * 20;
-  
+
   return (
     <motion.div
-      initial={{ 
-        opacity: 1, 
+      initial={{
+        opacity: 1,
         scale: 0,
-        x: 0, 
-        y: 0 
+        x: 0,
+        y: 0,
       }}
-      animate={{ 
-        opacity: 0, 
+      animate={{
+        opacity: 0,
         scale: 1,
-        x: Math.cos(angle) * distance, 
-        y: Math.sin(angle) * distance 
+        x: Math.cos(angle) * distance,
+        y: Math.sin(angle) * distance,
       }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="absolute w-2 h-2 rounded-full bg-king-orange"
@@ -71,11 +83,11 @@ function FloatingHeart({ delay }: { delay: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0, y: 0 }}
-      animate={{ 
+      animate={{
         opacity: [0, 1, 1, 0],
         scale: [0.5, 1.2, 1, 0.8],
         y: [-10, -30, -50, -70],
-        x: (Math.random() - 0.5) * 30
+        x: (Math.random() - 0.5) * 30,
       }}
       transition={{ duration: 0.8, delay, ease: "easeOut" }}
       className="absolute -top-2 left-1/2 -ml-2"
@@ -119,7 +131,7 @@ export function ReactionBar({
       setTimeout(() => setShowBurst(false), 500);
       setTimeout(() => setShowHearts(false), 1000);
     }
-    
+
     if (next === "down") {
       setPopDown(true);
       setTimeout(() => setPopDown(false), 400);
@@ -168,9 +180,13 @@ export function ReactionBar({
       >
         {/* Main Heart Icon with IG-style animation */}
         <motion.div
-          animate={myValue === "up" ? {
-            scale: [1, 1.3, 0.9, 1.1, 1],
-          } : { scale: 1 }}
+          animate={
+            myValue === "up"
+              ? {
+                  scale: [1, 1.3, 0.9, 1.1, 1],
+                }
+              : { scale: 1 }
+          }
           transition={{ duration: 0.4, ease: "easeOut" }}
           className="relative"
         >
@@ -180,7 +196,7 @@ export function ReactionBar({
               myValue === "up" && "fill-king-orange text-king-orange"
             )}
           />
-          
+
           {/* Sparkle overlay when liked */}
           <AnimatePresence>
             {myValue === "up" && (
@@ -195,14 +211,14 @@ export function ReactionBar({
             )}
           </AnimatePresence>
         </motion.div>
-        
-        <motion.span 
+
+        <motion.span
           className="text-sm font-bold tabular-nums"
           animate={showBurst ? { scale: [1, 1.2, 1] } : {}}
         >
           {up}
         </motion.span>
-        
+
         {/* Particle Burst Effect */}
         <AnimatePresence>
           {showBurst && (
@@ -213,7 +229,7 @@ export function ReactionBar({
             </>
           )}
         </AnimatePresence>
-        
+
         {/* Floating Hearts */}
         <AnimatePresence>
           {showHearts && (
@@ -224,7 +240,7 @@ export function ReactionBar({
             </>
           )}
         </AnimatePresence>
-        
+
         {/* Ring burst on click */}
         <AnimatePresence>
           {showBurst && (

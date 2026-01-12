@@ -3,7 +3,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, ArrowRight, Loader2, Clock, TrendingUp } from "lucide-react";
+import {
+  Search,
+  X,
+  ArrowRight,
+  Loader2,
+  Clock,
+  TrendingUp,
+} from "lucide-react";
 
 // Storage key for recent searches
 const RECENT_SEARCHES_KEY = "kb_recent_searches";
@@ -24,7 +31,7 @@ function getRecentSearches(): string[] {
 function saveRecentSearch(query: string): void {
   if (typeof window === "undefined" || !query.trim()) return;
   try {
-    const recent = getRecentSearches().filter(s => s !== query);
+    const recent = getRecentSearches().filter((s) => s !== query);
     recent.unshift(query);
     localStorage.setItem(
       RECENT_SEARCHES_KEY,
@@ -48,7 +55,7 @@ const TRENDING_SEARCHES = [
 
 /**
  * NavSearch – Global Search Trigger & Modal
- * 
+ *
  * Features:
  * - Non-blocking search icon in navbar
  * - Full-screen modal on activation
@@ -59,7 +66,7 @@ const TRENDING_SEARCHES = [
 export function NavSearch() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
-  
+
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -93,23 +100,26 @@ export function NavSearch() {
   }, [isOpen]);
 
   // Handle search submission
-  const handleSearch = useCallback((searchQuery: string) => {
-    const trimmed = searchQuery.trim();
-    if (!trimmed) return;
+  const handleSearch = useCallback(
+    (searchQuery: string) => {
+      const trimmed = searchQuery.trim();
+      if (!trimmed) return;
 
-    setIsSearching(true);
-    saveRecentSearch(trimmed);
-    setRecentSearches(getRecentSearches());
+      setIsSearching(true);
+      saveRecentSearch(trimmed);
+      setRecentSearches(getRecentSearches());
 
-    // Navigate to search results
-    router.push(`/blog?search=${encodeURIComponent(trimmed)}`);
-    
-    setTimeout(() => {
-      setIsSearching(false);
-      setIsOpen(false);
-      setQuery("");
-    }, 300);
-  }, [router]);
+      // Navigate to search results
+      router.push(`/blog?search=${encodeURIComponent(trimmed)}`);
+
+      setTimeout(() => {
+        setIsSearching(false);
+        setIsOpen(false);
+        setQuery("");
+      }, 300);
+    },
+    [router]
+  );
 
   // Handle keyboard events
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -141,7 +151,9 @@ export function NavSearch() {
         <Search className="h-5 w-5" />
         {/* Keyboard hint - desktop only */}
         <span className="hidden lg:flex items-center gap-1 text-[10px] text-foreground/40">
-          <kbd className="rounded bg-foreground/10 px-1.5 py-0.5 font-mono">⌘K</kbd>
+          <kbd className="rounded bg-foreground/10 px-1.5 py-0.5 font-mono">
+            ⌘K
+          </kbd>
         </span>
       </button>
 
@@ -265,13 +277,22 @@ export function NavSearch() {
                 <div className="border-t border-white/5 bg-white/5 px-4 py-3">
                   <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[10px] text-white/30">
                     <span>
-                      <kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono">Enter</kbd> to search
+                      <kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono">
+                        Enter
+                      </kbd>{" "}
+                      to search
                     </span>
                     <span>
-                      <kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono">Esc</kbd> to close
+                      <kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono">
+                        Esc
+                      </kbd>{" "}
+                      to close
                     </span>
                     <span>
-                      <kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono">⌘K</kbd> to open
+                      <kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono">
+                        ⌘K
+                      </kbd>{" "}
+                      to open
                     </span>
                   </div>
                 </div>

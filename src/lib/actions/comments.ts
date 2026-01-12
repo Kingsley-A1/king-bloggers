@@ -75,9 +75,8 @@ async function createCommentNotification(
       return;
     }
 
-    const preview = commentBody.length > 50 
-      ? commentBody.slice(0, 50) + "..." 
-      : commentBody;
+    const preview =
+      commentBody.length > 50 ? commentBody.slice(0, 50) + "..." : commentBody;
 
     await db.insert(notifications).values({
       userId: post.authorId,

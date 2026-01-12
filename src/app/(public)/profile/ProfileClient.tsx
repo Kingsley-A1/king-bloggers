@@ -48,12 +48,18 @@ export type ProfileClientProps = {
 
 type EditField = "name" | "location" | null;
 
-export function ProfileClient({ initial, commentCount, postCount }: ProfileClientProps) {
+export function ProfileClient({
+  initial,
+  commentCount,
+  postCount,
+}: ProfileClientProps) {
   const router = useRouter();
   const [name, setName] = React.useState(initial.name ?? "");
   const [state, setState] = React.useState(initial.state ?? "");
   const [lga, setLga] = React.useState(initial.lga ?? "");
-  const [imageUrl, setImageUrl] = React.useState<string>(initial.imageUrl ?? "");
+  const [imageUrl, setImageUrl] = React.useState<string>(
+    initial.imageUrl ?? ""
+  );
   const [editField, setEditField] = React.useState<EditField>(null);
   const [showUploader, setShowUploader] = React.useState(false);
 
@@ -91,7 +97,7 @@ export function ProfileClient({ initial, commentCount, postCount }: ProfileClien
       {/* Profile Header - Gradient Background */}
       <div className="relative">
         <div className="absolute inset-0 h-40 bg-gradient-to-b from-king-orange/20 to-transparent" />
-        
+
         <Container className="relative pt-8 pb-6">
           {/* Avatar Section */}
           <div className="flex flex-col items-center">
@@ -110,7 +116,7 @@ export function ProfileClient({ initial, commentCount, postCount }: ProfileClien
                   </div>
                 )}
               </div>
-              
+
               {/* Camera Button */}
               <button
                 type="button"
@@ -129,7 +135,7 @@ export function ProfileClient({ initial, commentCount, postCount }: ProfileClien
             {/* Name & Role */}
             <h1 className="mt-4 text-xl font-bold">{displayName}</h1>
             <p className="text-sm text-foreground/60 mt-0.5">{initial.email}</p>
-            
+
             <div className="mt-2">
               {initial.role === "blogger" ? (
                 <Badge variant="gold" className="flex items-center gap-1.5">

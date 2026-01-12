@@ -49,7 +49,7 @@ export type FuryUploaderProps = {
 
 /**
  * FuryUploader - A blazing fast, mobile-first media uploader
- * 
+ *
  * Features a "fury meter" that shows upload speed and animated effects
  * when uploads are going fast. Mobile-optimized with large touch targets.
  */
@@ -113,7 +113,9 @@ export function FuryUploader({
 
     const sizeMB = file.size / (1024 * 1024);
     if (sizeMB > maxSize) {
-      return `File too large. Max ${maxSize}MB, yours is ${sizeMB.toFixed(1)}MB.`;
+      return `File too large. Max ${maxSize}MB, yours is ${sizeMB.toFixed(
+        1
+      )}MB.`;
     }
 
     return null;
@@ -257,7 +259,10 @@ export function FuryUploader({
           const formData = new FormData();
           formData.append("file", file);
           formData.append("fileName", file.name);
-          formData.append("contentType", file.type || "application/octet-stream");
+          formData.append(
+            "contentType",
+            file.type || "application/octet-stream"
+          );
 
           const proxyResponse = await fetch("/api/upload", {
             method: "PUT",
@@ -329,7 +334,8 @@ export function FuryUploader({
     <div
       className={cn(
         "relative",
-        variant === "card" && "rounded-2xl border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-xl p-4 md:p-6",
+        variant === "card" &&
+          "rounded-2xl border border-white/10 bg-[#0a0a0a]/80 backdrop-blur-xl p-4 md:p-6",
         variant === "inline" && "rounded-xl bg-foreground/5 p-4",
         variant === "compact" && "rounded-lg bg-foreground/5 p-3",
         className
@@ -460,16 +466,14 @@ export function FuryUploader({
                     <Flame
                       className={cn(
                         "h-6 w-6",
-                        furyLevel >= 3
-                          ? "text-red-500"
-                          : "text-king-orange"
+                        furyLevel >= 3 ? "text-red-500" : "text-king-orange"
                       )}
                     />
                   ) : (
                     <Zap className="h-5 w-5 text-blue-400" />
                   )}
                 </motion.div>
-                
+
                 {/* Giant Progress Number */}
                 <motion.span
                   key={progress}
@@ -487,11 +491,13 @@ export function FuryUploader({
 
               {/* Speed & ETA */}
               <div className="flex items-center justify-center gap-3 text-xs text-foreground/60">
-                <span className={cn(
-                  "font-mono font-medium",
-                  furyLevel >= 2 && "text-king-orange",
-                  furyLevel >= 3 && "text-red-400"
-                )}>
+                <span
+                  className={cn(
+                    "font-mono font-medium",
+                    furyLevel >= 2 && "text-king-orange",
+                    furyLevel >= 3 && "text-red-400"
+                  )}
+                >
                   {formatSpeed(uploadSpeed)}
                 </span>
                 {eta !== null && eta > 0 && (

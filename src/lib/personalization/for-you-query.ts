@@ -26,10 +26,10 @@ import type { RankedPost } from "./types";
  * Scoring weights for personalized ranking
  */
 const RANKING_WEIGHTS = {
-  categoryInterest: 0.40,  // How much they like this category
-  authorAffinity: 0.25,    // How much they like this author
-  qualityScore: 0.25,      // Post's overall quality/engagement
-  freshness: 0.10,         // Recency boost
+  categoryInterest: 0.4, // How much they like this category
+  authorAffinity: 0.25, // How much they like this author
+  qualityScore: 0.25, // Post's overall quality/engagement
+  freshness: 0.1, // Recency boost
 } as const;
 
 /**
@@ -86,10 +86,7 @@ export async function getForYouFeed(input?: {
     .select({ postId: readingHistory.postId })
     .from(readingHistory)
     .where(
-      and(
-        eq(readingHistory.userId, userId),
-        eq(readingHistory.completed, true)
-      )
+      and(eq(readingHistory.userId, userId), eq(readingHistory.completed, true))
     );
   const excludeIds = readPostIds.map((r) => r.postId);
 
@@ -159,12 +156,13 @@ export async function getForYouFeed(input?: {
     }
 
     // Quality score based on engagement
-    const engagementScore = 
-      (post.viewCount * 0.1) + 
-      (post.reactionCount * 5) + 
-      (post.commentCount * 10);
+    const engagementScore =
+      post.viewCount * 0.1 + post.reactionCount * 5 + post.commentCount * 10;
     const hoursOld = (now - post.createdAt.getTime()) / (1000 * 60 * 60);
-    const qualityScore = Math.min(1, engagementScore / (Math.sqrt(hoursOld + 1) * 100));
+    const qualityScore = Math.min(
+      1,
+      engagementScore / (Math.sqrt(hoursOld + 1) * 100)
+    );
 
     // Freshness score (1 for new, decays over 48 hours)
     const freshnessScore = Math.max(0, 1 - hoursOld / 48);
@@ -400,7 +398,7 @@ function diversifyFeed(posts: RankedPost[], limit: number): RankedPost[] {
     if (result.length >= limit + 1) break;
 
     const count = authorCount.get(post.authorId) ?? 0;
-    
+
     // Check last few posts for same author
     const recentSameAuthor = result
       .slice(-MAX_CONSECUTIVE)

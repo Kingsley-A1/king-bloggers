@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
-import { createPresignedPutUrl, publicUrlForR2Key, uploadToR2Direct } from "@/lib/r2";
+import {
+  createPresignedPutUrl,
+  publicUrlForR2Key,
+  uploadToR2Direct,
+} from "@/lib/r2";
 
 // ===============    =============================
 // 👑 KING BLOGGERS - Secure Upload API
@@ -97,14 +101,13 @@ export async function PUT(req: NextRequest) {
     // Handle FormData
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    const fileName = (formData.get("fileName") as string) || `file-${Date.now()}`;
-    const contentType = (formData.get("contentType") as string) || "application/octet-stream";
+    const fileName =
+      (formData.get("fileName") as string) || `file-${Date.now()}`;
+    const contentType =
+      (formData.get("contentType") as string) || "application/octet-stream";
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file provided." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file provided." }, { status: 400 });
     }
 
     // SEC-010: Validate file type
@@ -112,7 +115,9 @@ export async function PUT(req: NextRequest) {
     if (!ALLOWED_TYPES.includes(mimeType)) {
       return NextResponse.json(
         {
-          error: `Invalid file type: ${mimeType}. Allowed: ${ALLOWED_TYPES.join(", ")}`,
+          error: `Invalid file type: ${mimeType}. Allowed: ${ALLOWED_TYPES.join(
+            ", "
+          )}`,
         },
         { status: 400 }
       );
@@ -130,7 +135,9 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const key = `uploads/${session.user.id}/${Date.now()}-${safeFileName(fileName)}`;
+    const key = `uploads/${session.user.id}/${Date.now()}-${safeFileName(
+      fileName
+    )}`;
 
     await uploadToR2Direct({ key, contentType: mimeType, body: buffer });
     const publicUrl = publicUrlForR2Key(key);

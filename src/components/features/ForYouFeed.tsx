@@ -16,7 +16,11 @@ import type { RankedPost, FeedType } from "@/lib/personalization/types";
 // Personalized infinite scroll with feed switching
 // ============================================
 
-const FEED_TABS: Array<{ type: FeedType; label: string; icon: React.ElementType }> = [
+const FEED_TABS: Array<{
+  type: FeedType;
+  label: string;
+  icon: React.ElementType;
+}> = [
   { type: "for-you", label: "For You", icon: Sparkles },
   { type: "following", label: "Following", icon: Users },
   { type: "trending", label: "Trending", icon: TrendingUp },
@@ -145,7 +149,12 @@ export function ForYouFeed({
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting && hasMore && !isPending && !isChangingFeed) {
+        if (
+          entries[0]?.isIntersecting &&
+          hasMore &&
+          !isPending &&
+          !isChangingFeed
+        ) {
           loadMore();
         }
       },

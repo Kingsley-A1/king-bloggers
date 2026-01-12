@@ -111,7 +111,7 @@ export async function getUnreadCount(): Promise<number> {
       );
 
     return result?.count ?? 0;
-  } catch (error) {
+  } catch {
     // If DB is temporarily down, don't break the whole page.
     return 0;
   }

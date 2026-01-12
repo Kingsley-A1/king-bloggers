@@ -1,6 +1,7 @@
 # 👑 KING BLOGGERS - Admin God-Mode System Architecture
 
 ## Executive Vision
+
 A sovereign command center granting absolute control over the King Bloggers platform. The Admin dashboard should feel like controlling a spaceship - powerful, precise, and visually stunning with real-time metrics and one-click power moves.
 
 ---
@@ -140,7 +141,7 @@ type AdminPermissions = {
     delete: boolean;
     promote_to_admin: boolean;
   };
-  
+
   // Content Management
   content: {
     view_all: boolean;
@@ -149,14 +150,14 @@ type AdminPermissions = {
     feature: boolean;
     review_reports: boolean;
   };
-  
+
   // Analytics
   analytics: {
     view_basic: boolean;
     view_advanced: boolean;
     export: boolean;
   };
-  
+
   // Settings
   settings: {
     view: boolean;
@@ -164,7 +165,7 @@ type AdminPermissions = {
     manage_categories: boolean;
     manage_announcements: boolean;
   };
-  
+
   // Admin Management
   admin: {
     view_team: boolean;
@@ -177,18 +178,19 @@ type AdminPermissions = {
 
 ### Predefined Roles
 
-| Role | Description | Permissions |
-|------|-------------|-------------|
-| **Super Admin** | God Mode - Full access | All permissions |
-| **Content Moderator** | Handles reports & content | content.*, users.view, users.ban |
-| **Analytics Viewer** | Read-only analytics | analytics.*, users.view |
-| **Community Manager** | User relations | users.*, content.view_all, content.review_reports |
+| Role                  | Description               | Permissions                                        |
+| --------------------- | ------------------------- | -------------------------------------------------- |
+| **Super Admin**       | God Mode - Full access    | All permissions                                    |
+| **Content Moderator** | Handles reports & content | content.\*, users.view, users.ban                  |
+| **Analytics Viewer**  | Read-only analytics       | analytics.\*, users.view                           |
+| **Community Manager** | User relations            | users.\*, content.view_all, content.review_reports |
 
 ---
 
 ## 4. Dashboard Components
 
 ### 4.1 Real-Time Metrics Panel
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  👁️ LIVE NOW                                           │
@@ -200,18 +202,21 @@ type AdminPermissions = {
 ```
 
 ### 4.2 Quick Actions Bar
+
 - 🚨 **Reports Queue** - Pending count with urgency indicator
 - ✨ **Feature Post** - Quick feature selection
 - 📢 **Announce** - One-click announcement
 - 🔒 **Emergency Mode** - Platform lockdown toggle
 
 ### 4.3 Growth Charts
+
 - User registrations (7d/30d/90d/1y)
 - Posts published
 - Comments & reactions
 - Category distribution pie chart
 
 ### 4.4 Content Health
+
 - Spam detection alerts
 - Flagged content summary
 - Most reported users/posts
@@ -222,6 +227,7 @@ type AdminPermissions = {
 ## 5. Key Features
 
 ### 5.1 User Management
+
 - **Search** with advanced filters (email, name, join date, status)
 - **User cards** showing:
   - Profile summary
@@ -233,6 +239,7 @@ type AdminPermissions = {
 - **Export** user data (CSV/JSON)
 
 ### 5.2 Content Moderation
+
 - **Report queue** with priority sorting
 - **Side-by-side view** (content + report details)
 - **Quick actions**:
@@ -244,12 +251,14 @@ type AdminPermissions = {
 - **Pattern detection** for coordinated abuse
 
 ### 5.3 Featured Content Manager
+
 - Drag-drop reordering
 - Schedule features (start/end dates)
 - Category-specific featuring
 - Preview how it appears on home
 
 ### 5.4 Announcement System
+
 - Rich text editor
 - Target audience selection
 - Scheduling with timezone support
@@ -257,6 +266,7 @@ type AdminPermissions = {
 - Analytics (views, dismissals)
 
 ### 5.5 Audit Trail
+
 - Searchable log of all admin actions
 - Filter by admin, action type, date range
 - Export for compliance
@@ -267,12 +277,14 @@ type AdminPermissions = {
 ## 6. Security Measures
 
 ### Access Control
+
 1. **Two-Factor Authentication** required for all admins
 2. **IP Whitelisting** option for super admins
 3. **Session timeout** (1 hour inactivity)
 4. **Rate limiting** on sensitive actions
 
 ### Audit & Compliance
+
 1. Every action logged with:
    - Admin ID
    - Action performed
@@ -284,6 +296,7 @@ type AdminPermissions = {
 3. Monthly audit report generation
 
 ### Emergency Protocols
+
 1. **Platform Lockdown** - Disable new posts/comments
 2. **Read-Only Mode** - No mutations allowed
 3. **User Lockout** - Disable all logins except admins
@@ -293,6 +306,7 @@ type AdminPermissions = {
 ## 7. UI/UX Design Principles
 
 ### The "Control Room" Aesthetic
+
 - **Dark mode only** (befitting the King's throne)
 - **Neon accent colors** for status indicators:
   - 🟢 Green: Healthy/Approved
@@ -304,6 +318,7 @@ type AdminPermissions = {
 - **Keyboard shortcuts** for power users
 
 ### Information Hierarchy
+
 1. **Critical alerts** always visible (top banner)
 2. **Pending actions** prominent (sidebar badge counts)
 3. **Analytics** easily scannable (large numbers, clear trends)
@@ -314,30 +329,35 @@ type AdminPermissions = {
 ## 8. Implementation Phases
 
 ### Phase 1: Foundation (Week 1-2)
+
 - [ ] Database migrations
 - [ ] Basic admin middleware
 - [ ] Role-based access control
 - [ ] Dashboard layout + real-time metrics
 
 ### Phase 2: User Management (Week 2-3)
+
 - [ ] User listing with search/filters
 - [ ] User detail page
 - [ ] Sanction system (warn, mute, suspend, ban)
 - [ ] User export
 
 ### Phase 3: Content Moderation (Week 3-4)
+
 - [ ] Report system (frontend submit + backend processing)
 - [ ] Report queue UI
 - [ ] Content moderation actions
 - [ ] Audit logging
 
 ### Phase 4: Analytics & Features (Week 4-5)
+
 - [ ] Real-time analytics (WebSocket/SSE)
 - [ ] Historical charts
 - [ ] Featured content manager
 - [ ] Announcement system
 
 ### Phase 5: Polish & Security (Week 5-6)
+
 - [ ] 2FA enforcement
 - [ ] Keyboard shortcuts
 - [ ] Mobile-responsive admin
@@ -347,15 +367,15 @@ type AdminPermissions = {
 
 ## 9. Tech Stack for Admin
 
-| Layer | Technology |
-|-------|------------|
-| **Framework** | Next.js App Router (same as main app) |
-| **State** | React Query for server state, Zustand for UI |
-| **Charts** | Recharts or Tremor |
-| **Tables** | TanStack Table with virtual scrolling |
-| **Real-time** | WebSocket via Pusher or self-hosted |
-| **Auth** | NextAuth with admin role check |
-| **Audit Log** | PostgreSQL (immutable pattern) |
+| Layer         | Technology                                   |
+| ------------- | -------------------------------------------- |
+| **Framework** | Next.js App Router (same as main app)        |
+| **State**     | React Query for server state, Zustand for UI |
+| **Charts**    | Recharts or Tremor                           |
+| **Tables**    | TanStack Table with virtual scrolling        |
+| **Real-time** | WebSocket via Pusher or self-hosted          |
+| **Auth**      | NextAuth with admin role check               |
+| **Audit Log** | PostgreSQL (immutable pattern)               |
 
 ---
 
@@ -416,6 +436,6 @@ This Admin God-Mode system will provide **absolute sovereignty** over the King B
 ✅ **Powerful moderation tools** for content integrity  
 ✅ **Complete audit trail** for accountability  
 ✅ **Emergency controls** for crisis management  
-✅ **Beautiful, efficient UI** for admin productivity  
+✅ **Beautiful, efficient UI** for admin productivity
 
 The throne awaits. 👑

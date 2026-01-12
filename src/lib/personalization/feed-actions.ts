@@ -29,13 +29,13 @@ export async function loadFeed(
   switch (feedType) {
     case "for-you":
       return getForYouFeed({ cursor, limit: 12 });
-    
+
     case "following":
       return getFollowingFeed({ cursor, limit: 12 });
-    
+
     case "trending":
       return getTrendingFeed({ cursor, limit: 12 });
-    
+
     case "latest":
     default: {
       const result = await listPublishedPosts({ cursor, limit: 12 });

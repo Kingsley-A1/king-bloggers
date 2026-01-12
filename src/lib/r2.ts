@@ -65,7 +65,8 @@ export async function uploadToR2Direct(input: {
 }
 
 export function publicUrlForR2Key(key: string) {
-  const base = process.env.R2_PUBLIC_BASE_URL ?? process.env.NEXT_PUBLIC_R2_DOMAIN;
+  const base =
+    process.env.R2_PUBLIC_BASE_URL ?? process.env.NEXT_PUBLIC_R2_DOMAIN;
   if (!base) return null;
   return `${base.replace(/\/$/, "")}/${key.replace(/^\//, "")}`;
 }

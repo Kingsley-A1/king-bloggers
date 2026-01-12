@@ -264,7 +264,10 @@ export const userInterests = pgTable(
       .defaultNow(),
   },
   (t) => ({
-    userInterestUnique: uniqueIndex("user_interests_unique").on(t.userId, t.category),
+    userInterestUnique: uniqueIndex("user_interests_unique").on(
+      t.userId,
+      t.category
+    ),
     userIdx: index("user_interests_user_idx").on(t.userId),
   })
 );
@@ -294,7 +297,10 @@ export const readingHistory = pgTable(
       .defaultNow(),
   },
   (t) => ({
-    readingHistoryUnique: uniqueIndex("reading_history_unique").on(t.userId, t.postId),
+    readingHistoryUnique: uniqueIndex("reading_history_unique").on(
+      t.userId,
+      t.postId
+    ),
     userIdx: index("reading_history_user_idx").on(t.userId),
     postIdx: index("reading_history_post_idx").on(t.postId),
   })
@@ -320,7 +326,10 @@ export const userAuthorAffinity = pgTable(
       .defaultNow(),
   },
   (t) => ({
-    userAuthorAffinityUnique: uniqueIndex("user_author_affinity_unique").on(t.userId, t.authorId),
+    userAuthorAffinityUnique: uniqueIndex("user_author_affinity_unique").on(
+      t.userId,
+      t.authorId
+    ),
     userIdx: index("user_author_affinity_user_idx").on(t.userId),
     authorIdx: index("user_author_affinity_author_idx").on(t.authorId),
   })

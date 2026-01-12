@@ -1,7 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { Upload, CheckCircle, AlertCircle, X, Image as ImageIcon, Copy, Check } from "lucide-react";
+import {
+  Upload,
+  CheckCircle,
+  AlertCircle,
+  X,
+  Image as ImageIcon,
+  Copy,
+  Check,
+} from "lucide-react";
 
 import { GlassButton } from "../ui/GlassButton";
 import { GlassCard } from "../ui/GlassCard";
@@ -29,8 +37,8 @@ export type ImageUploaderProps = {
   maxSize?: number; // in MB
 };
 
-export function ImageUploader({ 
-  onUploaded, 
+export function ImageUploader({
+  onUploaded,
   className,
   accept = "image/*",
   maxSize = 10, // 10MB default
@@ -74,13 +82,15 @@ export function ImageUploader({
     if (!isImage && !isVideo) {
       return "Please select an image or video file.";
     }
-    
+
     // Check file size
     const sizeMB = file.size / (1024 * 1024);
     if (sizeMB > maxSize) {
-      return `File too large. Maximum size is ${maxSize}MB. Your file is ${sizeMB.toFixed(1)}MB.`;
+      return `File too large. Maximum size is ${maxSize}MB. Your file is ${sizeMB.toFixed(
+        1
+      )}MB.`;
     }
-    
+
     return null;
   }
 
@@ -115,16 +125,18 @@ export function ImageUploader({
 
       if (!presign.ok) {
         const data = await presign.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to prepare upload. Please try again.");
+        throw new Error(
+          data.error || "Failed to prepare upload. Please try again."
+        );
       }
 
       const data = (await presign.json()) as UploadResponse;
 
       // Step 2: Try direct upload to R2, fallback to server proxy if CORS fails
       setState("uploading");
-      
+
       let uploadSuccess = false;
-      
+
       // Try direct upload first (faster)
       try {
         await new Promise<void>((resolve, reject) => {
@@ -156,32 +168,43 @@ export function ImageUploader({
           });
 
           xhr.open("PUT", data.uploadUrl);
-          xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+          xhr.setRequestHeader(
+            "Content-Type",
+            file.type || "application/octet-stream"
+          );
           xhr.send(file);
         });
         uploadSuccess = true;
       } catch (directError) {
         // If CORS error, try server-side proxy
-        if (directError instanceof Error && directError.message === "CORS_ERROR") {
+        if (
+          directError instanceof Error &&
+          directError.message === "CORS_ERROR"
+        ) {
           console.log("Direct upload failed (CORS), using server proxy...");
           setProgress(0);
-          
+
           // Use FormData for server-side upload
           const formData = new FormData();
           formData.append("file", file);
           formData.append("fileName", file.name);
-          formData.append("contentType", file.type || "application/octet-stream");
-          
+          formData.append(
+            "contentType",
+            file.type || "application/octet-stream"
+          );
+
           const proxyResponse = await fetch("/api/upload", {
             method: "PUT",
             body: formData,
           });
-          
+
           if (!proxyResponse.ok) {
             const proxyData = await proxyResponse.json().catch(() => ({}));
-            throw new Error(proxyData.error || "Server upload failed. Please try again.");
+            throw new Error(
+              proxyData.error || "Server upload failed. Please try again."
+            );
           }
-          
+
           const proxyResult = await proxyResponse.json();
           // Update data with proxy result
           if (proxyResult.publicUrl) {
@@ -190,7 +213,7 @@ export function ImageUploader({
           if (proxyResult.key) {
             data.key = proxyResult.key;
           }
-          
+
           setProgress(100);
           uploadSuccess = true;
         } else {
@@ -207,10 +230,11 @@ export function ImageUploader({
         onUploaded?.(data);
         abortRef.current = null;
       }
-
     } catch (err) {
       setState("error");
-      setError(err instanceof Error ? err.message : "Upload failed. Please try again.");
+      setError(
+        err instanceof Error ? err.message : "Upload failed. Please try again."
+      );
       abortRef.current = null;
     }
   }
@@ -243,15 +267,24 @@ export function ImageUploader({
       <div
         className={cn(
           "relative rounded-xl border-2 border-dashed p-6 md:p-8 text-center transition-all duration-300",
-          dragging 
-            ? "border-king-orange bg-king-orange/10" 
+          dragging
+            ? "border-king-orange bg-king-orange/10"
             : "border-foreground/20 hover:border-foreground/30",
           state === "success" && "border-emerald-500/50 bg-emerald-500/5",
           state === "error" && "border-red-500/50 bg-red-500/5"
         )}
-        onDragEnter={(e) => { e.preventDefault(); setDragging(true); }}
-        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-        onDragLeave={(e) => { e.preventDefault(); setDragging(false); }}
+        onDragEnter={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          setDragging(false);
+        }}
         onDrop={handleDrop}
       >
         {/* Preview or Icon */}
@@ -259,9 +292,9 @@ export function ImageUploader({
           {preview ? (
             <div className="relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src={preview} 
-                alt="Preview" 
+              <img
+                src={preview}
+                alt="Preview"
                 className="h-24 w-24 rounded-lg object-cover ring-2 ring-foreground/10"
               />
               {state === "success" && (
@@ -279,17 +312,21 @@ export function ImageUploader({
               )}
             </div>
           ) : (
-            <div className={cn(
-              "rounded-full p-4 transition-colors",
-              dragging ? "bg-king-orange/20" : "bg-foreground/5"
-            )}>
+            <div
+              className={cn(
+                "rounded-full p-4 transition-colors",
+                dragging ? "bg-king-orange/20" : "bg-foreground/5"
+              )}
+            >
               {state === "error" ? (
                 <AlertCircle className="h-8 w-8 text-red-500" />
               ) : (
-                <ImageIcon className={cn(
-                  "h-8 w-8 transition-colors",
-                  dragging ? "text-king-orange" : "text-foreground/40"
-                )} />
+                <ImageIcon
+                  className={cn(
+                    "h-8 w-8 transition-colors",
+                    dragging ? "text-king-orange" : "text-foreground/40"
+                  )}
+                />
               )}
             </div>
           )}
@@ -307,11 +344,11 @@ export function ImageUploader({
               </p>
             </>
           )}
-          
+
           {state === "preparing" && (
             <p className="text-sm text-foreground/70">Preparing upload...</p>
           )}
-          
+
           {state === "uploading" && (
             <div className="space-y-2">
               <p className="text-sm font-medium text-king-orange">
@@ -324,7 +361,7 @@ export function ImageUploader({
               )}
             </div>
           )}
-          
+
           {state === "success" && (
             <div className="space-y-1">
               <p className="text-sm font-medium text-emerald-500">
@@ -337,17 +374,15 @@ export function ImageUploader({
               )}
             </div>
           )}
-          
-          {state === "error" && (
-            <p className="text-sm text-red-500">{error}</p>
-          )}
+
+          {state === "error" && <p className="text-sm text-red-500">{error}</p>}
         </div>
 
         {/* Progress Bar */}
         {isUploading && (
           <div className="mb-4 mx-auto max-w-xs">
             <div className="h-2 rounded-full bg-foreground/10 overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-gradient-to-r from-king-orange to-sovereign-gold rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
               />
@@ -364,7 +399,7 @@ export function ImageUploader({
             className="hidden"
             onChange={handleFileSelect}
           />
-          
+
           {(state === "idle" || state === "error") && (
             <GlassButton
               variant="primary"
@@ -375,7 +410,7 @@ export function ImageUploader({
               Choose Image
             </GlassButton>
           )}
-          
+
           {isUploading && (
             <GlassButton
               variant="ghost"
@@ -387,13 +422,9 @@ export function ImageUploader({
               Cancel
             </GlassButton>
           )}
-          
+
           {state === "success" && (
-            <GlassButton
-              variant="ghost"
-              onClick={reset}
-              className="gap-2"
-            >
+            <GlassButton variant="ghost" onClick={reset} className="gap-2">
               <Upload className="h-4 w-4" />
               Upload Another
             </GlassButton>
@@ -405,9 +436,13 @@ export function ImageUploader({
           <div className="mt-4 p-2 rounded-lg bg-foreground/5 border border-foreground/10">
             <p className="text-[10px] text-foreground/40 mb-1 flex items-center gap-1">
               {copied ? (
-                <><Check className="h-3 w-3 text-green-500" /> Copied!</>
+                <>
+                  <Check className="h-3 w-3 text-green-500" /> Copied!
+                </>
               ) : (
-                <><Copy className="h-3 w-3" /> Click to copy URL</>
+                <>
+                  <Copy className="h-3 w-3" /> Click to copy URL
+                </>
               )}
             </p>
             <button
@@ -420,7 +455,9 @@ export function ImageUploader({
               }}
               className={cn(
                 "text-xs font-mono break-all text-left w-full transition-colors",
-                copied ? "text-green-500" : "text-king-orange/80 hover:text-king-orange"
+                copied
+                  ? "text-green-500"
+                  : "text-king-orange/80 hover:text-king-orange"
               )}
             >
               {publicUrl}

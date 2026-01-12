@@ -131,30 +131,37 @@ function EditorContent() {
   }>({ open: false, message: "" });
 
   // Load post for editing function
-  const loadPostForEdit = React.useCallback(async (id: string) => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/my-posts/${id}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.post) {
-          setPostId(data.post.id);
-          setTitle(data.post.title);
-          setHtml(data.post.content);
-          setCategory(data.post.category);
-          setCoverImageUrl(data.post.coverImageUrl);
-          setIsEditing(true);
+  const loadPostForEdit = React.useCallback(
+    async (id: string) => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/my-posts/${id}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.post) {
+            setPostId(data.post.id);
+            setTitle(data.post.title);
+            setHtml(data.post.content);
+            setCategory(data.post.category);
+            setCoverImageUrl(data.post.coverImageUrl);
+            setIsEditing(true);
+          }
+        } else {
+          setToast({ open: true, message: "Post not found", variant: "error" });
+          router.push("/blogger/my-blogs");
         }
-      } else {
-        setToast({ open: true, message: "Post not found", variant: "error" });
-        router.push("/blogger/my-blogs");
+      } catch {
+        setToast({
+          open: true,
+          message: "Failed to load post",
+          variant: "error",
+        });
+      } finally {
+        setLoading(false);
       }
-    } catch {
-      setToast({ open: true, message: "Failed to load post", variant: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }, [router]);
+    },
+    [router]
+  );
 
   // Load post for editing or draft on mount
   React.useEffect(() => {
@@ -183,7 +190,7 @@ function EditorContent() {
   // Auto-save draft (debounced 1.5s) - only for new posts
   React.useEffect(() => {
     if (isEditing || editPostId) return; // Don't auto-save when editing existing
-    
+
     const handle = window.setTimeout(() => {
       const payload: Draft = {
         postId: postId ?? undefined,
@@ -209,9 +216,18 @@ function EditorContent() {
     setUploading(true);
     try {
       // Validate file type
-      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm"];
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/gif",
+        "video/mp4",
+        "video/webm",
+      ];
       if (!allowedTypes.includes(file.type)) {
-        throw new Error(`Invalid file type. Allowed: ${allowedTypes.join(", ")}`);
+        throw new Error(
+          `Invalid file type. Allowed: ${allowedTypes.join(", ")}`
+        );
       }
 
       // Validate file size (50MB max)
@@ -357,7 +373,7 @@ function EditorContent() {
     setBusy(true);
     try {
       const excerpt = textFromHtml(html).slice(0, 220);
-      
+
       if (isEditing && postId) {
         // Update existing
         const updated = await updatePost({
@@ -387,7 +403,11 @@ function EditorContent() {
           return;
         }
         setPostId(created.postId);
-        setToast({ open: true, message: "Draft saved to cloud", variant: "success" });
+        setToast({
+          open: true,
+          message: "Draft saved to cloud",
+          variant: "success",
+        });
       }
     } finally {
       setBusy(false);
@@ -593,7 +613,7 @@ function EditorContent() {
           >
             <Link2 className="h-4 w-4" />
           </button>
-          
+
           {/* Inline Image Upload (Multiple) */}
           <button
             type="button"
@@ -603,27 +623,39 @@ function EditorContent() {
               input.accept = "image/*";
               input.multiple = true; // Allow multiple images
               input.onchange = async (e) => {
-                const files = Array.from((e.target as HTMLInputElement).files || []);
+                const files = Array.from(
+                  (e.target as HTMLInputElement).files || []
+                );
                 if (files.length === 0) return;
-                
+
                 setUploading(true);
                 const uploadedUrls: string[] = [];
-                
+
                 for (const file of files) {
                   const url = await uploadImage(file);
                   if (url) uploadedUrls.push(url);
                 }
-                
+
                 setUploading(false);
-                
+
                 if (uploadedUrls.length === 1) {
                   // Single image
-                  exec("insertHTML", `<img src="${uploadedUrls[0]}" alt="Image" style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;" />`);
+                  exec(
+                    "insertHTML",
+                    `<img src="${uploadedUrls[0]}" alt="Image" style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;" />`
+                  );
                 } else if (uploadedUrls.length > 1) {
                   // Multiple images - create a gallery grid
                   const galleryHtml = `
-                    <div style="display: grid; grid-template-columns: repeat(${uploadedUrls.length <= 2 ? uploadedUrls.length : 2}, 1fr); gap: 8px; margin: 16px 0;">
-                      ${uploadedUrls.map(url => `<img src="${url}" alt="Gallery image" style="width: 100%; height: auto; border-radius: 8px; object-fit: cover; aspect-ratio: 1;" />`).join("")}
+                    <div style="display: grid; grid-template-columns: repeat(${
+                      uploadedUrls.length <= 2 ? uploadedUrls.length : 2
+                    }, 1fr); gap: 8px; margin: 16px 0;">
+                      ${uploadedUrls
+                        .map(
+                          (url) =>
+                            `<img src="${url}" alt="Gallery image" style="width: 100%; height: auto; border-radius: 8px; object-fit: cover; aspect-ratio: 1;" />`
+                        )
+                        .join("")}
                     </div>
                   `;
                   exec("insertHTML", galleryHtml);
@@ -642,7 +674,7 @@ function EditorContent() {
           >
             <ImageIcon className="h-4 w-4" />
           </button>
-          
+
           {/* Inline Video Upload - PROMINENT BUTTON */}
           <button
             type="button"
@@ -656,30 +688,35 @@ function EditorContent() {
                   // Check video duration before upload
                   const video = document.createElement("video");
                   video.preload = "metadata";
-                  
+
                   video.onloadedmetadata = async () => {
                     window.URL.revokeObjectURL(video.src);
                     const duration = video.duration;
-                    
+
                     // 10 minutes = 600 seconds
                     if (duration > 600) {
                       setToast({
                         open: true,
-                        message: `Video is too long (${Math.round(duration / 60)} min). Maximum is 10 minutes.`,
+                        message: `Video is too long (${Math.round(
+                          duration / 60
+                        )} min). Maximum is 10 minutes.`,
                         variant: "error",
                       });
                       return;
                     }
-                    
+
                     // Upload the video
                     setUploading(true);
                     const url = await uploadImage(file);
                     setUploading(false);
                     if (url) {
-                      exec("insertHTML", `<video src="${url}" controls style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;"></video>`);
+                      exec(
+                        "insertHTML",
+                        `<video src="${url}" controls style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;"></video>`
+                      );
                     }
                   };
-                  
+
                   video.onerror = () => {
                     setToast({
                       open: true,
@@ -687,7 +724,7 @@ function EditorContent() {
                       variant: "error",
                     });
                   };
-                  
+
                   video.src = URL.createObjectURL(file);
                 }
               };
@@ -700,10 +737,12 @@ function EditorContent() {
             <Video className="h-4 w-4" />
             <span className="hidden sm:inline">Video</span>
           </button>
-          
+
           <div className="flex-1" />
           {uploading && (
-            <span className="text-xs text-king-orange font-medium mr-2">Uploading...</span>
+            <span className="text-xs text-king-orange font-medium mr-2">
+              Uploading...
+            </span>
           )}
           <span className="text-xs text-foreground/40 font-mono">
             {textFromHtml(html).length} chars
@@ -711,20 +750,26 @@ function EditorContent() {
         </div>
 
         {/* Content Editor */}
-        <div
-          ref={editorRef}
-          contentEditable
-          suppressContentEditableWarning
-          onInput={(e) =>
-            setHtml((e.currentTarget as HTMLDivElement).innerHTML)
-          }
-          className={cn(
-            "min-h-[300px] outline-none",
-            "prose dark:prose-invert max-w-none",
-            "text-lg leading-relaxed",
-            "[&:empty]:before:content-['Start_writing...'] [&:empty]:before:text-foreground/30"
-          )}
-        />
+        <div className="relative rounded-xl border-2 border-dashed border-foreground/10 bg-foreground/[0.02] p-4 md:p-6 transition-all focus-within:border-king-orange/30 focus-within:bg-foreground/[0.03] hover:border-foreground/20">
+          {/* Editor hint */}
+          <div className="absolute top-2 right-2 text-[10px] text-foreground/30 uppercase tracking-wider font-medium pointer-events-none">
+            Content Area
+          </div>
+          <div
+            ref={editorRef}
+            contentEditable
+            suppressContentEditableWarning
+            onInput={(e) =>
+              setHtml((e.currentTarget as HTMLDivElement).innerHTML)
+            }
+            className={cn(
+              "min-h-[250px] md:min-h-[350px] outline-none",
+              "prose dark:prose-invert max-w-none",
+              "text-base md:text-lg leading-relaxed",
+              "[&:empty]:before:content-['Start_writing_your_story...'] [&:empty]:before:text-foreground/30 [&:empty]:before:italic"
+            )}
+          />
+        </div>
 
         {/* Status Bar */}
         <div className="mt-6 pt-4 border-t border-foreground/10 flex items-center justify-between text-xs text-foreground/50">

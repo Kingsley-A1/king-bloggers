@@ -49,8 +49,11 @@ export function Navbar() {
   // Poll for unread notifications
   React.useEffect(() => {
     if (!signedIn) return;
-    
-    const loadCount = () => getUnreadCount().then(setUnreadCount).catch(() => 0);
+
+    const loadCount = () =>
+      getUnreadCount()
+        .then(setUnreadCount)
+        .catch(() => 0);
     loadCount();
     const interval = setInterval(loadCount, 30000);
     return () => clearInterval(interval);
@@ -86,10 +89,10 @@ export function Navbar() {
           {/* Right Actions */}
           <div className="flex items-center gap-1.5 md:gap-2">
             <ThemeToggle />
-            
+
             {/* Global Search */}
             <NavSearch />
-            
+
             {/* Notification Bell - Link to page instead of modal */}
             {signedIn && (
               <>
@@ -147,14 +150,24 @@ export function Navbar() {
                 />
               </Link>
             ) : (
-              <GlassButton as="a" href="/login" variant="glass" className="px-3 py-1.5 text-sm">
+              <GlassButton
+                as="a"
+                href="/login"
+                variant="glass"
+                className="px-3 py-1.5 text-sm"
+              >
                 Log In
               </GlassButton>
             )}
 
             {/* Desktop Studio Button */}
             <div className="hidden md:block">
-              <GlassButton as="a" href="/bloggers/editor" variant="primary" className="text-sm">
+              <GlassButton
+                as="a"
+                href="/bloggers/editor"
+                variant="primary"
+                className="text-sm"
+              >
                 Open Studio
               </GlassButton>
             </div>

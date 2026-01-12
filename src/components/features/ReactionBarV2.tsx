@@ -97,7 +97,7 @@ export function ReactionBar({
         {POSITIVE_REACTIONS.map((type) => {
           const count = counts[type];
           const isActive = myValue === type;
-          
+
           return (
             <button
               key={type}
@@ -113,7 +113,12 @@ export function ReactionBar({
               )}
               title={REACTION_CONFIG[type].label}
             >
-              <span className={cn("text-base", popType === type && "scale-125 transition-transform")}>
+              <span
+                className={cn(
+                  "text-base",
+                  popType === type && "scale-125 transition-transform"
+                )}
+              >
                 {REACTION_CONFIG[type].emoji}
               </span>
               {count > 0 && (
@@ -134,7 +139,7 @@ export function ReactionBar({
       {POSITIVE_REACTIONS.map((type) => {
         const count = counts[type];
         const isActive = myValue === type;
-        
+
         return (
           <button
             key={type}
@@ -143,8 +148,8 @@ export function ReactionBar({
             className={cn(
               "flex items-center gap-1.5 px-3 py-2 rounded-full transition-all duration-200",
               "border hover:bg-foreground/10 active:scale-95",
-              isActive 
-                ? "border-king-orange/50 bg-king-orange/15 shadow-sm shadow-king-orange/20" 
+              isActive
+                ? "border-king-orange/50 bg-king-orange/15 shadow-sm shadow-king-orange/20"
                 : "border-foreground/10 bg-foreground/5",
               popType === type && "animate-bounce",
               "disabled:pointer-events-none"
@@ -152,23 +157,27 @@ export function ReactionBar({
             title={REACTION_CONFIG[type].label}
             aria-label={`${REACTION_CONFIG[type].label} (${count})`}
           >
-            <span className={cn(
-              "text-xl transition-transform duration-200",
-              popType === type && "scale-125",
-              isActive && "drop-shadow-sm"
-            )}>
+            <span
+              className={cn(
+                "text-xl transition-transform duration-200",
+                popType === type && "scale-125",
+                isActive && "drop-shadow-sm"
+              )}
+            >
               {REACTION_CONFIG[type].emoji}
             </span>
-            <span className={cn(
-              "text-sm font-bold tabular-nums",
-              isActive ? "text-king-orange" : "text-foreground/60"
-            )}>
+            <span
+              className={cn(
+                "text-sm font-bold tabular-nums",
+                isActive ? "text-king-orange" : "text-foreground/60"
+              )}
+            >
               {count}
             </span>
           </button>
         );
       })}
-      
+
       {/* Total indicator */}
       {total > 0 && (
         <div className="ml-2 px-3 py-2 text-xs text-foreground/50 font-medium">

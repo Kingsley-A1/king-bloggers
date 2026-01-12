@@ -1,6 +1,15 @@
 import { and, eq, sql, desc } from "drizzle-orm";
 import Link from "next/link";
-import { TrendingUp, Eye, Heart, MessageCircle, FileText, Send, PenTool, Users } from "lucide-react";
+import {
+  TrendingUp,
+  Eye,
+  Heart,
+  MessageCircle,
+  FileText,
+  Send,
+  PenTool,
+  Users,
+} from "lucide-react";
 
 import { AnalyticsChart } from "@/components/features/AnalyticsChart";
 import { SectionHeader } from "@/components/features/SectionHeader";
@@ -51,7 +60,8 @@ export default async function BloggerDashboardPage() {
     .where(eq(users.id, userId))
     .limit(1);
 
-  const userName = userInfo?.name || userInfo?.email?.split("@")[0] || "Blogger";
+  const userName =
+    userInfo?.name || userInfo?.email?.split("@")[0] || "Blogger";
 
   // Aggregate stats
   const [totals] = await db
@@ -65,10 +75,8 @@ export default async function BloggerDashboardPage() {
         sql<number>`sum(case when ${posts.status} = 'draft' then 1 else 0 end)`.mapWith(
           Number
         ),
-      totalViews:
-        sql<number>`sum(${posts.viewCount})`.mapWith(Number),
-      totalReactions:
-        sql<number>`sum(${posts.reactionCount})`.mapWith(Number),
+      totalViews: sql<number>`sum(${posts.viewCount})`.mapWith(Number),
+      totalReactions: sql<number>`sum(${posts.reactionCount})`.mapWith(Number),
     })
     .from(posts)
     .where(eq(posts.authorId, userId));
@@ -111,7 +119,9 @@ export default async function BloggerDashboardPage() {
       count: sql<number>`count(*)`.mapWith(Number),
     })
     .from(posts)
-    .where(and(eq(posts.authorId, userId), sql`${posts.createdAt} >= ${startIso}`))
+    .where(
+      and(eq(posts.authorId, userId), sql`${posts.createdAt} >= ${startIso}`)
+    )
     .groupBy(sql`1`)
     .orderBy(sql`1`);
 
@@ -207,7 +217,9 @@ export default async function BloggerDashboardPage() {
               href={`/blog/${topPost[0].slug}`}
               className="block hover:text-king-orange transition-colors"
             >
-              <h3 className="text-xl font-bold line-clamp-1">{topPost[0].title}</h3>
+              <h3 className="text-xl font-bold line-clamp-1">
+                {topPost[0].title}
+              </h3>
             </Link>
             <div className="flex items-center gap-4 mt-3 text-sm text-foreground/60">
               <span className="flex items-center gap-1">
@@ -238,21 +250,27 @@ export default async function BloggerDashboardPage() {
             <GlassCard className="p-6 hover:border-king-orange/50 transition-all group cursor-pointer">
               <FileText className="h-6 w-6 text-foreground/60 group-hover:text-king-orange transition-colors mb-3" />
               <h4 className="font-bold">Manage Blogs</h4>
-              <p className="text-sm text-foreground/60 mt-1">View, edit and delete your posts</p>
+              <p className="text-sm text-foreground/60 mt-1">
+                View, edit and delete your posts
+              </p>
             </GlassCard>
           </Link>
           <Link href="/bloggers/editor?new=true">
             <GlassCard className="p-6 hover:border-king-orange/50 transition-all group cursor-pointer">
               <PenTool className="h-6 w-6 text-foreground/60 group-hover:text-king-orange transition-colors mb-3" />
               <h4 className="font-bold">Write New Post</h4>
-              <p className="text-sm text-foreground/60 mt-1">Share your thoughts with the world</p>
+              <p className="text-sm text-foreground/60 mt-1">
+                Share your thoughts with the world
+              </p>
             </GlassCard>
           </Link>
           <Link href="/profile">
             <GlassCard className="p-6 hover:border-king-orange/50 transition-all group cursor-pointer">
               <Users className="h-6 w-6 text-foreground/60 group-hover:text-king-orange transition-colors mb-3" />
               <h4 className="font-bold">Your Profile</h4>
-              <p className="text-sm text-foreground/60 mt-1">Update your public profile</p>
+              <p className="text-sm text-foreground/60 mt-1">
+                Update your public profile
+              </p>
             </GlassCard>
           </Link>
         </section>

@@ -23,7 +23,9 @@ export default function LoginClient() {
   const callbackUrl =
     rawCallbackUrl && rawCallbackUrl.startsWith("/") ? rawCallbackUrl : "/";
 
-  const registerHref = `/register?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+  const registerHref = `/register?callbackUrl=${encodeURIComponent(
+    callbackUrl
+  )}`;
 
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -49,7 +51,7 @@ export default function LoginClient() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
-    
+
     setBusy(true);
     try {
       const res = await signIn("credentials", {
@@ -114,7 +116,9 @@ export default function LoginClient() {
                   autoComplete="email"
                   disabled={busy}
                   className={cn(
-                    email && !isValidEmail && "border-red-500/50 focus:border-red-500"
+                    email &&
+                      !isValidEmail &&
+                      "border-red-500/50 focus:border-red-500"
                   )}
                 />
               </div>

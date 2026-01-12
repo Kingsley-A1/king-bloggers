@@ -9,17 +9,14 @@ export async function GET(
   try {
     const { postId } = await params;
     const post = await getPostForEdit(postId);
-    
+
     if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
-    
+
     return NextResponse.json({ post });
   } catch {
-    return NextResponse.json(
-      { error: "Failed to load post" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to load post" }, { status: 500 });
   }
 }
 
@@ -30,11 +27,11 @@ export async function DELETE(
   try {
     const { postId } = await params;
     const result = await deletePost(postId);
-    
+
     if (!result.ok) {
       return NextResponse.json({ error: result.error }, { status: 403 });
     }
-    
+
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json(

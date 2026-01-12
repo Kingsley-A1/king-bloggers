@@ -6,17 +6,17 @@ import type { PostCategory } from "@/db/schema";
 
 /** Actions that update user interest scores */
 export type EngagementAction =
-  | "view"           // Just opened the post
-  | "read_25"        // Scrolled 25%
-  | "read_50"        // Scrolled 50%
-  | "read_75"        // Scrolled 75%
-  | "read_100"       // Completed reading
-  | "reaction"       // Gave any reaction
-  | "reaction_strong"// Gave fire/crown/gem (high intent)
-  | "bookmark"       // Saved for later
-  | "comment"        // Left a comment
-  | "follow_author"  // Followed the author
-  | "share";         // Shared the post
+  | "view" // Just opened the post
+  | "read_25" // Scrolled 25%
+  | "read_50" // Scrolled 50%
+  | "read_75" // Scrolled 75%
+  | "read_100" // Completed reading
+  | "reaction" // Gave any reaction
+  | "reaction_strong" // Gave fire/crown/gem (high intent)
+  | "bookmark" // Saved for later
+  | "comment" // Left a comment
+  | "follow_author" // Followed the author
+  | "share"; // Shared the post
 
 /** Engagement action weights for scoring */
 export const ENGAGEMENT_WEIGHTS: Record<EngagementAction, number> = {
@@ -45,7 +45,7 @@ export interface UserInterestProfile {
 export interface ReadingProgress {
   postId: string;
   scrollDepth: number; // 0-100
-  timeSpent: number;   // seconds
+  timeSpent: number; // seconds
 }
 
 /** Post with personalization score for ranking */

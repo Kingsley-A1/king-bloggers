@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Sparkles, 
-  Check, 
-  ArrowRight, 
+import {
+  Sparkles,
+  Check,
+  ArrowRight,
   Zap,
   Palette,
   Mic,
@@ -17,7 +17,7 @@ import {
   DollarSign,
   Church,
   Activity,
-  Heart
+  Heart,
 } from "lucide-react";
 
 import { GlassButton } from "@/components/ui/GlassButton";
@@ -46,7 +46,8 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Tech",
     description: "AI, gadgets, startups & innovation",
     icon: Zap,
-    imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop",
+    imageUrl:
+      "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop",
     gradient: "from-blue-500 to-cyan-400",
   },
   {
@@ -54,7 +55,8 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Art & Culture",
     description: "Music, fashion, design & creativity",
     icon: Palette,
-    imageUrl: "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=400&h=400&fit=crop",
+    imageUrl:
+      "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=400&h=400&fit=crop",
     gradient: "from-purple-500 to-pink-400",
   },
   {
@@ -62,7 +64,8 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Entertainment",
     description: "Movies, celebrities, gaming & pop culture",
     icon: Mic,
-    imageUrl: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=400&fit=crop",
+    imageUrl:
+      "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=400&fit=crop",
     gradient: "from-orange-500 to-red-400",
   },
   {
@@ -70,7 +73,8 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Sport",
     description: "Football, athletics, sports news & highlights",
     icon: Activity,
-    imageUrl: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&h=400&fit=crop",
+    imageUrl:
+      "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&h=400&fit=crop",
     gradient: "from-green-500 to-emerald-400",
   },
   {
@@ -78,7 +82,8 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Health",
     description: "Wellness, fitness, nutrition & mental health",
     icon: Heart,
-    imageUrl: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&h=400&fit=crop",
+    imageUrl:
+      "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&h=400&fit=crop",
     gradient: "from-pink-500 to-rose-400",
   },
   {
@@ -86,7 +91,8 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Politics",
     description: "Government, policies & current affairs",
     icon: Scale,
-    imageUrl: "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=400&h=400&fit=crop",
+    imageUrl:
+      "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=400&h=400&fit=crop",
     gradient: "from-red-500 to-orange-400",
   },
   {
@@ -94,7 +100,8 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Economics",
     description: "Finance, markets & business trends",
     icon: DollarSign,
-    imageUrl: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=400&fit=crop",
+    imageUrl:
+      "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=400&fit=crop",
     gradient: "from-emerald-500 to-teal-400",
   },
   {
@@ -102,7 +109,8 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Religion",
     description: "Faith, spirituality & philosophy",
     icon: Church,
-    imageUrl: "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=400&h=400&fit=crop",
+    imageUrl:
+      "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=400&h=400&fit=crop",
     gradient: "from-amber-500 to-yellow-400",
   },
 ];
@@ -139,7 +147,9 @@ function InterestCard({
         priority
         className={cn(
           "object-cover transition-all duration-500",
-          selected ? "scale-110 brightness-50" : "scale-100 brightness-75 group-hover:scale-105"
+          selected
+            ? "scale-110 brightness-50"
+            : "scale-100 brightness-75 group-hover:scale-105"
         )}
       />
 
@@ -169,10 +179,7 @@ function InterestCard({
         </AnimatePresence>
 
         {/* Icon */}
-        <motion.div
-          animate={{ scale: selected ? 1.2 : 1 }}
-          className="mb-2"
-        >
+        <motion.div animate={{ scale: selected ? 1.2 : 1 }} className="mb-2">
           <Icon className="w-10 h-10 drop-shadow-lg" />
         </motion.div>
 
@@ -206,7 +213,7 @@ export function OnboardingClient() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const { data: session, status } = useSession();
-  
+
   const userName = session?.user?.name?.split(" ")[0] || "there";
 
   // Show loading state while session is being fetched
@@ -307,10 +314,13 @@ export function OnboardingClient() {
               "px-4 py-2 rounded-full text-sm font-bold transition-all",
               "border border-king-orange/30 hover:border-king-orange",
               "text-king-orange hover:bg-king-orange/10",
-              selected.size === INTEREST_CATEGORIES.length && "bg-king-orange/20"
+              selected.size === INTEREST_CATEGORIES.length &&
+                "bg-king-orange/20"
             )}
           >
-            {selected.size === INTEREST_CATEGORIES.length ? "✓ All Selected" : "Select All"}
+            {selected.size === INTEREST_CATEGORIES.length
+              ? "✓ All Selected"
+              : "Select All"}
           </button>
         </motion.div>
 
@@ -345,7 +355,9 @@ export function OnboardingClient() {
         >
           {selected.size === 0
             ? "No interests selected"
-            : `${selected.size} interest${selected.size > 1 ? "s" : ""} selected`}
+            : `${selected.size} interest${
+                selected.size > 1 ? "s" : ""
+              } selected`}
         </motion.div>
 
         {/* Error Message */}

@@ -68,7 +68,8 @@ export function ShareBar({ title, url, className }: ShareBarProps) {
           onClick={() => void copy()}
           className={cn(
             "gap-2 transition-all duration-300",
-            copyState === "copied" && "bg-emerald-500/20 border-emerald-500/50 text-emerald-400"
+            copyState === "copied" &&
+              "bg-emerald-500/20 border-emerald-500/50 text-emerald-400"
           )}
         >
           {copyState === "copied" ? (
@@ -85,14 +86,16 @@ export function ShareBar({ title, url, className }: ShareBarProps) {
             : "Copy link"}
         </GlassButton>
       </div>
-      
+
       {/* Link Preview Toast */}
       {showLinkPreview && (
-        <div className={cn(
-          "flex items-center gap-2 px-3 py-2 rounded-lg",
-          "bg-foreground/5 border border-foreground/10",
-          "animate-in slide-in-from-top-2 fade-in duration-200"
-        )}>
+        <div
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 rounded-lg",
+            "bg-foreground/5 border border-foreground/10",
+            "animate-in slide-in-from-top-2 fade-in duration-200"
+          )}
+        >
           <LinkIcon className="h-3.5 w-3.5 text-king-orange shrink-0" />
           <span className="text-xs text-foreground/70 truncate font-mono">
             {url}

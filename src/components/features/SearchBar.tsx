@@ -109,15 +109,15 @@ export type SearchBarProps = {
 
 /**
  * SearchBar - A powerful, reusable search component
- * 
+ *
  * @example
  * // Inline on a page
  * <SearchBar variant="inline" showTrending showRecent />
- * 
+ *
  * @example
  * // Compact in header
  * <SearchBar variant="compact" placeholder="Quick search..." />
- * 
+ *
  * @example
  * // Controlled with custom handler
  * <SearchBar value={query} onChange={setQuery} onSearch={handleSearch} />
@@ -215,17 +215,22 @@ export function SearchBar({
 
   // Voice search (Web Speech API)
   const startVoiceSearch = () => {
-    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+    if (
+      !("webkitSpeechRecognition" in window) &&
+      !("SpeechRecognition" in window)
+    ) {
       return;
     }
 
     const SpeechRecognitionConstructor =
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-    
+      (window as any).webkitSpeechRecognition ||
+      (window as any).SpeechRecognition;
+
     if (!SpeechRecognitionConstructor) return;
 
-    const recognition = new SpeechRecognitionConstructor() as SpeechRecognitionInstance;
+    const recognition =
+      new SpeechRecognitionConstructor() as SpeechRecognitionInstance;
     recognition.lang = "en-US";
     recognition.continuous = false;
     recognition.interimResults = false;
@@ -332,10 +337,10 @@ export function SearchBar({
           placeholder={placeholder}
           className={cn(
             "flex-1 bg-transparent outline-none placeholder:text-foreground/40",
-            variant === "inline" && "py-4 text-base md:text-lg",
-            variant === "hero" && "py-5 text-lg md:text-xl font-medium",
+            variant === "inline" && "py-3 text-base",
+            variant === "hero" && "py-3 md:py-4 text-base md:text-lg",
             variant === "compact" && "py-2.5 text-sm",
-            variant === "modal" && "py-4 text-lg"
+            variant === "modal" && "py-3 text-base"
           )}
           autoComplete="off"
         />
@@ -443,7 +448,10 @@ export function SearchBar({
                       onClick={() => handleSearch(search)}
                       className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors hover:bg-white/5"
                     >
-                      <Clock size={14} className="shrink-0 text-foreground/30" />
+                      <Clock
+                        size={14}
+                        className="shrink-0 text-foreground/30"
+                      />
                       <span className="flex-1 truncate">{search}</span>
                       <ArrowRight
                         size={14}

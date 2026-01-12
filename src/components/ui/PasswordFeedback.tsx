@@ -83,9 +83,7 @@ export function PasswordFeedback({
           aria-hidden="true"
         />
       </div>
-      <div className="text-[10px] text-foreground/50 text-right">
-        {s.label}
-      </div>
+      <div className="text-[10px] text-foreground/50 text-right">{s.label}</div>
     </div>
   );
 }

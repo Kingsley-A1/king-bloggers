@@ -12,7 +12,11 @@ import {
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
-import { ENGAGEMENT_WEIGHTS, type EngagementAction, type ReadingProgress } from "./types";
+import {
+  ENGAGEMENT_WEIGHTS,
+  type EngagementAction,
+  type ReadingProgress,
+} from "./types";
 
 // ============================================
 // 👑 KING BLOGGERS - Engagement Tracking
@@ -33,7 +37,7 @@ export async function trackEngagement(
 ): Promise<{ ok: boolean }> {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) return { ok: false };
 
   try {
@@ -75,7 +79,7 @@ export async function trackReadingProgress(
 ): Promise<{ ok: boolean }> {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) return { ok: false };
 
   try {
@@ -118,7 +122,7 @@ export async function trackReadingProgress(
 
       const weight = ENGAGEMENT_WEIGHTS[action];
       await updateCategoryInterest(userId, post.category, weight);
-      
+
       if (post.authorId !== userId) {
         await updateAuthorAffinity(userId, post.authorId, weight);
       }
