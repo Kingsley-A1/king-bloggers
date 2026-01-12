@@ -20,6 +20,7 @@ export type PostCardProps = {
   excerpt?: string;
   authorName?: string;
   authorAvatarUrl?: string | null;
+  authorRole?: "reader" | "blogger";
   readTime: string;
   imageUrl?: string | null;
   badge?: {
@@ -37,6 +38,7 @@ export function PostCard({
   excerpt,
   authorName = "King Bloggers",
   authorAvatarUrl,
+  authorRole = "reader",
   readTime,
   imageUrl,
   badge,
@@ -113,11 +115,25 @@ export function PostCard({
           </div>
 
           <div className="flex items-center gap-3 pt-2">
-            <Avatar
-              src={authorAvatarUrl ?? undefined}
-              name={authorName}
-              size={36}
-            />
+            <div className="relative">
+              <Avatar
+                src={authorAvatarUrl ?? undefined}
+                name={authorName}
+                size={36}
+              />
+              {/* Role Badge - B for Blogger (green), R for Reader (orange) */}
+              <span
+                className={cn(
+                  "absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black border-2 border-background",
+                  authorRole === "blogger"
+                    ? "bg-emerald-500 text-white"
+                    : "bg-king-orange text-black"
+                )}
+                title={authorRole === "blogger" ? "Verified Blogger" : "Reader"}
+              >
+                {authorRole === "blogger" ? "B" : "R"}
+              </span>
+            </div>
             <div>
               <div className="text-sm font-bold">{authorName}</div>
               <div className="text-xs text-foreground/50">Read more →</div>

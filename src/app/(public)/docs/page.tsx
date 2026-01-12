@@ -355,7 +355,7 @@ export default function DocsPage() {
             {/* Footer CTA */}
             <div className="text-center py-8">
               <Link
-                href="/blogger/editor"
+                href="/bloggers/editor"
                 className="inline-flex items-center gap-2 rounded-full bg-king-orange px-8 py-3 text-sm font-bold uppercase tracking-widest text-white shadow-lg hover:opacity-90 transition-all active:scale-95"
               >
                 Start Publishing Now →

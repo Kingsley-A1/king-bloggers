@@ -9,7 +9,8 @@ import { GlassButton } from "../ui/GlassButton";
 
 const SIDEBAR_LINKS = [
   { label: "Dashboard", href: "/blogger/dashboard" },
-  { label: "Editor", href: "/blogger/editor" },
+  { label: "My Blogs", href: "/blogger/my-blogs" },
+  { label: "New Blog", href: "/bloggers/editor?new=true" },
 ];
 
 export function Sidebar() {

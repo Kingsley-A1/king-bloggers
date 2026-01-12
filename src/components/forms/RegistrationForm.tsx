@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Eye, EyeOff, MapPin } from "lucide-react";
+import { Eye, EyeOff, MapPin, BookOpen, Pen, Crown, Sparkles, Check, Mail, Lock, User, Loader2 } from "lucide-react";
 
 import { NIGERIAN_STATES, NIGERIA_GEO_MAP } from "../../lib/geo-data";
 import { registerUser } from "../../lib/actions/auth";
@@ -12,10 +12,10 @@ import { GlassButton } from "../ui/GlassButton";
 import { GlassCard } from "../ui/GlassCard";
 import { Input } from "../ui/Input";
 import { Select } from "../ui/Select";
-import { Spinner } from "../ui/Spinner";
 import { Toast } from "../features/Toast";
 import { PasswordFeedback } from "../ui/PasswordFeedback";
 import { GoogleIcon } from "../ui/GoogleIcon";
+import { cn } from "../../lib/utils";
 
 export type RegistrationRole = "reader" | "blogger";
 
@@ -64,13 +64,25 @@ export function RegistrationForm({
     message: string;
     variant?: "success" | "error";
   }>({ open: false, message: "" });
+  const [googleBusy, setGoogleBusy] = React.useState(false);
+
+  // Auto-focus name field on step 1
+  const nameRef = React.useRef<HTMLInputElement>(null);
+  React.useEffect(() => {
+    if (step === 1) {
+      nameRef.current?.focus();
+    }
+  }, [step]);
+
+  // Email validation
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const safeCallbackUrl = normalizeCallbackUrl(callbackUrl);
 
   const lgas = state ? NIGERIA_GEO_MAP.get(state) ?? [] : [];
   const lgaDisabled = !state || lgas.length === 0;
 
-  const defaultAfterAuth = role === "blogger" ? "/blogger/editor" : "/profile";
+  const defaultAfterAuth = role === "blogger" ? "/bloggers/editor" : "/profile";
   const callbackAllowedByRole =
     safeCallbackUrl && safeCallbackUrl.startsWith("/blogger") && role !== "blogger"
       ? null
@@ -115,7 +127,8 @@ export function RegistrationForm({
         return;
       }
 
-      router.replace(afterAuth);
+      // 👑 Redirect to onboarding for interest selection
+      router.replace("/onboarding");
     } catch (error) {
       logDevError("RegistrationForm.submit", error);
       setToast({
@@ -145,59 +158,168 @@ export function RegistrationForm({
 
         <div className="mt-8">
           {step === 0 ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => setRole("reader")}
-                disabled={busy}
-                className={
-                  "glass-card p-6 text-left active:scale-[0.99] " +
-                  (role === "reader"
-                    ? "border-king-orange/30 bg-king-orange/10"
-                    : "")
-                }
-              >
-                <div className="text-sm font-black">Reader</div>
-                <p className="mt-2 text-sm text-foreground/60">
-                  Save favorites, comment, and follow creators.
-                </p>
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole("blogger")}
-                disabled={busy}
-                className={
-                  "glass-card p-6 text-left active:scale-[0.99] " +
-                  (role === "blogger"
-                    ? "border-king-orange/30 bg-king-orange/10"
-                    : "")
-                }
-              >
-                <div className="text-sm font-black">Blogger</div>
-                <p className="mt-2 text-sm text-foreground/60">
-                  Access the studio and publish posts.
-                </p>
-              </button>
+            <div className="space-y-6">
+              <p className="text-sm text-foreground/60 text-center">
+                Choose your path in the Kingdom
+              </p>
+              <div className="grid gap-4 md:grid-cols-2">
+                {/* Reader Card */}
+                <button
+                  type="button"
+                  onClick={() => setRole("reader")}
+                  disabled={busy}
+                  className={cn(
+                    "group relative glass-card p-6 text-left transition-all duration-300",
+                    "hover:scale-[1.02] active:scale-[0.98]",
+                    role === "reader"
+                      ? "border-king-orange ring-2 ring-king-orange/30 bg-gradient-to-br from-king-orange/10 to-transparent"
+                      : "hover:border-foreground/20"
+                  )}
+                >
+                  {/* Selected Badge */}
+                  {role === "reader" && (
+                    <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-king-orange flex items-center justify-center animate-in zoom-in duration-200">
+                      <Check className="w-4 h-4 text-black" />
+                    </div>
+                  )}
+                  
+                  {/* Icon */}
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors",
+                    role === "reader" 
+                      ? "bg-king-orange/20" 
+                      : "bg-foreground/5 group-hover:bg-foreground/10"
+                  )}>
+                    <BookOpen className={cn(
+                      "w-6 h-6 transition-colors",
+                      role === "reader" ? "text-king-orange" : "text-foreground/60"
+                    )} />
+                  </div>
+                  
+                  {/* Title */}
+                  <div className={cn(
+                    "text-lg font-black transition-colors",
+                    role === "reader" && "text-king-orange"
+                  )}>
+                    Reader
+                  </div>
+                  
+                  {/* Description */}
+                  <p className="mt-2 text-sm text-foreground/60">
+                    Explore the kingdom&apos;s finest content
+                  </p>
+                  
+                  {/* Features */}
+                  <ul className="mt-4 space-y-2">
+                    {[
+                      "Personalized For You feed",
+                      "Save & bookmark articles",
+                      "Follow your favorite creators",
+                      "React & comment on posts",
+                    ].map((feature) => (
+                      <li key={feature} className="flex items-center gap-2 text-xs text-foreground/50">
+                        <Sparkles className="w-3 h-3 text-king-gold" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </button>
+
+                {/* Blogger Card */}
+                <button
+                  type="button"
+                  onClick={() => setRole("blogger")}
+                  disabled={busy}
+                  className={cn(
+                    "group relative glass-card p-6 text-left transition-all duration-300",
+                    "hover:scale-[1.02] active:scale-[0.98]",
+                    role === "blogger"
+                      ? "border-king-gold ring-2 ring-king-gold/30 bg-gradient-to-br from-king-gold/10 to-transparent"
+                      : "hover:border-foreground/20"
+                  )}
+                >
+                  {/* Selected Badge */}
+                  {role === "blogger" && (
+                    <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-king-gold flex items-center justify-center animate-in zoom-in duration-200">
+                      <Check className="w-4 h-4 text-black" />
+                    </div>
+                  )}
+                  
+                  {/* Crown Badge */}
+                  <div className="absolute top-3 right-3">
+                    <Crown className={cn(
+                      "w-4 h-4 transition-colors",
+                      role === "blogger" ? "text-king-gold" : "text-foreground/20"
+                    )} />
+                  </div>
+                  
+                  {/* Icon */}
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors",
+                    role === "blogger" 
+                      ? "bg-king-gold/20" 
+                      : "bg-foreground/5 group-hover:bg-foreground/10"
+                  )}>
+                    <Pen className={cn(
+                      "w-6 h-6 transition-colors",
+                      role === "blogger" ? "text-king-gold" : "text-foreground/60"
+                    )} />
+                  </div>
+                  
+                  {/* Title */}
+                  <div className={cn(
+                    "text-lg font-black transition-colors",
+                    role === "blogger" && "text-king-gold"
+                  )}>
+                    Blogger
+                  </div>
+                  
+                  {/* Description */}
+                  <p className="mt-2 text-sm text-foreground/60">
+                    Become a content sovereign
+                  </p>
+                  
+                  {/* Features */}
+                  <ul className="mt-4 space-y-2">
+                    {[
+                      "All Reader features included",
+                      "Rich WYSIWYG blog editor",
+                      "Analytics dashboard",
+                      "Build your audience",
+                    ].map((feature) => (
+                      <li key={feature} className="flex items-center gap-2 text-xs text-foreground/50">
+                        <Sparkles className="w-3 h-3 text-king-gold" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </button>
+              </div>
             </div>
           ) : null}
 
           {step === 1 ? (
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-mono text-foreground/50">
+                <label className="text-xs font-mono text-foreground/50 flex items-center gap-2">
+                  <User className="w-3 h-3" />
                   Name
                 </label>
                 <div className="mt-2">
                   <Input
+                    ref={nameRef}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     type="text"
                     placeholder="Your name"
+                    autoComplete="name"
+                    disabled={busy}
                   />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-mono text-foreground/50">
+                <label className="text-xs font-mono text-foreground/50 flex items-center gap-2">
+                  <Mail className="w-3 h-3" />
                   Email
                 </label>
                 <div className="mt-2">
@@ -206,11 +328,20 @@ export function RegistrationForm({
                     onChange={(e) => setEmail(e.target.value)}
                     type="email"
                     placeholder="you@example.com"
+                    autoComplete="email"
+                    disabled={busy}
+                    className={cn(
+                      email && !isValidEmail && "border-red-500/50 focus:border-red-500"
+                    )}
                   />
                 </div>
+                {email && !isValidEmail && (
+                  <p className="mt-1 text-[10px] text-red-500">Enter a valid email</p>
+                )}
               </div>
               <div>
-                <label className="text-xs font-mono text-foreground/50">
+                <label className="text-xs font-mono text-foreground/50 flex items-center gap-2">
+                  <Lock className="w-3 h-3" />
                   Password
                 </label>
                 <div className="mt-2 relative">
@@ -219,12 +350,15 @@ export function RegistrationForm({
                     onChange={(e) => setPassword(e.target.value)}
                     type={showPassword ? "text" : "password"}
                     placeholder="Minimum 8 characters"
+                    autoComplete="new-password"
+                    disabled={busy}
                     className="pr-10"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground/70 transition-colors"
+                    tabIndex={-1}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -320,7 +454,7 @@ export function RegistrationForm({
                   disabled={
                     busy ||
                     (step === 1 &&
-                      (!name.trim() || !email || password.length < 8))
+                      (!name.trim() || !isValidEmail || password.length < 8))
                   }
                 >
                   Continue
@@ -329,11 +463,11 @@ export function RegistrationForm({
                 <GlassButton
                   variant="primary"
                   onClick={submit}
-                  disabled={!email || password.length < 8 || busy}
+                  disabled={!isValidEmail || password.length < 8 || busy}
                 >
                   {busy ? (
                     <span className="inline-flex items-center gap-2">
-                      <Spinner /> Creating…
+                      <Loader2 className="w-4 h-4 animate-spin" /> Creating…
                     </span>
                   ) : (
                     "Create Account"
@@ -356,11 +490,24 @@ export function RegistrationForm({
                 </div>
                 <button
                   type="button"
-                  onClick={() => void signIn("google", { callbackUrl: afterAuth })}
-                  className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-full border border-foreground/10 bg-foreground/5 hover:bg-foreground/10 text-foreground font-medium transition-all duration-300 active:scale-[0.98]"
+                  onClick={() => {
+                    setGoogleBusy(true);
+                    void signIn("google", { callbackUrl: afterAuth });
+                  }}
+                  disabled={googleBusy || busy}
+                  className={cn(
+                    "w-full flex items-center justify-center gap-3 px-4 py-3 rounded-full border border-foreground/10 bg-foreground/5 text-foreground font-medium transition-all duration-300 active:scale-[0.98]",
+                    googleBusy || busy
+                      ? "opacity-60 cursor-not-allowed"
+                      : "hover:bg-foreground/10"
+                  )}
                 >
-                  <GoogleIcon />
-                  <span>Continue with Google</span>
+                  {googleBusy ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <GoogleIcon />
+                  )}
+                  <span>{googleBusy ? "Connecting…" : "Continue with Google"}</span>
                 </button>
               </>
             )}

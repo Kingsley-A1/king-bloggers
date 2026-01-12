@@ -13,6 +13,8 @@ import { auth } from "@/lib/auth";
 
 export type PostCategory = typeof posts.$inferSelect.category;
 
+export type UserRole = "reader" | "blogger";
+
 export type PublishedPostListItem = {
   id: string;
   slug: string;
@@ -24,6 +26,9 @@ export type PublishedPostListItem = {
   category: PostCategory;
   createdAt: Date;
   authorEmail: string;
+  authorName?: string | null;
+  authorImage?: string | null;
+  authorRole: UserRole;
   viewCount: number;
   reactionCount: number;
   commentCount: number;
@@ -49,10 +54,7 @@ export async function listPublishedPosts(input?: {
       .limit(1);
 
     if (cursorPost[0]) {
-      where = and(
-        where,
-        sql`${posts.createdAt} < ${cursorPost[0].createdAt}`
-      );
+      where = and(where, sql`${posts.createdAt} < ${cursorPost[0].createdAt}`);
     }
   }
 
@@ -68,6 +70,9 @@ export async function listPublishedPosts(input?: {
       category: posts.category,
       createdAt: posts.createdAt,
       authorEmail: users.email,
+      authorName: users.name,
+      authorImage: users.imageUrl,
+      authorRole: users.role,
       viewCount: posts.viewCount,
       reactionCount: posts.reactionCount,
       commentCount: posts.commentCount,
@@ -106,23 +111,25 @@ export async function getTrendingPosts(limit = 10) {
       category: posts.category,
       createdAt: posts.createdAt,
       authorEmail: users.email,
+      authorName: users.name,
+      authorImage: users.imageUrl,
+      authorRole: users.role,
       viewCount: posts.viewCount,
       reactionCount: posts.reactionCount,
       commentCount: posts.commentCount,
       // Trending score calculation
       trendingScore: sql<number>`
-        (${posts.viewCount} * 0.3 + ${posts.reactionCount} * 0.5 + ${posts.commentCount} * 0.2)
-        / GREATEST(1, EXTRACT(EPOCH FROM (NOW() - ${posts.createdAt})) / 3600)
+        (
+          CAST(${posts.viewCount} AS FLOAT) * 0.3
+          + CAST(${posts.reactionCount} AS FLOAT) * 0.5
+          + CAST(${posts.commentCount} AS FLOAT) * 0.2
+        )
+        / CAST(GREATEST(1, EXTRACT(EPOCH FROM (NOW() - ${posts.createdAt})) / 3600) AS FLOAT)
       `.mapWith(Number),
     })
     .from(posts)
     .innerJoin(users, eq(posts.authorId, users.id))
-    .where(
-      and(
-        eq(posts.status, "published"),
-        gt(posts.createdAt, oneDayAgo)
-      )
-    )
+    .where(and(eq(posts.status, "published"), gt(posts.createdAt, oneDayAgo)))
     .orderBy(sql`7 DESC`) // Order by trendingScore
     .limit(limit);
 
@@ -145,6 +152,7 @@ export async function getPublishedPostBySlug(slug: string) {
       authorEmail: users.email,
       authorName: users.name,
       authorImage: users.imageUrl,
+      authorRole: users.role,
       viewCount: posts.viewCount,
       reactionCount: posts.reactionCount,
       commentCount: posts.commentCount,
@@ -257,4 +265,73 @@ export function formatCount(count: number): string {
     return `${(count / 1_000).toFixed(1)}K`;
   }
   return count.toString();
+}
+
+/**
+ * Get all posts by the current authenticated user (both drafts and published)
+ */
+export async function getUserPosts() {
+  const session = await auth();
+  if (!session?.user?.id) return [];
+
+  const rows = await db
+    .select({
+      id: posts.id,
+      slug: posts.slug,
+      title: posts.title,
+      excerpt: posts.excerpt,
+      content: posts.content,
+      coverImageUrl: posts.coverImageUrl,
+      category: posts.category,
+      status: posts.status,
+      createdAt: posts.createdAt,
+      updatedAt: posts.updatedAt,
+      viewCount: posts.viewCount,
+      reactionCount: posts.reactionCount,
+      commentCount: posts.commentCount,
+    })
+    .from(posts)
+    .where(eq(posts.authorId, session.user.id))
+    .orderBy(desc(posts.createdAt));
+
+  return rows;
+}
+
+/**
+ * Get a single post by ID for editing (only if owned by current user)
+ */
+export async function getPostForEdit(postId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+
+  const rows = await db
+    .select({
+      id: posts.id,
+      slug: posts.slug,
+      title: posts.title,
+      excerpt: posts.excerpt,
+      content: posts.content,
+      coverImageUrl: posts.coverImageUrl,
+      category: posts.category,
+      status: posts.status,
+    })
+    .from(posts)
+    .where(and(eq(posts.id, postId), eq(posts.authorId, session.user.id)))
+    .limit(1);
+
+  return rows[0] ?? null;
+}
+
+/**
+ * Delete a post by ID (only if owned by current user)
+ */
+export async function deletePost(postId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { ok: false, error: "Unauthorized" };
+
+  await db
+    .delete(posts)
+    .where(and(eq(posts.id, postId), eq(posts.authorId, session.user.id)));
+
+  return { ok: true };
 }

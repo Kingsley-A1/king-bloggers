@@ -32,7 +32,7 @@ export default function NotFound() {
               <GlassButton as="a" href="/about" variant="glass">
                 About King Bloggers
               </GlassButton>
-              <GlassButton as="a" href="/blogger/editor" variant="glass">
+              <GlassButton as="a" href="/bloggers/editor" variant="glass">
                 Open Studio
               </GlassButton>
               <GlassButton as="a" href="/profile" variant="glass">

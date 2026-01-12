@@ -10,8 +10,17 @@ import withPWA from "@ducanh2912/next-pwa";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  
-  // Allow R2 images
+
+  async rewrites() {
+    return [
+      {
+        source: "/bloggers/:path*",
+        destination: "/blogger/:path*",
+      },
+    ];
+  },
+
+  // Allow R2 images + external sources
   images: {
     remotePatterns: [
       {
@@ -22,6 +31,11 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
         pathname: "/**",
       },
     ],
@@ -63,9 +77,43 @@ const nextConfig = {
   },
 };
 
+const isDev = process.env.NODE_ENV === "development";
+const enablePwaInDev = process.env.KING_PWA_DEV === "1";
+
 export default withPWA({
   dest: "public",
   register: true,
   skipWaiting: true,
-  disable: false,
+  extendDefaultRuntimeCaching: true,
+  workboxOptions: {
+    runtimeCaching: [
+      {
+        // App router navigations (/, /login, /blogger/editor, etc)
+        urlPattern: ({ request }) => request.mode === "navigate",
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "pages",
+          networkTimeoutSeconds: 3,
+          expiration: {
+            maxEntries: 50,
+            maxAgeSeconds: 24 * 60 * 60,
+          },
+          cacheableResponse: {
+            statuses: [0, 200],
+          },
+        },
+      },
+      {
+        // NextAuth endpoints should never be cached
+        urlPattern: /\/api\/auth\/.*$/i,
+        handler: "NetworkOnly",
+        options: {
+          cacheName: "auth",
+        },
+      },
+    ],
+  },
+  // next-pwa + Next 15 can trigger dev-only stream errors on some Node versions.
+  // Keep PWA enabled for production; disable by default in dev.
+  disable: isDev && !enablePwaInDev,
 })(nextConfig);

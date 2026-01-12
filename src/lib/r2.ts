@@ -43,6 +43,27 @@ export async function createPresignedPutUrl(input: {
   return { uploadUrl };
 }
 
+/**
+ * Direct upload to R2 (server-side, bypasses CORS issues)
+ */
+export async function uploadToR2Direct(input: {
+  key: string;
+  contentType: string;
+  body: Buffer;
+}) {
+  const client = createR2Client();
+  const bucket = requireEnv("R2_BUCKET_NAME");
+
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: input.key,
+    ContentType: input.contentType,
+    Body: input.body,
+  });
+
+  await client.send(command);
+}
+
 export function publicUrlForR2Key(key: string) {
   const base = process.env.R2_PUBLIC_BASE_URL ?? process.env.NEXT_PUBLIC_R2_DOMAIN;
   if (!base) return null;

@@ -12,17 +12,19 @@ import { auth } from "@/lib/auth";
 // Social connections for content discovery
 // ============================================
 
-type FollowResult = 
+type FollowResult =
   | { ok: true; action: "followed" | "unfollowed" }
   | { ok: false; error: string };
 
 /**
  * Toggle follow status for a user
  */
-export async function toggleFollow(targetUserId: string): Promise<FollowResult> {
+export async function toggleFollow(
+  targetUserId: string
+): Promise<FollowResult> {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) {
     return { ok: false, error: "Sign in to follow users." };
   }
@@ -36,10 +38,7 @@ export async function toggleFollow(targetUserId: string): Promise<FollowResult> 
     .select({ id: follows.id })
     .from(follows)
     .where(
-      and(
-        eq(follows.followerId, userId),
-        eq(follows.followingId, targetUserId)
-      )
+      and(eq(follows.followerId, userId), eq(follows.followingId, targetUserId))
     )
     .limit(1);
 
@@ -67,7 +66,9 @@ export async function toggleFollow(targetUserId: string): Promise<FollowResult> 
       userId: targetUserId,
       type: "follow",
       actorId: userId,
-      message: `${actor?.name ?? actor?.email ?? "Someone"} started following you`,
+      message: `${
+        actor?.name ?? actor?.email ?? "Someone"
+      } started following you`,
     });
   } catch {
     // Don't fail the follow if notification fails
@@ -82,7 +83,7 @@ export async function toggleFollow(targetUserId: string): Promise<FollowResult> 
 export async function isFollowing(targetUserId: string): Promise<boolean> {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId || userId === targetUserId) {
     return false;
   }
@@ -91,10 +92,7 @@ export async function isFollowing(targetUserId: string): Promise<boolean> {
     .select({ id: follows.id })
     .from(follows)
     .where(
-      and(
-        eq(follows.followerId, userId),
-        eq(follows.followingId, targetUserId)
-      )
+      and(eq(follows.followerId, userId), eq(follows.followingId, targetUserId))
     )
     .limit(1);
 
@@ -110,8 +108,14 @@ export async function getFollowStats(userId: string): Promise<{
 }> {
   const [result] = await db
     .select({
-      followers: sql<number>`(SELECT COUNT(*) FROM ${follows} WHERE following_id = ${userId})`.mapWith(Number),
-      following: sql<number>`(SELECT COUNT(*) FROM ${follows} WHERE follower_id = ${userId})`.mapWith(Number),
+      followers:
+        sql<number>`(SELECT COUNT(*) FROM ${follows} WHERE following_id = ${userId})`.mapWith(
+          Number
+        ),
+      following:
+        sql<number>`(SELECT COUNT(*) FROM ${follows} WHERE follower_id = ${userId})`.mapWith(
+          Number
+        ),
     })
     .from(sql`(SELECT 1)`);
 
@@ -127,7 +131,7 @@ export async function getFollowStats(userId: string): Promise<{
 export async function getFollowingIds(): Promise<string[]> {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) return [];
 
   const rows = await db

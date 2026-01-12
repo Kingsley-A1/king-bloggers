@@ -9,6 +9,8 @@ const CATEGORIES: Array<{ label: string; href: string; value?: PostCategory }> =
     { label: "Tech", href: "/tech", value: "tech" },
     { label: "Art & Culture", href: "/art-culture", value: "art_culture" },
     { label: "Entertainment", href: "/entertainment", value: "entertainment" },
+    { label: "Sport", href: "/sport", value: "sport" },
+    { label: "Health", href: "/health", value: "health" },
     { label: "Politics", href: "/politics", value: "politics" },
     { label: "Economics", href: "/economics", value: "economics" },
     { label: "Religion", href: "/religion", value: "religion" },

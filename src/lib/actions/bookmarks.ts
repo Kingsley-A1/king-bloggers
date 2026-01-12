@@ -12,7 +12,7 @@ import { auth } from "@/lib/auth";
 // Save posts for later reading
 // ============================================
 
-type BookmarkResult = 
+type BookmarkResult =
   | { ok: true; action: "added" | "removed" }
   | { ok: false; error: string };
 
@@ -22,7 +22,7 @@ type BookmarkResult =
 export async function toggleBookmark(postId: string): Promise<BookmarkResult> {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) {
     return { ok: false, error: "Sign in to save posts." };
   }
@@ -31,12 +31,7 @@ export async function toggleBookmark(postId: string): Promise<BookmarkResult> {
   const [existing] = await db
     .select({ id: bookmarks.id })
     .from(bookmarks)
-    .where(
-      and(
-        eq(bookmarks.userId, userId),
-        eq(bookmarks.postId, postId)
-      )
-    )
+    .where(and(eq(bookmarks.userId, userId), eq(bookmarks.postId, postId)))
     .limit(1);
 
   if (existing) {
@@ -56,18 +51,13 @@ export async function toggleBookmark(postId: string): Promise<BookmarkResult> {
 export async function isBookmarked(postId: string): Promise<boolean> {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) return false;
 
   const [existing] = await db
     .select({ id: bookmarks.id })
     .from(bookmarks)
-    .where(
-      and(
-        eq(bookmarks.userId, userId),
-        eq(bookmarks.postId, postId)
-      )
-    )
+    .where(and(eq(bookmarks.userId, userId), eq(bookmarks.postId, postId)))
     .limit(1);
 
   return !!existing;
@@ -79,7 +69,7 @@ export async function isBookmarked(postId: string): Promise<boolean> {
 export async function getMyBookmarks() {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) return [];
 
   const rows = await db
@@ -111,7 +101,7 @@ export async function getMyBookmarks() {
 export async function getBookmarkCount(): Promise<number> {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) return 0;
 
   const [result] = await db

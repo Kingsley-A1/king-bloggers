@@ -57,66 +57,34 @@ export function PasswordFeedback({
     [password, minLength]
   );
 
-  return (
-    <div
-      className={cn(
-        "rounded-2xl border border-foreground/10 bg-foreground/5 p-4",
-        className
-      )}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-xs font-mono text-foreground/60">
-          Password strength
-        </div>
-        <div className="text-xs font-mono text-foreground/60">
-          {password.length}/{minLength} • {s.label}
-        </div>
-      </div>
+  // Color based on strength
+  const barColor =
+    s.points <= 1
+      ? "bg-red-500"
+      : s.points === 2
+      ? "bg-orange-500"
+      : s.points === 3
+      ? "bg-yellow-500"
+      : s.points === 4
+      ? "bg-lime-500"
+      : "bg-green-500";
 
-      <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-foreground/10">
+  if (!password) return null;
+
+  return (
+    <div className={cn("space-y-1", className)}>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-foreground/10">
         <div
-          className="h-full rounded-full bg-king-orange/70 transition-[width] duration-300"
+          className={cn(
+            "h-full rounded-full transition-all duration-300",
+            barColor
+          )}
           style={{ width: `${s.pct}%` }}
           aria-hidden="true"
         />
       </div>
-
-      <div className="mt-4 grid gap-1 text-xs text-foreground/70">
-        <div
-          className={cn(
-            s.checks.lengthOk ? "text-foreground/70" : "text-foreground/50"
-          )}
-        >
-          • At least {minLength} characters
-        </div>
-        <div
-          className={cn(
-            s.checks.lowerOk ? "text-foreground/70" : "text-foreground/50"
-          )}
-        >
-          • One lowercase letter
-        </div>
-        <div
-          className={cn(
-            s.checks.upperOk ? "text-foreground/70" : "text-foreground/50"
-          )}
-        >
-          • One uppercase letter
-        </div>
-        <div
-          className={cn(
-            s.checks.numberOk ? "text-foreground/70" : "text-foreground/50"
-          )}
-        >
-          • One number
-        </div>
-        <div
-          className={cn(
-            s.checks.symbolOk ? "text-foreground/70" : "text-foreground/50"
-          )}
-        >
-          • One symbol
-        </div>
+      <div className="text-[10px] text-foreground/50 text-right">
+        {s.label}
       </div>
     </div>
   );

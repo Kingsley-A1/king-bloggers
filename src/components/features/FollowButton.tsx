@@ -75,10 +75,7 @@ export function FollowButton({
       loading={busy}
       variant={following ? "glass" : "primary"}
       size="sm"
-      className={cn(
-        following && "border-king-orange/30",
-        className
-      )}
+      className={cn(following && "border-king-orange/30", className)}
     >
       {following ? (
         <>

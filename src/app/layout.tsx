@@ -1,23 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { Suspense } from "react";
 
 import "../../global.css";
+import { ExitShareModal } from "@/components/features/ExitShareModal";
 import { InstallAppPrompt } from "@/components/features/InstallAppPrompt";
 import { PwaRouteRestore } from "@/components/features/PwaRouteRestore";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const jetBrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  display: "swap",
-});
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://kingbloggers.com";
 
@@ -98,7 +86,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${plusJakartaSans.variable} ${jetBrainsMono.variable}`}
+      className=""
       suppressHydrationWarning
     >
       <body className="font-sans">
@@ -114,6 +102,9 @@ export default function RootLayout({
           {children}
           <Suspense fallback={null}>
             <InstallAppPrompt />
+          </Suspense>
+          <Suspense fallback={null}>
+            <ExitShareModal />
           </Suspense>
         </ThemeProvider>
       </body>

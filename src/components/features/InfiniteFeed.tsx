@@ -22,11 +22,21 @@ export interface InfinitePostItem {
   coverImageUrl?: string | null;
   category: string;
   authorEmail: string;
+  authorName?: string | null;
+  authorImage?: string | null;
+  authorRole?: "reader" | "blogger";
   viewCount: string;
   reactionCount: number;
   badge: {
     label: string;
-    variant: "tech" | "art" | "politics" | "draft" | "published" | "gold" | "secondary";
+    variant:
+      | "tech"
+      | "art"
+      | "politics"
+      | "draft"
+      | "published"
+      | "gold"
+      | "secondary";
   };
   readTime: string;
 }
@@ -113,7 +123,9 @@ export function InfiniteFeed({
             excerpt={p.excerpt}
             badge={p.badge}
             readTime={p.readTime}
-            authorName={p.authorEmail}
+            authorName={p.authorName ?? p.authorEmail.split("@")[0]}
+            authorAvatarUrl={p.authorImage}
+            authorRole={p.authorRole ?? "reader"}
             imageUrl={p.coverImageUrl}
             viewCount={p.viewCount}
             reactionCount={p.reactionCount}

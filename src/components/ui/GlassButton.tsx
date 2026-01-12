@@ -29,7 +29,12 @@ type AnchorProps = CommonProps &
 export type GlassButtonProps = ButtonProps | AnchorProps;
 
 export function GlassButton(props: GlassButtonProps) {
-  const { variant = "glass", size = "default", loading = false, loadingText } = props;
+  const {
+    variant = "glass",
+    size = "default",
+    loading = false,
+    loadingText,
+  } = props;
 
   const classes = cn(
     "glass-button",
@@ -54,12 +59,26 @@ export function GlassButton(props: GlassButtonProps) {
   const spinnerSize = size === "sm" ? 12 : size === "lg" ? 18 : 14;
 
   if (props.as === "a") {
-    const { as: _as, className: _className, loading: _loading, loadingText: _loadingText, ...rest } = props;
+    const {
+      as: _as,
+      className: _className,
+      loading: _loading,
+      loadingText: _loadingText,
+      ...rest
+    } = props;
     return <a className={classes} {...rest} />;
   }
 
-  const { as: _as, className: _className, loading: _loading, loadingText: _loadingText, children, disabled, ...rest } = props as ButtonProps & { children?: React.ReactNode };
-  
+  const {
+    as: _as,
+    className: _className,
+    loading: _loading,
+    loadingText: _loadingText,
+    children,
+    disabled,
+    ...rest
+  } = props as ButtonProps & { children?: React.ReactNode };
+
   return (
     <button
       type={(rest as ButtonProps).type ?? "button"}

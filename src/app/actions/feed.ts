@@ -1,6 +1,13 @@
 "use server";
 
-import { listPublishedPosts, badgeVariantForCategory, labelForCategory, readTimeFromContent, formatCount, type PostCategory } from "@/lib/queries/posts";
+import {
+  listPublishedPosts,
+  badgeVariantForCategory,
+  labelForCategory,
+  readTimeFromContent,
+  formatCount,
+  type PostCategory,
+} from "@/lib/queries/posts";
 
 // ============================================
 // 👑 KING BLOGGERS V2 - Feed Actions
@@ -17,11 +24,21 @@ export interface FeedPostItem {
   coverImageUrl?: string | null;
   category: string;
   authorEmail: string;
+  authorName?: string | null;
+  authorImage?: string | null;
+  authorRole?: "reader" | "blogger";
   viewCount: string;
   reactionCount: number;
   badge: {
     label: string;
-    variant: "tech" | "art" | "politics" | "draft" | "published" | "gold" | "secondary";
+    variant:
+      | "tech"
+      | "art"
+      | "politics"
+      | "draft"
+      | "published"
+      | "gold"
+      | "secondary";
   };
   readTime: string;
 }
@@ -35,6 +52,9 @@ function mapPostToFeedItem(p: {
   coverImageUrl: string | null;
   category: PostCategory;
   authorEmail: string;
+  authorName?: string | null;
+  authorImage?: string | null;
+  authorRole?: "reader" | "blogger";
   viewCount: number;
   reactionCount: number;
 }): FeedPostItem {
@@ -47,6 +67,9 @@ function mapPostToFeedItem(p: {
     coverImageUrl: p.coverImageUrl,
     category: p.category,
     authorEmail: p.authorEmail,
+    authorName: p.authorName,
+    authorImage: p.authorImage,
+    authorRole: p.authorRole,
     viewCount: formatCount(p.viewCount),
     reactionCount: p.reactionCount,
     badge: {
@@ -76,7 +99,10 @@ export async function loadMorePosts(cursor: string) {
 /**
  * Load more posts for a specific category
  */
-export async function loadMoreCategoryPosts(category: PostCategory, cursor: string) {
+export async function loadMoreCategoryPosts(
+  category: PostCategory,
+  cursor: string
+) {
   const { items, nextCursor, hasMore } = await listPublishedPosts({
     category,
     cursor,

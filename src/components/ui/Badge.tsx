@@ -8,7 +8,14 @@ import { cn } from "../../lib/utils";
 // Sovereign Gold (#D4AF37): ONLY for badges, awards, and premium markers
 // ============================================
 
-export type BadgeVariant = "tech" | "art" | "politics" | "draft" | "published" | "gold" | "secondary";
+export type BadgeVariant =
+  | "tech"
+  | "art"
+  | "politics"
+  | "draft"
+  | "published"
+  | "gold"
+  | "secondary";
 
 export type BadgeProps = React.HTMLAttributes<HTMLSpanElement> & {
   variant?: BadgeVariant;

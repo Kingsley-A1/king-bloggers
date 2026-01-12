@@ -11,6 +11,9 @@ if (!connectionString) {
 const queryClient = postgres(connectionString, {
   max: 10,
   prepare: false,
+  // Fail faster on flaky networks (Cockroach Cloud) to avoid 40s+ hangs in callbacks.
+  connect_timeout: 5,
+  idle_timeout: 20,
 });
 
 export const db = drizzle(queryClient, { schema });

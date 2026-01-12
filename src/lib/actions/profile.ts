@@ -24,9 +24,7 @@ const updateMyProfileSchema = z.object({
   imageUrl: z.string().trim().url().nullable().optional(),
 });
 
-export type UpdateMyProfileResult =
-  | { ok: true }
-  | { ok: false; error: string };
+export type UpdateMyProfileResult = { ok: true } | { ok: false; error: string };
 
 export async function updateMyProfile(
   input: unknown

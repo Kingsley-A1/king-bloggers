@@ -27,7 +27,9 @@ async function migrate() {
     const newReactionValues = ["fire", "gem", "crown", "insightful", "lol"];
     for (const val of newReactionValues) {
       try {
-        await sql`ALTER TYPE reaction_value ADD VALUE IF NOT EXISTS ${sql.unsafe(`'${val}'`)}`;
+        await sql`ALTER TYPE reaction_value ADD VALUE IF NOT EXISTS ${sql.unsafe(
+          `'${val}'`
+        )}`;
         console.log(`   ✓ Added '${val}'`);
       } catch (e) {
         if (e.code === "42710") {
@@ -64,7 +66,9 @@ async function migrate() {
     ];
     for (const [col, type] of postColumns) {
       try {
-        await sql.unsafe(`ALTER TABLE posts ADD COLUMN IF NOT EXISTS ${col} ${type}`);
+        await sql.unsafe(
+          `ALTER TABLE posts ADD COLUMN IF NOT EXISTS ${col} ${type}`
+        );
         console.log(`   ✓ Added ${col}`);
       } catch (e) {
         if (e.code === "42701") {
@@ -86,7 +90,7 @@ async function migrate() {
       )
     `;
     console.log("   ✓ Created follows table");
-    
+
     // Create indexes
     await sql`CREATE UNIQUE INDEX IF NOT EXISTS follows_unique ON follows (follower_id, following_id)`;
     await sql`CREATE INDEX IF NOT EXISTS follows_follower_idx ON follows (follower_id)`;
@@ -108,7 +112,7 @@ async function migrate() {
       )
     `;
     console.log("   ✓ Created notifications table");
-    
+
     await sql`CREATE INDEX IF NOT EXISTS notifications_user_idx ON notifications (user_id)`;
     await sql`CREATE INDEX IF NOT EXISTS notifications_user_unread_idx ON notifications (user_id, read)`;
     console.log("   ✓ Created indexes");
@@ -125,7 +129,7 @@ async function migrate() {
       )
     `;
     console.log("   ✓ Created post_views table");
-    
+
     await sql`CREATE INDEX IF NOT EXISTS post_views_post_idx ON post_views (post_id)`;
     await sql`CREATE INDEX IF NOT EXISTS post_views_post_ip_idx ON post_views (post_id, viewer_ip)`;
     console.log("   ✓ Created indexes");
@@ -141,7 +145,7 @@ async function migrate() {
       )
     `;
     console.log("   ✓ Created bookmarks table");
-    
+
     await sql`CREATE UNIQUE INDEX IF NOT EXISTS bookmarks_unique ON bookmarks (user_id, post_id)`;
     await sql`CREATE INDEX IF NOT EXISTS bookmarks_user_idx ON bookmarks (user_id)`;
     console.log("   ✓ Created indexes");
@@ -150,12 +154,13 @@ async function migrate() {
     console.log("\n📊 Summary:");
     console.log("   - Expanded reaction_value enum with 5 new values");
     console.log("   - Created notification_type enum");
-    console.log("   - Added view_count, reaction_count, comment_count to posts");
+    console.log(
+      "   - Added view_count, reaction_count, comment_count to posts"
+    );
     console.log("   - Created follows table with indexes");
     console.log("   - Created notifications table with indexes");
     console.log("   - Created post_views table with indexes");
     console.log("   - Created bookmarks table with indexes");
-
   } catch (error) {
     console.error("\n❌ Migration failed:", error);
     process.exit(1);

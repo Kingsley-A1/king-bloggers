@@ -3,7 +3,12 @@
 import { and, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db";
-import { postReactions, posts, notifications, type ReactionValue } from "@/db/schema";
+import {
+  postReactions,
+  posts,
+  notifications,
+  type ReactionValue,
+} from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 // ============================================
@@ -13,7 +18,13 @@ import { auth } from "@/lib/auth";
 // ============================================
 
 const VALID_REACTIONS: readonly ReactionValue[] = [
-  "up", "down", "fire", "gem", "crown", "insightful", "lol"
+  "up",
+  "down",
+  "fire",
+  "gem",
+  "crown",
+  "insightful",
+  "lol",
 ] as const;
 
 type SetReactionInput = {
@@ -21,11 +32,13 @@ type SetReactionInput = {
   value: ReactionValue | "none";
 };
 
-type SetReactionResult = 
+type SetReactionResult =
   | { ok: true; action: "added" | "removed" | "changed" }
   | { ok: false; error: string };
 
-export async function setReaction(input: SetReactionInput): Promise<SetReactionResult> {
+export async function setReaction(
+  input: SetReactionInput
+): Promise<SetReactionResult> {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) {
@@ -55,7 +68,8 @@ export async function setReaction(input: SetReactionInput): Promise<SetReactionR
     if (row) {
       await db.delete(postReactions).where(eq(postReactions.id, row.id));
       // Decrement reaction count
-      await db.update(posts)
+      await db
+        .update(posts)
         .set({ reactionCount: sql`GREATEST(${posts.reactionCount} - 1, 0)` })
         .where(eq(posts.id, postId));
     }
@@ -65,22 +79,24 @@ export async function setReaction(input: SetReactionInput): Promise<SetReactionR
   // No existing reaction - add new one
   if (!row) {
     await db.insert(postReactions).values({ postId, userId, value });
-    
+
     // Increment reaction count
-    await db.update(posts)
+    await db
+      .update(posts)
       .set({ reactionCount: sql`${posts.reactionCount} + 1` })
       .where(eq(posts.id, postId));
 
     // Create notification for post author
     await createReactionNotification(postId, userId, value);
-    
+
     return { ok: true, action: "added" };
   }
 
   // Same reaction - toggle off
   if (row.value === value) {
     await db.delete(postReactions).where(eq(postReactions.id, row.id));
-    await db.update(posts)
+    await db
+      .update(posts)
       .set({ reactionCount: sql`GREATEST(${posts.reactionCount} - 1, 0)` })
       .where(eq(posts.id, postId));
     return { ok: true, action: "removed" };
@@ -116,8 +132,13 @@ async function createReactionNotification(
     }
 
     const emojiMap: Record<ReactionValue, string> = {
-      up: "👍", down: "👎", fire: "🔥", gem: "💎",
-      crown: "👑", insightful: "💡", lol: "😂"
+      up: "👍",
+      down: "👎",
+      fire: "🔥",
+      gem: "💎",
+      crown: "👑",
+      insightful: "💡",
+      lol: "😂",
     };
 
     await db.insert(notifications).values({
@@ -125,7 +146,9 @@ async function createReactionNotification(
       type: "reaction",
       actorId,
       postId,
-      message: `Someone reacted ${emojiMap[reactionValue]} to "${post.title.slice(0, 40)}..."`,
+      message: `Someone reacted ${
+        emojiMap[reactionValue]
+      } to "${post.title.slice(0, 40)}..."`,
     });
   } catch {
     // Don't fail the reaction if notification fails

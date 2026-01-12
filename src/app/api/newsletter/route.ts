@@ -19,7 +19,10 @@ const payloadSchema = z.object({
 // More lenient than auth: 5 requests per minute per IP
 const NEWSLETTER_WINDOW_MS = 60 * 1000;
 const NEWSLETTER_MAX_REQUESTS = 5;
-const newsletterRateCache = new Map<string, { count: number; resetTime: number }>();
+const newsletterRateCache = new Map<
+  string,
+  { count: number; resetTime: number }
+>();
 
 // Cleanup stale entries every 5 minutes
 if (typeof setInterval !== "undefined") {
@@ -33,7 +36,10 @@ if (typeof setInterval !== "undefined") {
   }, 5 * 60 * 1000);
 }
 
-async function checkNewsletterRateLimit(): Promise<{ limited: boolean; retryAfterMs?: number }> {
+async function checkNewsletterRateLimit(): Promise<{
+  limited: boolean;
+  retryAfterMs?: number;
+}> {
   const headersList = await headers();
   const forwardedFor = headersList.get("x-forwarded-for");
   const ip = forwardedFor?.split(",")[0]?.trim() ?? "unknown";
@@ -42,7 +48,10 @@ async function checkNewsletterRateLimit(): Promise<{ limited: boolean; retryAfte
   const entry = newsletterRateCache.get(key);
 
   if (!entry || now > entry.resetTime) {
-    newsletterRateCache.set(key, { count: 1, resetTime: now + NEWSLETTER_WINDOW_MS });
+    newsletterRateCache.set(key, {
+      count: 1,
+      resetTime: now + NEWSLETTER_WINDOW_MS,
+    });
     return { limited: false };
   }
 

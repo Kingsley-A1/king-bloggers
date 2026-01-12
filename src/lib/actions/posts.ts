@@ -19,9 +19,10 @@ function slugify(title: string) {
 
 async function requireBlogger() {
   const session = await auth();
-  if (!session?.user?.id || session.user.role !== "blogger") {
+  if (!session?.user?.id) {
     throw new Error("Unauthorized");
   }
+  // Allow all authenticated users to create/manage posts
   return session.user.id;
 }
 
@@ -58,7 +59,9 @@ export async function createPost(input: unknown) {
   // Sanitize inputs to prevent XSS attacks
   const sanitizedTitle = sanitizeText(parsed.data.title);
   const sanitizedContent = sanitizeHtml(parsed.data.content);
-  const sanitizedExcerpt = parsed.data.excerpt ? sanitizeText(parsed.data.excerpt) : null;
+  const sanitizedExcerpt = parsed.data.excerpt
+    ? sanitizeText(parsed.data.excerpt)
+    : null;
 
   const baseSlug = slugify(sanitizedTitle) || "post";
   const candidateSlug = `${baseSlug}-${Math.random().toString(36).slice(2, 7)}`;

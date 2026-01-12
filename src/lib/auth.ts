@@ -15,6 +15,22 @@ const credentialsSchema = z.object({
   password: z.string().min(8),
 });
 
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const id = setTimeout(() => reject(new Error(`${label}: timeout after ${ms}ms`)), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(id);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(id);
+        reject(err);
+      }
+    );
+  });
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   debug: process.env.NODE_ENV === "development",
   secret: authSecret,
@@ -85,21 +101,38 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         if (typeof token.sub === "string") {
-          const rows = await db
-            .select({
-              role: users.role,
-              name: users.name,
-              imageUrl: users.imageUrl,
-            })
-            .from(users)
-            .where(eq(users.id, token.sub))
-            .limit(1);
-          const row = rows[0];
-          if (row) {
-            if (typeof row.role === "string") token.role = row.role;
-            if (typeof row.name === "string") token.name = row.name;
-            token.picture =
-              typeof row.imageUrl === "string" ? row.imageUrl : undefined;
+          // Avoid hammering DB on every request (and avoid long hangs if DB is unreachable).
+          const now = Date.now();
+          const lastSync =
+            typeof (token as { kbUserSyncAt?: unknown }).kbUserSyncAt === "number"
+              ? ((token as { kbUserSyncAt: number }).kbUserSyncAt as number)
+              : 0;
+
+          const shouldSync = !lastSync || now - lastSync > 10 * 60 * 1000;
+          if (shouldSync) {
+            const rows = await withTimeout(
+              db
+                .select({
+                  role: users.role,
+                  name: users.name,
+                  imageUrl: users.imageUrl,
+                })
+                .from(users)
+                .where(eq(users.id, token.sub))
+                .limit(1),
+              2500,
+              "auth.jwt user lookup"
+            );
+
+            const row = rows[0];
+            if (row) {
+              if (typeof row.role === "string") token.role = row.role;
+              if (typeof row.name === "string") token.name = row.name;
+              token.picture =
+                typeof row.imageUrl === "string" ? row.imageUrl : undefined;
+            }
+
+            (token as { kbUserSyncAt?: number }).kbUserSyncAt = now;
           }
         }
       } catch (error) {
@@ -111,10 +144,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       try {
         if (session.user) {
-          session.user.id = typeof token.sub === "string" ? token.sub : "";
-          if (typeof token.role === "string") {
-            session.user.role = token.role;
-          }
+          if (typeof token.sub === "string") session.user.id = token.sub;
+          if (typeof token.role === "string") session.user.role = token.role;
+          if (typeof token.name === "string") session.user.name = token.name;
+          if (typeof token.picture === "string") session.user.image = token.picture;
         }
       } catch (error) {
         console.error("Auth session callback error:", error);

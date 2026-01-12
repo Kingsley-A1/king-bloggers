@@ -5,7 +5,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "../../db";
-import { comments, posts } from "../../db/schema";
+import { comments, posts, notifications } from "../../db/schema";
 import { auth } from "../auth";
 import { sanitizeText } from "../sanitize";
 
@@ -13,6 +13,7 @@ import { sanitizeText } from "../sanitize";
 // 👑 KING BLOGGERS - Comments Actions
 // ============================================
 // SEC-004: ✅ Comment body sanitized before storage
+// Notifications: ✅ Post authors notified on comments
 // ============================================
 
 const addCommentFormSchema = z.object({
@@ -43,7 +44,51 @@ export async function addComment(formData: FormData) {
     body: sanitizedBody,
   });
 
+  // Create notification for post author
+  await createCommentNotification(
+    parsed.data.postId,
+    session.user.id,
+    sanitizedBody
+  );
+
   if (parsed.data.redirectTo) revalidatePath(parsed.data.redirectTo);
+}
+
+/**
+ * Create a notification for the post author when someone comments
+ */
+async function createCommentNotification(
+  postId: string,
+  actorId: string,
+  commentBody: string
+): Promise<void> {
+  try {
+    // Get post author
+    const [post] = await db
+      .select({ authorId: posts.authorId, title: posts.title })
+      .from(posts)
+      .where(eq(posts.id, postId))
+      .limit(1);
+
+    if (!post || post.authorId === actorId) {
+      // Don't notify if commenting on own post
+      return;
+    }
+
+    const preview = commentBody.length > 50 
+      ? commentBody.slice(0, 50) + "..." 
+      : commentBody;
+
+    await db.insert(notifications).values({
+      userId: post.authorId,
+      type: "comment",
+      actorId,
+      postId,
+      message: `commented: "${preview}"`,
+    });
+  } catch {
+    // Don't fail the comment if notification fails
+  }
 }
 
 export async function listCommentsForPost(postSlug: string) {

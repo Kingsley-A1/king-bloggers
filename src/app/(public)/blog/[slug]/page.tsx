@@ -1,6 +1,7 @@
 import { Breadcrumb } from "@/components/features/Breadcrumb";
 import { CommentSection } from "@/components/features/CommentSection";
 import { SectionHeader } from "@/components/features/SectionHeader";
+import { ReadingTracker } from "@/components/features/ReadingTracker";
 import { Container } from "@/components/layout/Container";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { auth } from "@/lib/auth";
@@ -107,6 +108,9 @@ export default async function BlogPostPage({ params }: PageProps) {
               />
             </div>
           ) : null}
+
+          {/* 👑 Personalization: Track reading engagement */}
+          <ReadingTracker postId={post.id} />
 
           <div
             className="mt-10 post-content"

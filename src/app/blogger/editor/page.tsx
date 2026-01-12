@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import {
   Zap,
@@ -11,16 +11,19 @@ import {
   Link2,
   Heading2,
   Image as ImageIcon,
+  Video,
   Send,
   Save,
   Trash2,
+  Plus,
+  ArrowLeft,
 } from "lucide-react";
 
 import { Container } from "@/components/layout/Container";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { Spinner } from "@/components/ui/Spinner";
 import { Toast } from "@/components/features/Toast";
-import { createPost, publishPost } from "@/lib/actions/posts";
+import { createPost, publishPost, updatePost } from "@/lib/actions/posts";
 import {
   safeLocalStorageGet,
   safeLocalStorageRemove,
@@ -72,16 +75,44 @@ function safeParseDraft(raw: string | null): Draft {
 }
 
 function textFromHtml(html: string) {
-  if (typeof document === "undefined") return html.replace(/<[^>]*>/g, " ").trim();
+  if (typeof document === "undefined")
+    return html.replace(/<[^>]*>/g, " ").trim();
   const tmp = document.createElement("div");
   tmp.innerHTML = html;
   return (tmp.textContent ?? "").replace(/\s+/g, " ").trim();
 }
 
+// Main page wrapper with Suspense for useSearchParams
 export default function BloggerEditorPage() {
+  return (
+    <React.Suspense fallback={<EditorLoadingFallback />}>
+      <EditorContent />
+    </React.Suspense>
+  );
+}
+
+function EditorLoadingFallback() {
+  return (
+    <main className="min-h-screen bg-background">
+      <Container className="py-8">
+        <div className="glass-card p-8 text-center">
+          <Spinner size={32} className="mx-auto mb-4" />
+          <p className="text-foreground/60">Loading editor...</p>
+        </div>
+      </Container>
+    </main>
+  );
+}
+
+function EditorContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const editorRef = React.useRef<HTMLDivElement | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  // Check if we're editing an existing post or creating new
+  const editPostId = searchParams.get("edit");
+  const isNewMode = searchParams.get("new") === "true";
 
   // State
   const [postId, setPostId] = React.useState<string | null>(null);
@@ -91,21 +122,57 @@ export default function BloggerEditorPage() {
   const [coverImageUrl, setCoverImageUrl] = React.useState<string | null>(null);
   const [uploading, setUploading] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
+  const [loading, setLoading] = React.useState(!!editPostId);
+  const [isEditing, setIsEditing] = React.useState(false);
   const [toast, setToast] = React.useState<{
     open: boolean;
     message: string;
     variant?: "success" | "error";
   }>({ open: false, message: "" });
 
-  // Load draft on mount
+  // Load post for editing function
+  const loadPostForEdit = React.useCallback(async (id: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/my-posts/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.post) {
+          setPostId(data.post.id);
+          setTitle(data.post.title);
+          setHtml(data.post.content);
+          setCategory(data.post.category);
+          setCoverImageUrl(data.post.coverImageUrl);
+          setIsEditing(true);
+        }
+      } else {
+        setToast({ open: true, message: "Post not found", variant: "error" });
+        router.push("/blogger/my-blogs");
+      }
+    } catch {
+      setToast({ open: true, message: "Failed to load post", variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
+
+  // Load post for editing or draft on mount
   React.useEffect(() => {
-    const draft = safeParseDraft(safeLocalStorageGet(STORAGE_KEY));
-    setPostId(draft.postId ?? null);
-    setTitle(draft.title);
-    setHtml(draft.html);
-    setCategory(draft.category);
-    setCoverImageUrl(draft.coverImageUrl ?? null);
-  }, []);
+    if (editPostId) {
+      loadPostForEdit(editPostId);
+    } else if (isNewMode) {
+      // Clear everything for new post
+      clearDraft();
+    } else {
+      // Load draft from local storage
+      const draft = safeParseDraft(safeLocalStorageGet(STORAGE_KEY));
+      setPostId(draft.postId ?? null);
+      setTitle(draft.title);
+      setHtml(draft.html);
+      setCategory(draft.category);
+      setCoverImageUrl(draft.coverImageUrl ?? null);
+    }
+  }, [editPostId, isNewMode, loadPostForEdit]);
 
   // Sync editor content
   React.useEffect(() => {
@@ -113,8 +180,10 @@ export default function BloggerEditorPage() {
     if (el && el.innerHTML !== html) el.innerHTML = html;
   }, [html]);
 
-  // Auto-save draft (debounced 1.5s)
+  // Auto-save draft (debounced 1.5s) - only for new posts
   React.useEffect(() => {
+    if (isEditing || editPostId) return; // Don't auto-save when editing existing
+    
     const handle = window.setTimeout(() => {
       const payload: Draft = {
         postId: postId ?? undefined,
@@ -126,7 +195,7 @@ export default function BloggerEditorPage() {
       safeLocalStorageSet(STORAGE_KEY, JSON.stringify(payload));
     }, 1500);
     return () => window.clearTimeout(handle);
-  }, [postId, title, html, category, coverImageUrl]);
+  }, [postId, title, html, category, coverImageUrl, isEditing, editPostId]);
 
   // Editor commands
   function exec(cmd: string, value?: string) {
@@ -135,32 +204,38 @@ export default function BloggerEditorPage() {
     setHtml(editorRef.current?.innerHTML ?? "");
   }
 
-  // Upload image
+  // Upload image/video via server proxy (avoids CORS issues)
   async function uploadImage(file: File) {
     setUploading(true);
     try {
-      const presign = await fetch("/api/upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fileName: file.name,
-          contentType: file.type,
-          fileSize: file.size,
-        }),
+      // Validate file type
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm"];
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error(`Invalid file type. Allowed: ${allowedTypes.join(", ")}`);
+      }
+
+      // Validate file size (50MB max)
+      if (file.size > 50 * 1024 * 1024) {
+        throw new Error("File too large. Maximum size is 50MB.");
+      }
+
+      // Use server-side proxy to avoid CORS issues
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("fileName", file.name);
+      formData.append("contentType", file.type);
+
+      const response = await fetch("/api/upload", {
+        method: "PUT",
+        body: formData,
       });
 
-      if (!presign.ok) {
-        const err = await presign.json();
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
         throw new Error(err.error || "Upload failed");
       }
 
-      const data = await presign.json();
-      await fetch(data.uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-
+      const data = await response.json();
       return data.publicUrl as string;
     } catch (error) {
       setToast({
@@ -188,8 +263,15 @@ export default function BloggerEditorPage() {
     setHtml("");
     setCategory("tech");
     setCoverImageUrl(null);
+    setIsEditing(false);
     if (editorRef.current) editorRef.current.innerHTML = "";
-    setToast({ open: true, message: "Draft cleared", variant: "success" });
+  }
+
+  // Start new blog
+  function startNewBlog() {
+    clearDraft();
+    router.push("/bloggers/editor?new=true");
+    setToast({ open: true, message: "Starting fresh!", variant: "success" });
   }
 
   // Quick Publish (single action)
@@ -200,7 +282,11 @@ export default function BloggerEditorPage() {
       return;
     }
     if (!html.trim() || textFromHtml(html).length < 10) {
-      setToast({ open: true, message: "Write some content first!", variant: "error" });
+      setToast({
+        open: true,
+        message: "Write some content first!",
+        variant: "error",
+      });
       return;
     }
 
@@ -208,7 +294,7 @@ export default function BloggerEditorPage() {
     try {
       let id = postId;
 
-      // Create post if not exists
+      // Create or update post
       if (!id) {
         const excerpt = textFromHtml(html).slice(0, 220);
         const created = await createPost({
@@ -224,6 +310,21 @@ export default function BloggerEditorPage() {
         }
         id = created.postId;
         setPostId(id);
+      } else if (isEditing) {
+        // Update existing post
+        const excerpt = textFromHtml(html).slice(0, 220);
+        const updated = await updatePost({
+          postId: id,
+          title: title.trim(),
+          content: html,
+          category,
+          excerpt: excerpt || undefined,
+          coverImageUrl: coverImageUrl ?? undefined,
+        });
+        if (!updated.ok) {
+          setToast({ open: true, message: updated.error, variant: "error" });
+          return;
+        }
       }
 
       // Publish
@@ -236,7 +337,7 @@ export default function BloggerEditorPage() {
       // Clear draft and redirect
       safeLocalStorageRemove(STORAGE_KEY);
       setToast({ open: true, message: "🚀 Published!", variant: "success" });
-      
+
       setTimeout(() => {
         router.replace(`/blog/${published.slug}`);
       }, 500);
@@ -256,21 +357,38 @@ export default function BloggerEditorPage() {
     setBusy(true);
     try {
       const excerpt = textFromHtml(html).slice(0, 220);
-      const created = await createPost({
-        title: title.trim(),
-        content: html || "<p></p>",
-        category,
-        excerpt: excerpt || undefined,
-        coverImageUrl: coverImageUrl ?? undefined,
-      });
-
-      if (!created.ok) {
-        setToast({ open: true, message: created.error, variant: "error" });
-        return;
+      
+      if (isEditing && postId) {
+        // Update existing
+        const updated = await updatePost({
+          postId,
+          title: title.trim(),
+          content: html || "<p></p>",
+          category,
+          excerpt: excerpt || undefined,
+          coverImageUrl: coverImageUrl ?? undefined,
+        });
+        if (!updated.ok) {
+          setToast({ open: true, message: updated.error, variant: "error" });
+          return;
+        }
+        setToast({ open: true, message: "Changes saved!", variant: "success" });
+      } else {
+        // Create new
+        const created = await createPost({
+          title: title.trim(),
+          content: html || "<p></p>",
+          category,
+          excerpt: excerpt || undefined,
+          coverImageUrl: coverImageUrl ?? undefined,
+        });
+        if (!created.ok) {
+          setToast({ open: true, message: created.error, variant: "error" });
+          return;
+        }
+        setPostId(created.postId);
+        setToast({ open: true, message: "Draft saved to cloud", variant: "success" });
       }
-
-      setPostId(created.postId);
-      setToast({ open: true, message: "Draft saved to cloud", variant: "success" });
     } finally {
       setBusy(false);
     }
@@ -278,16 +396,46 @@ export default function BloggerEditorPage() {
 
   const canPublish = title.trim().length > 0 && textFromHtml(html).length >= 10;
 
+  if (loading) {
+    return (
+      <main className="min-h-screen py-20 flex items-center justify-center">
+        <Spinner size={32} />
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen py-6 md:py-10">
       <Container className="max-w-4xl">
         {/* Header */}
         <div className="flex items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
+            {isEditing && (
+              <button
+                onClick={() => router.push("/blogger/my-blogs")}
+                className="p-2 rounded-lg hover:bg-foreground/10 transition-colors"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </button>
+            )}
             <Zap className="h-6 w-6 text-king-orange" />
-            <span className="font-black text-lg">Quick Post</span>
+            <span className="font-black text-lg">
+              {isEditing ? "Edit Post" : "Quick Post"}
+            </span>
           </div>
           <div className="flex items-center gap-2">
+            {/* New Blog Button - Always visible */}
+            {!isNewMode && (
+              <GlassButton
+                variant="ghost"
+                size="sm"
+                onClick={startNewBlog}
+                className="gap-2 text-king-orange border-king-orange/30 hover:bg-king-orange/10"
+              >
+                <Plus className="h-4 w-4" />
+                New Blog
+              </GlassButton>
+            )}
             <GlassButton
               variant="ghost"
               size="sm"
@@ -315,7 +463,7 @@ export default function BloggerEditorPage() {
               ) : (
                 <>
                   <Send className="h-4 w-4 mr-2" />
-                  Publish Now
+                  {isEditing ? "Update & Publish" : "Publish Now"}
                 </>
               )}
             </GlassButton>
@@ -445,7 +593,118 @@ export default function BloggerEditorPage() {
           >
             <Link2 className="h-4 w-4" />
           </button>
+          
+          {/* Inline Image Upload (Multiple) */}
+          <button
+            type="button"
+            onClick={() => {
+              const input = document.createElement("input");
+              input.type = "file";
+              input.accept = "image/*";
+              input.multiple = true; // Allow multiple images
+              input.onchange = async (e) => {
+                const files = Array.from((e.target as HTMLInputElement).files || []);
+                if (files.length === 0) return;
+                
+                setUploading(true);
+                const uploadedUrls: string[] = [];
+                
+                for (const file of files) {
+                  const url = await uploadImage(file);
+                  if (url) uploadedUrls.push(url);
+                }
+                
+                setUploading(false);
+                
+                if (uploadedUrls.length === 1) {
+                  // Single image
+                  exec("insertHTML", `<img src="${uploadedUrls[0]}" alt="Image" style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;" />`);
+                } else if (uploadedUrls.length > 1) {
+                  // Multiple images - create a gallery grid
+                  const galleryHtml = `
+                    <div style="display: grid; grid-template-columns: repeat(${uploadedUrls.length <= 2 ? uploadedUrls.length : 2}, 1fr); gap: 8px; margin: 16px 0;">
+                      ${uploadedUrls.map(url => `<img src="${url}" alt="Gallery image" style="width: 100%; height: auto; border-radius: 8px; object-fit: cover; aspect-ratio: 1;" />`).join("")}
+                    </div>
+                  `;
+                  exec("insertHTML", galleryHtml);
+                  setToast({
+                    open: true,
+                    message: `${uploadedUrls.length} images added as gallery`,
+                    variant: "success",
+                  });
+                }
+              };
+              input.click();
+            }}
+            className="p-2 rounded-lg hover:bg-foreground/10 transition-colors"
+            title="Insert Images (select multiple)"
+            disabled={uploading}
+          >
+            <ImageIcon className="h-4 w-4" />
+          </button>
+          
+          {/* Inline Video Upload - PROMINENT BUTTON */}
+          <button
+            type="button"
+            onClick={() => {
+              const input = document.createElement("input");
+              input.type = "file";
+              input.accept = "video/mp4,video/webm";
+              input.onchange = async (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (file) {
+                  // Check video duration before upload
+                  const video = document.createElement("video");
+                  video.preload = "metadata";
+                  
+                  video.onloadedmetadata = async () => {
+                    window.URL.revokeObjectURL(video.src);
+                    const duration = video.duration;
+                    
+                    // 10 minutes = 600 seconds
+                    if (duration > 600) {
+                      setToast({
+                        open: true,
+                        message: `Video is too long (${Math.round(duration / 60)} min). Maximum is 10 minutes.`,
+                        variant: "error",
+                      });
+                      return;
+                    }
+                    
+                    // Upload the video
+                    setUploading(true);
+                    const url = await uploadImage(file);
+                    setUploading(false);
+                    if (url) {
+                      exec("insertHTML", `<video src="${url}" controls style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;"></video>`);
+                    }
+                  };
+                  
+                  video.onerror = () => {
+                    setToast({
+                      open: true,
+                      message: "Failed to read video file. Please try another.",
+                      variant: "error",
+                    });
+                  };
+                  
+                  video.src = URL.createObjectURL(file);
+                }
+              };
+              input.click();
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-king-orange to-amber-500 text-black font-semibold text-sm transition-all hover:from-king-orange/90 hover:to-amber-500/90 active:scale-95 shadow-lg shadow-king-orange/25"
+            title="Insert Video (max 10 min)"
+            disabled={uploading}
+          >
+            <Video className="h-4 w-4" />
+            <span className="hidden sm:inline">Video</span>
+          </button>
+          
           <div className="flex-1" />
+          {uploading && (
+            <span className="text-xs text-king-orange font-medium mr-2">Uploading...</span>
+          )}
           <span className="text-xs text-foreground/40 font-mono">
             {textFromHtml(html).length} chars
           </span>
@@ -456,7 +715,9 @@ export default function BloggerEditorPage() {
           ref={editorRef}
           contentEditable
           suppressContentEditableWarning
-          onInput={(e) => setHtml((e.currentTarget as HTMLDivElement).innerHTML)}
+          onInput={(e) =>
+            setHtml((e.currentTarget as HTMLDivElement).innerHTML)
+          }
           className={cn(
             "min-h-[300px] outline-none",
             "prose dark:prose-invert max-w-none",
@@ -467,11 +728,11 @@ export default function BloggerEditorPage() {
 
         {/* Status Bar */}
         <div className="mt-6 pt-4 border-t border-foreground/10 flex items-center justify-between text-xs text-foreground/50">
+          <span>{postId ? "✓ Synced to cloud" : "Auto-saving locally..."}</span>
           <span>
-            {postId ? "✓ Synced to cloud" : "Auto-saving locally..."}
-          </span>
-          <span>
-            {canPublish ? "✓ Ready to publish" : "Add title + content to publish"}
+            {canPublish
+              ? "✓ Ready to publish"
+              : "Add title + content to publish"}
           </span>
         </div>
       </Container>

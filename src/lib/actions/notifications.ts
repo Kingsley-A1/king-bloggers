@@ -3,7 +3,12 @@
 import { and, count, desc, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db";
-import { notifications, users, posts, type NotificationType } from "@/db/schema";
+import {
+  notifications,
+  users,
+  posts,
+  type NotificationType,
+} from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 // ============================================
@@ -34,10 +39,12 @@ export interface NotificationWithDetails {
 /**
  * Get notifications for current user
  */
-export async function getMyNotifications(limit = 20): Promise<NotificationWithDetails[]> {
+export async function getMyNotifications(
+  limit = 20
+): Promise<NotificationWithDetails[]> {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) return [];
 
   const rows = await db
@@ -68,17 +75,21 @@ export async function getMyNotifications(limit = 20): Promise<NotificationWithDe
     message: row.message,
     read: row.read,
     createdAt: row.createdAt,
-    actor: row.actorId ? {
-      id: row.actorId,
-      name: row.actorName,
-      email: row.actorEmail,
-      imageUrl: row.actorImage,
-    } : null,
-    post: row.postId ? {
-      id: row.postId,
-      title: row.postTitle,
-      slug: row.postSlug,
-    } : null,
+    actor: row.actorId
+      ? {
+          id: row.actorId,
+          name: row.actorName,
+          email: row.actorEmail,
+          imageUrl: row.actorImage,
+        }
+      : null,
+    post: row.postId
+      ? {
+          id: row.postId,
+          title: row.postTitle,
+          slug: row.postSlug,
+        }
+      : null,
   }));
 }
 
@@ -88,29 +99,33 @@ export async function getMyNotifications(limit = 20): Promise<NotificationWithDe
 export async function getUnreadCount(): Promise<number> {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) return 0;
 
-  const [result] = await db
-    .select({ count: count() })
-    .from(notifications)
-    .where(
-      and(
-        eq(notifications.userId, userId),
-        eq(notifications.read, false)
-      )
-    );
+  try {
+    const [result] = await db
+      .select({ count: count() })
+      .from(notifications)
+      .where(
+        and(eq(notifications.userId, userId), eq(notifications.read, false))
+      );
 
-  return result?.count ?? 0;
+    return result?.count ?? 0;
+  } catch (error) {
+    // If DB is temporarily down, don't break the whole page.
+    return 0;
+  }
 }
 
 /**
  * Mark notifications as read
  */
-export async function markAsRead(notificationIds: string[]): Promise<{ ok: boolean }> {
+export async function markAsRead(
+  notificationIds: string[]
+): Promise<{ ok: boolean }> {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) return { ok: false };
 
   if (notificationIds.length === 0) return { ok: true };
@@ -134,7 +149,7 @@ export async function markAsRead(notificationIds: string[]): Promise<{ ok: boole
 export async function markAllAsRead(): Promise<{ ok: boolean }> {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) return { ok: false };
 
   await db
@@ -148,10 +163,12 @@ export async function markAllAsRead(): Promise<{ ok: boolean }> {
 /**
  * Delete a notification
  */
-export async function deleteNotification(notificationId: string): Promise<{ ok: boolean }> {
+export async function deleteNotification(
+  notificationId: string
+): Promise<{ ok: boolean }> {
   const session = await auth();
   const userId = session?.user?.id;
-  
+
   if (!userId) return { ok: false };
 
   await db

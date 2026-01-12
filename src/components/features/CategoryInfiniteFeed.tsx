@@ -1,7 +1,10 @@
 "use client";
 
 import { useCallback } from "react";
-import { InfiniteFeed, type InfinitePostItem } from "@/components/features/InfiniteFeed";
+import {
+  InfiniteFeed,
+  type InfinitePostItem,
+} from "@/components/features/InfiniteFeed";
 import { loadMoreCategoryPosts } from "@/app/actions/feed";
 
 // ============================================
@@ -10,7 +13,15 @@ import { loadMoreCategoryPosts } from "@/app/actions/feed";
 // Wrapper for InfiniteFeed with bound category
 // ============================================
 
-type CategoryFeedCategory = "tech" | "politics" | "religion" | "economics" | "art_culture" | "entertainment";
+type CategoryFeedCategory =
+  | "tech"
+  | "politics"
+  | "religion"
+  | "economics"
+  | "art_culture"
+  | "entertainment"
+  | "sport"
+  | "health";
 
 export function CategoryInfiniteFeed({
   category,

@@ -27,26 +27,28 @@ export const postCategoryEnum = pgEnum("post_category", [
   "politics",
   "economics",
   "religion",
+  "sport",
+  "health",
 ]);
 
 // V2: Expanded reactions for more engagement
 export const reactionValueEnum = pgEnum("reaction_value", [
   "up",
   "down",
-  "fire",      // 🔥 Fire
-  "gem",       // 💎 Gem
-  "crown",     // 👑 Crown
+  "fire", // 🔥 Fire
+  "gem", // 💎 Gem
+  "crown", // 👑 Crown
   "insightful", // 💡 Insightful
-  "lol",       // 😂 LOL
+  "lol", // 😂 LOL
 ]);
 
 // V2: Notification types
 export const notificationTypeEnum = pgEnum("notification_type", [
-  "comment",     // Someone commented on your post
-  "reaction",    // Someone reacted to your post
-  "follow",      // Someone followed you
-  "mention",     // Someone mentioned you
-  "post",        // Someone you follow posted
+  "comment", // Someone commented on your post
+  "reaction", // Someone reacted to your post
+  "follow", // Someone followed you
+  "mention", // Someone mentioned you
+  "post", // Someone you follow posted
 ]);
 
 export const users = pgTable("users", {
@@ -174,7 +176,9 @@ export const notifications = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     type: notificationTypeEnum("type").notNull(),
-    actorId: uuid("actor_id").references(() => users.id, { onDelete: "set null" }),
+    actorId: uuid("actor_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     postId: uuid("post_id").references(() => posts.id, { onDelete: "cascade" }),
     message: text("message"),
     read: boolean("read").notNull().default(false),
@@ -200,7 +204,9 @@ export const postViews = pgTable(
       .notNull()
       .references(() => posts.id, { onDelete: "cascade" }),
     viewerIp: varchar("viewer_ip", { length: 45 }), // IPv6 support
-    userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+    userId: uuid("user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -237,6 +243,90 @@ export const bookmarks = pgTable(
 );
 
 // ============================================
+// 👑 PERSONALIZATION ENGINE TABLES
+// ============================================
+
+/**
+ * User Interests - Category affinity scores for personalization
+ * Updated on every engagement (view, reaction, bookmark, etc.)
+ */
+export const userInterests = pgTable(
+  "user_interests",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    category: postCategoryEnum("category").notNull(),
+    score: integer("score").notNull().default(0), // 0-1000 scale
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    userInterestUnique: uniqueIndex("user_interests_unique").on(t.userId, t.category),
+    userIdx: index("user_interests_user_idx").on(t.userId),
+  })
+);
+
+/**
+ * Reading History - Track what users read and how engaged they were
+ * Powers the "For You" feed by understanding reading patterns
+ */
+export const readingHistory = pgTable(
+  "reading_history",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    postId: uuid("post_id")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
+    scrollDepth: integer("scroll_depth").notNull().default(0), // 0-100%
+    timeSpent: integer("time_spent").notNull().default(0), // seconds
+    completed: boolean("completed").notNull().default(false), // Read > 80%
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    readingHistoryUnique: uniqueIndex("reading_history_unique").on(t.userId, t.postId),
+    userIdx: index("reading_history_user_idx").on(t.userId),
+    postIdx: index("reading_history_post_idx").on(t.postId),
+  })
+);
+
+/**
+ * User Author Affinity - How much a user likes a particular author
+ * High affinity = prioritize their content in feed
+ */
+export const userAuthorAffinity = pgTable(
+  "user_author_affinity",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    authorId: uuid("author_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    score: integer("score").notNull().default(0), // 0-1000 scale
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    userAuthorAffinityUnique: uniqueIndex("user_author_affinity_unique").on(t.userId, t.authorId),
+    userIdx: index("user_author_affinity_user_idx").on(t.userId),
+    authorIdx: index("user_author_affinity_author_idx").on(t.authorId),
+  })
+);
+
+// ============================================
 // 👑 TYPE EXPORTS
 // ============================================
 
@@ -252,8 +342,11 @@ export type Follow = typeof follows.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 export type PostView = typeof postViews.$inferSelect;
 export type Bookmark = typeof bookmarks.$inferSelect;
+export type UserInterest = typeof userInterests.$inferSelect;
+export type ReadingHistory = typeof readingHistory.$inferSelect;
+export type UserAuthorAffinity = typeof userAuthorAffinity.$inferSelect;
 
 export type ReactionValue = (typeof reactionValueEnum.enumValues)[number];
-export type NotificationType = (typeof notificationTypeEnum.enumValues)[number];
 export type PostCategory = (typeof postCategoryEnum.enumValues)[number];
+export type NotificationType = (typeof notificationTypeEnum.enumValues)[number];
 export type UserRole = (typeof userRoleEnum.enumValues)[number];

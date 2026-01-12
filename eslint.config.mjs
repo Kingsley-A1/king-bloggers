@@ -41,7 +41,7 @@ export default tseslint.config(
       "react/prop-types": "off",
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
-      
+
       // TypeScript rules
       "@typescript-eslint/no-unused-vars": [
         "error",
@@ -49,7 +49,7 @@ export default tseslint.config(
       ],
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-empty-object-type": "off",
-      
+
       // Next.js rules
       "@next/next/no-html-link-for-pages": "error",
       "@next/next/no-img-element": "warn",

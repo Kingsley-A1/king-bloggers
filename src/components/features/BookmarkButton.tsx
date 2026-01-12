@@ -67,10 +67,7 @@ export function BookmarkButton({
     >
       {bookmarked ? (
         <BookmarkCheck
-          className={cn(
-            "h-5 w-5 fill-current",
-            pop && "reaction-pop"
-          )}
+          className={cn("h-5 w-5 fill-current", pop && "reaction-pop")}
         />
       ) : (
         <Bookmark className="h-5 w-5" />

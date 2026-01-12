@@ -2,7 +2,11 @@ import { eq, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import { postReactions } from "@/db/schema";
-import type { ReactionCounts, ReactionSummary, ReactionValue } from "@/lib/reactions";
+import type {
+  ReactionCounts,
+  ReactionSummary,
+  ReactionValue,
+} from "@/lib/reactions";
 
 // Re-export shared types from the client-safe module
 export {
@@ -24,22 +28,45 @@ export async function getReactionSummary(
 ): Promise<ReactionSummary> {
   const result = await db
     .select({
-      upCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'up' THEN 1 END)`.mapWith(Number),
-      downCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'down' THEN 1 END)`.mapWith(Number),
-      fireCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'fire' THEN 1 END)`.mapWith(Number),
-      gemCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'gem' THEN 1 END)`.mapWith(Number),
-      crownCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'crown' THEN 1 END)`.mapWith(Number),
-      insightfulCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'insightful' THEN 1 END)`.mapWith(Number),
-      lolCount: sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'lol' THEN 1 END)`.mapWith(Number),
+      upCount:
+        sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'up' THEN 1 END)`.mapWith(
+          Number
+        ),
+      downCount:
+        sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'down' THEN 1 END)`.mapWith(
+          Number
+        ),
+      fireCount:
+        sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'fire' THEN 1 END)`.mapWith(
+          Number
+        ),
+      gemCount:
+        sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'gem' THEN 1 END)`.mapWith(
+          Number
+        ),
+      crownCount:
+        sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'crown' THEN 1 END)`.mapWith(
+          Number
+        ),
+      insightfulCount:
+        sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'insightful' THEN 1 END)`.mapWith(
+          Number
+        ),
+      lolCount:
+        sql<number>`COUNT(CASE WHEN ${postReactions.value} = 'lol' THEN 1 END)`.mapWith(
+          Number
+        ),
       myValue: userId
-        ? sql<string | null>`MAX(CASE WHEN ${postReactions.userId} = ${userId} THEN ${postReactions.value}::text END)`
+        ? sql<
+            string | null
+          >`MAX(CASE WHEN ${postReactions.userId} = ${userId} THEN ${postReactions.value}::text END)`
         : sql<null>`NULL`,
     })
     .from(postReactions)
     .where(eq(postReactions.postId, postId));
 
   const row = result[0];
-  
+
   const counts: ReactionCounts = {
     up: row?.upCount ?? 0,
     down: row?.downCount ?? 0,
