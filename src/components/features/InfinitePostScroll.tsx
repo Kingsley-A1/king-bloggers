@@ -361,24 +361,50 @@ function SwipeableMediaCarousel({
             <div className="relative aspect-[4/5] sm:aspect-[16/10] md:aspect-[16/9] w-full bg-black/20">
               {m.type === "image" ? (
                 canUseNextImage(m.src) ? (
-                  <Image
-                    src={m.src}
-                    alt={`${postTitle} - image ${idx + 1}`}
-                    fill
-                    priority={isFirst && idx === 0}
-                    sizes="(max-width: 768px) 100vw, 1200px"
-                    className="object-cover object-center"
-                    draggable={false}
-                  />
+                  <>
+                    {/* Background fill (no whitespace) */}
+                    <Image
+                      src={m.src}
+                      alt=""
+                      aria-hidden
+                      fill
+                      sizes="(max-width: 768px) 100vw, 1200px"
+                      className="object-cover object-center blur-2xl scale-110 opacity-60"
+                      draggable={false}
+                    />
+                    {/* Foreground (no cropping) */}
+                    <Image
+                      src={m.src}
+                      alt={`${postTitle} - image ${idx + 1}`}
+                      fill
+                      priority={isFirst && idx === 0}
+                      sizes="(max-width: 768px) 100vw, 1200px"
+                      className="object-contain object-center"
+                      draggable={false}
+                    />
+                  </>
                 ) : (
-                  <img
-                    src={m.src}
-                    alt={`${postTitle} - image ${idx + 1}`}
-                    className="absolute inset-0 h-full w-full object-cover object-center"
-                    draggable={false}
-                    loading={isFirst && idx === 0 ? "eager" : "lazy"}
-                    referrerPolicy="no-referrer"
-                  />
+                  <>
+                    {/* Background fill (no whitespace) */}
+                    <img
+                      src={m.src}
+                      alt=""
+                      aria-hidden
+                      className="absolute inset-0 h-full w-full object-cover object-center blur-2xl scale-110 opacity-60"
+                      draggable={false}
+                      loading={isFirst && idx === 0 ? "eager" : "lazy"}
+                      referrerPolicy="no-referrer"
+                    />
+                    {/* Foreground (no cropping) */}
+                    <img
+                      src={m.src}
+                      alt={`${postTitle} - image ${idx + 1}`}
+                      className="absolute inset-0 h-full w-full object-contain object-center"
+                      draggable={false}
+                      loading={isFirst && idx === 0 ? "eager" : "lazy"}
+                      referrerPolicy="no-referrer"
+                    />
+                  </>
                 )
               ) : (
                 <video
