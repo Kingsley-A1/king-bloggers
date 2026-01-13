@@ -367,14 +367,14 @@ function SwipeableMediaCarousel({
                     fill
                     priority={isFirst && idx === 0}
                     sizes="(max-width: 768px) 100vw, 1200px"
-                    className="object-contain"
+                    className="object-cover object-center"
                     draggable={false}
                   />
                 ) : (
                   <img
                     src={m.src}
                     alt={`${postTitle} - image ${idx + 1}`}
-                    className="absolute inset-0 h-full w-full object-contain"
+                    className="absolute inset-0 h-full w-full object-cover object-center"
                     draggable={false}
                     loading={isFirst && idx === 0 ? "eager" : "lazy"}
                     referrerPolicy="no-referrer"
