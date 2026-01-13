@@ -177,23 +177,23 @@ export function Navbar() {
             ) : (
               <GlassButton
                 as="a"
-                href="/login"
+                href="/register"
                 variant="glass"
                 className="hidden md:inline-flex px-3 py-1.5 text-xs"
               >
-                Log In
+                Sign Up
               </GlassButton>
             )}
 
-            {/* Not signed in - mobile login */}
+            {/* Not signed in - mobile Sign Up */}
             {!signedIn && !loading && (
               <GlassButton
                 as="a"
-                href="/login"
+                href="/register"
                 variant="primary"
                 className="md:hidden px-3 py-1.5 text-xs"
               >
-                Log In
+                Sign Up
               </GlassButton>
             )}
 
@@ -223,7 +223,7 @@ export function Navbar() {
                 { label: "Profile", href: "/profile" },
                 { label: "Notifications", href: "/notifications" },
               ]
-            : [{ label: "Log In", href: "/login" }]),
+            : [{ label: "Sign Up", href: "/register" }]),
         ]}
       />
     </>

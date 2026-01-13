@@ -25,7 +25,8 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://king-bloggers.vercel.app";
+const APP_URL =
+  process.env.NEXT_PUBLIC_APP_URL || "https://king-bloggers.vercel.app";
 
 const VIDEO_EXT_RE = /\.(mp4|webm|mov|ogg)(\?.*)?$/i;
 
@@ -87,20 +88,29 @@ export async function generateMetadata({
   const coverIsVideo = cover ? VIDEO_EXT_RE.test(cover) : false;
   const firstContentImage = extractFirstImageSrcFromHtml(post.content);
 
-  const ogImage =
-    (cover && !coverIsVideo ? cover : null) ??
-    firstContentImage ??
-    `${APP_URL}/icons/og.png`;
+  // Determine the best OG image source
+  const rawOgImage =
+    (cover && !coverIsVideo ? cover : null) ?? firstContentImage ?? null;
+
+  // Ensure the OG image is an absolute URL
+  function toAbsoluteUrl(src: string | null): string {
+    if (!src) return `${APP_URL}/icons/og.png`;
+    if (src.startsWith("http://") || src.startsWith("https://")) return src;
+    if (src.startsWith("/")) return `${APP_URL}${src}`;
+    return `${APP_URL}/${src}`;
+  }
+
+  const ogImage = toAbsoluteUrl(rawOgImage);
 
   return {
     title,
     description,
     openGraph: {
       type: "article",
-      url: `/blog/${post.slug}`,
+      url: `${APP_URL}/blog/${post.slug}`,
       title,
       description,
-      images: [{ url: ogImage }],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: "summary_large_image",

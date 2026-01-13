@@ -7,7 +7,6 @@ import Link from "next/link";
 import { Loader2, Eye, Calendar, ArrowUp, Heart } from "lucide-react";
 
 import { Container } from "@/components/layout/Container";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { SectionHeader } from "@/components/features/SectionHeader";
@@ -665,10 +664,10 @@ function PostView({
   );
 
   return (
-    <article className="mb-8 md:mb-12">
-      {/* 👑 PREMIUM SWIPEABLE MEDIA CAROUSEL */}
+    <article className="mb-8 md:mb-12 border border-foreground/10 rounded-2xl overflow-hidden bg-background/50 backdrop-blur-sm">
+      {/* 👑 PREMIUM SWIPEABLE MEDIA CAROUSEL - Full width edge-to-edge */}
       {heroMedia.length > 0 && (
-        <div className="mb-4 md:mb-6">
+        <div className="-mx-0 mb-0">
           <SwipeableMediaCarousel
             media={heroMedia}
             postTitle={post.title}
@@ -681,7 +680,7 @@ function PostView({
         </div>
       )}
 
-      <GlassCard className="p-4 md:p-8 lg:p-12">
+      <div className="p-4 md:p-8 lg:p-12">
         {/* Category & Stats */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <Badge variant={getBadgeVariant(post.category)}>
@@ -769,30 +768,26 @@ function PostView({
             Share is most powerful after reading.
           </p>
         </div>
-      </GlassCard>
+      </div>
 
       {/* Comments - Collapsed for infinite scroll */}
-      <div className="mt-4 md:mt-6">
-        <GlassCard className="p-4 md:p-6">
-          <details className="group">
-            <summary className="cursor-pointer flex items-center justify-between">
-              <span className="font-bold">
-                💬 Comments ({post.commentCount})
-              </span>
-              <span className="text-sm text-king-orange group-open:hidden">
-                Tap to add comment
-              </span>
-            </summary>
-            <div className="mt-4 pt-4 border-t border-foreground/10">
-              <CommentSection
-                postId={post.id}
-                canComment={canComment}
-                comments={[]}
-                redirectTo={`/blog/${post.slug}`}
-              />
-            </div>
-          </details>
-        </GlassCard>
+      <div className="p-4 md:p-6 border-t border-foreground/10">
+        <details className="group">
+          <summary className="cursor-pointer flex items-center justify-between">
+            <span className="font-bold">💬 Comments ({post.commentCount})</span>
+            <span className="text-sm text-king-orange group-open:hidden">
+              Tap to add comment
+            </span>
+          </summary>
+          <div className="mt-4 pt-4 border-t border-foreground/10">
+            <CommentSection
+              postId={post.id}
+              canComment={canComment}
+              comments={[]}
+              redirectTo={`/blog/${post.slug}`}
+            />
+          </div>
+        </details>
       </div>
 
       {/* Separator between posts */}

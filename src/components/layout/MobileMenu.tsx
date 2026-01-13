@@ -61,6 +61,7 @@ export function MobileMenu({
     if (href === "/profile") return User;
     if (href === "/notifications") return Bell;
     if (href === "/login") return LogIn;
+    if (href === "/register") return LogIn;
     void label;
     return null;
   }
