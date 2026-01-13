@@ -30,8 +30,11 @@ export default async function HomePage() {
             title="King Bloggers"
             subtitle={
               <>
-                Built for <span className="text-king-orange font-semibold">{name}</span>
-                {" -- A sovereign feed for Tech, Art, Culture, and Power and more..."}
+                Built for{" "}
+                <span className="text-king-orange font-semibold">{name}</span>
+                {
+                  " -- A sovereign feed for Tech, Art, Culture, and Power and more..."
+                }
               </>
             }
           />

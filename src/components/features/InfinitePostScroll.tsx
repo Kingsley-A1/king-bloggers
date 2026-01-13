@@ -106,6 +106,63 @@ type MediaItem =
   | { type: "image"; src: string }
   | { type: "video"; src: string };
 
+const VIDEO_EXT_RE = /\.(mp4|webm|mov|ogg)(\?.*)?$/i;
+
+const ALLOWED_NEXT_IMAGE_HOSTS = new Set([
+  "pub-2aa1172cadf14ba89fb907ce9a9bcaa1.r2.dev",
+  "lh3.googleusercontent.com",
+  "images.unsplash.com",
+]);
+
+function canUseNextImage(src: string) {
+  if (src.startsWith("/")) return true;
+  try {
+    const u = new URL(src);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
+    return ALLOWED_NEXT_IMAGE_HOSTS.has(u.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function decodeHtmlEntitiesLoose(input: string) {
+  let out = input;
+  // Handle doubly-encoded entities like &amp;amp;#x2F;
+  for (let i = 0; i < 3; i++) {
+    const next = out.replace(/&amp;/g, "&");
+    if (next === out) break;
+    out = next;
+  }
+
+  out = out
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) =>
+      String.fromCharCode(parseInt(hex, 16))
+    )
+    .replace(/&#([0-9]+);/g, (_, num) => String.fromCharCode(parseInt(num, 10)))
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ");
+
+  return out;
+}
+
+function sanitizeMediaSrc(raw: string): string | null {
+  const decoded = decodeHtmlEntitiesLoose(raw);
+  const compact = decoded.replace(/\s+/g, "").trim();
+  if (!compact) return null;
+  if (compact.startsWith("//")) return `https:${compact}`;
+  if (compact.startsWith("http://") || compact.startsWith("https://"))
+    return compact;
+  if (compact.startsWith("/")) return compact;
+  return null;
+}
+
+function inferMediaTypeFromUrl(url: string): MediaItem["type"] {
+  return VIDEO_EXT_RE.test(url) ? "video" : "image";
+}
+
 // ============================================
 // 👑 PREMIUM SWIPEABLE MEDIA CAROUSEL
 // ============================================
@@ -129,7 +186,10 @@ interface SwipeableMediaCarouselProps {
   initialReactionCounts: ReactionCounts;
   initialMyReaction: ReactionValue | null;
   isFirst: boolean;
-  onReactionChange?: (counts: ReactionCounts, myValue: ReactionValue | null) => void;
+  onReactionChange?: (
+    counts: ReactionCounts,
+    myValue: ReactionValue | null
+  ) => void;
 }
 
 function SwipeableMediaCarousel({
@@ -147,7 +207,7 @@ function SwipeableMediaCarousel({
   const [counts, setCounts] = useState(initialReactionCounts);
   const [myValue, setMyValue] = useState(initialMyReaction);
   const [busy, setBusy] = useState(false);
-  
+
   const carouselRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef(0);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -178,39 +238,42 @@ function SwipeableMediaCarousel({
   }, []);
 
   // Handle reaction
-  const handleReaction = useCallback(async (nextValue: ReactionValue) => {
-    if (busy) return;
-    
-    const prev = myValue;
-    const prevCounts = { ...counts };
-    
-    let nextMy: ReactionValue | null = nextValue;
-    if (prev === nextValue) nextMy = null;
-    
-    const newCounts = { ...counts };
-    if (prev) newCounts[prev] = Math.max(0, newCounts[prev] - 1);
-    if (nextMy) newCounts[nextMy] = newCounts[nextMy] + 1;
-    
-    setCounts(newCounts);
-    setMyValue(nextMy);
-    onReactionChange?.(newCounts, nextMy);
-    
-    setBusy(true);
-    const res = await setReaction({ postId, value: nextMy ?? "none" });
-    setBusy(false);
-    
-    if (!res.ok) {
-      setCounts(prevCounts);
-      setMyValue(prev);
-      onReactionChange?.(prevCounts, prev);
-    }
-  }, [busy, counts, myValue, postId, onReactionChange]);
+  const handleReaction = useCallback(
+    async (nextValue: ReactionValue) => {
+      if (busy) return;
+
+      const prev = myValue;
+      const prevCounts = { ...counts };
+
+      let nextMy: ReactionValue | null = nextValue;
+      if (prev === nextValue) nextMy = null;
+
+      const newCounts = { ...counts };
+      if (prev) newCounts[prev] = Math.max(0, newCounts[prev] - 1);
+      if (nextMy) newCounts[nextMy] = newCounts[nextMy] + 1;
+
+      setCounts(newCounts);
+      setMyValue(nextMy);
+      onReactionChange?.(newCounts, nextMy);
+
+      setBusy(true);
+      const res = await setReaction({ postId, value: nextMy ?? "none" });
+      setBusy(false);
+
+      if (!res.ok) {
+        setCounts(prevCounts);
+        setMyValue(prev);
+        onReactionChange?.(prevCounts, prev);
+      }
+    },
+    [busy, counts, myValue, postId, onReactionChange]
+  );
 
   // Double-tap to like
   const handleDoubleTap = useCallback(() => {
     setShowLikeAnimation(true);
     setTimeout(() => setShowLikeAnimation(false), 800);
-    
+
     // If not already liked with fire, add fire reaction
     if (myValue !== "fire") {
       void handleReaction("fire");
@@ -218,24 +281,30 @@ function SwipeableMediaCarousel({
   }, [myValue, handleReaction]);
 
   // Handle touch/click events for double-tap and long-press
-  const handleTouchStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
-    const now = Date.now();
-    const pos = "touches" in e ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
-    touchStartRef.current = pos;
-    
-    // Double-tap detection
-    if (now - lastTapRef.current < 300) {
-      handleDoubleTap();
-      lastTapRef.current = 0;
-      return;
-    }
-    lastTapRef.current = now;
-    
-    // Long-press detection
-    longPressTimerRef.current = setTimeout(() => {
-      setShowReactionPicker(true);
-    }, 500);
-  }, [handleDoubleTap]);
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent | React.MouseEvent) => {
+      const now = Date.now();
+      const pos =
+        "touches" in e
+          ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
+          : { x: e.clientX, y: e.clientY };
+      touchStartRef.current = pos;
+
+      // Double-tap detection
+      if (now - lastTapRef.current < 300) {
+        handleDoubleTap();
+        lastTapRef.current = 0;
+        return;
+      }
+      lastTapRef.current = now;
+
+      // Long-press detection
+      longPressTimerRef.current = setTimeout(() => {
+        setShowReactionPicker(true);
+      }, 500);
+    },
+    [handleDoubleTap]
+  );
 
   const handleTouchEnd = useCallback(() => {
     if (longPressTimerRef.current) {
@@ -291,15 +360,26 @@ function SwipeableMediaCarousel({
           >
             <div className="relative aspect-[4/5] sm:aspect-[16/10] md:aspect-[16/9] w-full bg-black/20">
               {m.type === "image" ? (
-                <Image
-                  src={m.src}
-                  alt={`${postTitle} - image ${idx + 1}`}
-                  fill
-                  priority={isFirst && idx === 0}
-                  sizes="(max-width: 768px) 100vw, 1200px"
-                  className="object-contain"
-                  draggable={false}
-                />
+                canUseNextImage(m.src) ? (
+                  <Image
+                    src={m.src}
+                    alt={`${postTitle} - image ${idx + 1}`}
+                    fill
+                    priority={isFirst && idx === 0}
+                    sizes="(max-width: 768px) 100vw, 1200px"
+                    className="object-contain"
+                    draggable={false}
+                  />
+                ) : (
+                  <img
+                    src={m.src}
+                    alt={`${postTitle} - image ${idx + 1}`}
+                    className="absolute inset-0 h-full w-full object-contain"
+                    draggable={false}
+                    loading={isFirst && idx === 0 ? "eager" : "lazy"}
+                    referrerPolicy="no-referrer"
+                  />
+                )
               ) : (
                 <video
                   src={m.src}
@@ -358,7 +438,9 @@ function SwipeableMediaCarousel({
                   title={REACTION_CONFIG[type].label}
                   aria-label={REACTION_CONFIG[type].label}
                 >
-                  <span className="text-3xl">{REACTION_CONFIG[type].emoji}</span>
+                  <span className="text-3xl">
+                    {REACTION_CONFIG[type].emoji}
+                  </span>
                 </button>
               );
             })}
@@ -426,37 +508,73 @@ function extractMediaBlocksFromHtml(html: string): {
   cleanedHtml: string;
   media: MediaItem[];
 } {
-  if (typeof window === "undefined") return { cleanedHtml: html, media: [] };
+  if (typeof window === "undefined") {
+    const media: MediaItem[] = [];
+    let cleaned = html;
+
+    // <img ... src="..." ...>
+    cleaned = cleaned.replace(
+      /<img[^>]*\ssrc\s*=\s*['"]([^'"]+)['"][^>]*>/gi,
+      (_m, rawSrc: string) => {
+        const src = sanitizeMediaSrc(rawSrc);
+        if (src) media.push({ type: "image", src });
+        return "";
+      }
+    );
+
+    // <video src="...">...</video>
+    cleaned = cleaned.replace(
+      /<video[^>]*\ssrc\s*=\s*['"]([^'"]+)['"][^>]*>[\s\S]*?<\/video>/gi,
+      (_m, rawSrc: string) => {
+        const src = sanitizeMediaSrc(rawSrc);
+        if (src) media.push({ type: "video", src });
+        return "";
+      }
+    );
+
+    // <video ...><source src="..." /></video>
+    cleaned = cleaned.replace(
+      /<video[^>]*>[\s\S]*?<source[^>]*\ssrc\s*=\s*['"]([^'"]+)['"][^>]*>[\s\S]*?<\/video>/gi,
+      (_m, rawSrc: string) => {
+        const src = sanitizeMediaSrc(rawSrc);
+        if (src) media.push({ type: "video", src });
+        return "";
+      }
+    );
+
+    // Remove empty paragraphs created by stripping tags
+    cleaned = cleaned.replace(/<p>(\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, "");
+
+    return { cleanedHtml: cleaned, media };
+  }
   try {
     const doc = new DOMParser().parseFromString(html, "text/html");
     const body = doc.body;
     const media: MediaItem[] = [];
 
-    const candidates = Array.from(body.querySelectorAll("img, video"));
-    for (const el of candidates) {
-      const parent = el.parentElement;
-      if (!parent) continue;
-      const tag = parent.tagName.toLowerCase();
-      if (tag !== "p" && tag !== "div") continue;
-
-      // Only extract standalone media blocks (e.g., <p><img/></p>)
-      const parentText = normalizeText(parent.textContent ?? "");
-      const hasOnlyThisMedia =
-        parentText.length === 0 &&
-        parent.querySelectorAll("img, video").length === 1 &&
-        parent.children.length === 1;
-
-      if (!hasOnlyThisMedia) continue;
-
+    // Extract ALL images and videos from content - they go into the carousel
+    const allMedia = Array.from(body.querySelectorAll("img, video"));
+    for (const el of allMedia) {
       if (el.tagName.toLowerCase() === "img") {
-        const src = (el as HTMLImageElement).getAttribute("src");
+        const rawSrc = (el as HTMLImageElement).getAttribute("src");
+        const src = rawSrc ? sanitizeMediaSrc(rawSrc) : null;
         if (src) media.push({ type: "image", src });
       } else {
-        const src = (el as HTMLVideoElement).getAttribute("src");
+        const rawSrc = (el as HTMLVideoElement).getAttribute("src");
+        const src = rawSrc ? sanitizeMediaSrc(rawSrc) : null;
         if (src) media.push({ type: "video", src });
       }
+      // Remove the element from content
+      el.remove();
+    }
 
-      parent.remove();
+    // Also clean up any empty paragraphs/divs that contained only media
+    const emptyContainers = Array.from(body.querySelectorAll("p, div"));
+    for (const container of emptyContainers) {
+      const text = normalizeText(container.textContent ?? "");
+      if (text.length === 0 && container.children.length === 0) {
+        container.remove();
+      }
     }
 
     return { cleanedHtml: body.innerHTML, media };
@@ -482,13 +600,25 @@ function PostView({
   const [reactionCounts, setReactionCounts] = useState(post.reactionCounts);
   const [myReaction, setMyReaction] = useState(post.myReaction);
 
-  const contentOnce = React.useMemo(() => dedupeExactDoubleHtml(post.content), [post.content]);
-  const extracted = React.useMemo(() => extractMediaBlocksFromHtml(contentOnce), [contentOnce]);
+  const contentOnce = React.useMemo(
+    () => dedupeExactDoubleHtml(post.content),
+    [post.content]
+  );
+  const extracted = React.useMemo(
+    () => extractMediaBlocksFromHtml(contentOnce),
+    [contentOnce]
+  );
 
   const heroMedia = React.useMemo(() => {
     const items: MediaItem[] = [];
-    if (post.coverImageUrl) items.push({ type: "image", src: post.coverImageUrl });
-    if (post.videoUrl) items.push({ type: "video", src: post.videoUrl });
+    if (post.coverImageUrl) {
+      const src = sanitizeMediaSrc(post.coverImageUrl);
+      if (src) items.push({ type: inferMediaTypeFromUrl(src), src });
+    }
+    if (post.videoUrl) {
+      const src = sanitizeMediaSrc(post.videoUrl);
+      if (src) items.push({ type: "video", src });
+    }
 
     // Add extracted content media, but avoid duplicates (esp. cover image)
     for (const m of extracted.media) {
@@ -499,10 +629,13 @@ function PostView({
   }, [post.coverImageUrl, post.videoUrl, extracted.media]);
 
   // Handle reaction sync from carousel
-  const handleReactionChange = useCallback((counts: ReactionCounts, myValue: ReactionValue | null) => {
-    setReactionCounts(counts);
-    setMyReaction(myValue);
-  }, []);
+  const handleReactionChange = useCallback(
+    (counts: ReactionCounts, myValue: ReactionValue | null) => {
+      setReactionCounts(counts);
+      setMyReaction(myValue);
+    },
+    []
+  );
 
   return (
     <article className="mb-8 md:mb-12">

@@ -60,6 +60,7 @@ type Draft = {
   html: string;
   category: Category;
   coverImageUrl?: string;
+  videoUrl?: string;
 };
 
 function safeParseDraft(raw: string | null): Draft {
@@ -72,6 +73,7 @@ function safeParseDraft(raw: string | null): Draft {
       html: parsed.html ?? "",
       category: parsed.category ?? "tech",
       coverImageUrl: parsed.coverImageUrl,
+      videoUrl: parsed.videoUrl,
     };
   } catch {
     return { title: "", html: "", category: "tech" };
@@ -126,6 +128,7 @@ function EditorContent() {
   const [html, setHtml] = React.useState("");
   const [category, setCategory] = React.useState<Category>("tech");
   const [coverImageUrl, setCoverImageUrl] = React.useState<string | null>(null);
+  const [coverVideoUrl, setCoverVideoUrl] = React.useState<string | null>(null);
   const [inlineImages, setInlineImages] = React.useState<string[]>([]);
   const [uploading, setUploading] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
@@ -151,6 +154,7 @@ function EditorContent() {
             setHtml(data.post.content);
             setCategory(data.post.category);
             setCoverImageUrl(data.post.coverImageUrl);
+            setCoverVideoUrl(data.post.videoUrl ?? null);
             setIsEditing(true);
           }
         } else {
@@ -185,6 +189,7 @@ function EditorContent() {
       setHtml(draft.html);
       setCategory(draft.category);
       setCoverImageUrl(draft.coverImageUrl ?? null);
+      setCoverVideoUrl(draft.videoUrl ?? null);
     }
   }, [editPostId, isNewMode, loadPostForEdit]);
 
@@ -205,11 +210,21 @@ function EditorContent() {
         html,
         category,
         coverImageUrl: coverImageUrl ?? undefined,
+        videoUrl: coverVideoUrl ?? undefined,
       };
       safeLocalStorageSet(STORAGE_KEY, JSON.stringify(payload));
     }, 1500);
     return () => window.clearTimeout(handle);
-  }, [postId, title, html, category, coverImageUrl, isEditing, editPostId]);
+  }, [
+    postId,
+    title,
+    html,
+    category,
+    coverImageUrl,
+    coverVideoUrl,
+    isEditing,
+    editPostId,
+  ]);
 
   // Editor commands
   function exec(cmd: string, value?: string) {
@@ -235,7 +250,9 @@ function EditorContent() {
       setInlineImages((prev) => [...prev, ...uploadedUrls]);
       setToast({
         open: true,
-        message: `${uploadedUrls.length} image${uploadedUrls.length > 1 ? "s" : ""} added`,
+        message: `${uploadedUrls.length} image${
+          uploadedUrls.length > 1 ? "s" : ""
+        } added`,
         variant: "success",
       });
     }
@@ -324,7 +341,16 @@ function EditorContent() {
   // Handle cover drop/select
   async function handleCoverUpload(file: File) {
     const url = await uploadImage(file);
-    if (url) setCoverImageUrl(url);
+    if (!url) return;
+
+    if (file.type.startsWith("video/")) {
+      setCoverVideoUrl(url);
+      setCoverImageUrl(null);
+      return;
+    }
+
+    setCoverImageUrl(url);
+    setCoverVideoUrl(null);
   }
 
   // Clear draft
@@ -335,6 +361,7 @@ function EditorContent() {
     setHtml("");
     setCategory("tech");
     setCoverImageUrl(null);
+    setCoverVideoUrl(null);
     setIsEditing(false);
     if (editorRef.current) editorRef.current.innerHTML = "";
   }
@@ -368,6 +395,7 @@ function EditorContent() {
           category,
           excerpt: excerpt || undefined,
           coverImageUrl: coverImageUrl ?? undefined,
+          videoUrl: coverVideoUrl ?? undefined,
         });
         if (!created.ok) {
           setToast({ open: true, message: created.error, variant: "error" });
@@ -385,6 +413,7 @@ function EditorContent() {
           category,
           excerpt: excerpt || undefined,
           coverImageUrl: coverImageUrl ?? undefined,
+          videoUrl: coverVideoUrl ?? undefined,
         });
         if (!updated.ok) {
           setToast({ open: true, message: updated.error, variant: "error" });
@@ -432,6 +461,7 @@ function EditorContent() {
           category,
           excerpt: excerpt || undefined,
           coverImageUrl: coverImageUrl ?? undefined,
+          videoUrl: coverVideoUrl ?? undefined,
         });
         if (!updated.ok) {
           setToast({ open: true, message: updated.error, variant: "error" });
@@ -446,6 +476,7 @@ function EditorContent() {
           category,
           excerpt: excerpt || undefined,
           coverImageUrl: coverImageUrl ?? undefined,
+          videoUrl: coverVideoUrl ?? undefined,
         });
         if (!created.ok) {
           setToast({ open: true, message: created.error, variant: "error" });
@@ -536,11 +567,11 @@ function EditorContent() {
           </div>
         </div>
 
-        {/* 👑 CAMERA-FIRST: Cover Image Upload Zone (Made More Prominent) */}
+        {/* 👑 COVER MEDIA ZONE - Accepts Images & Videos */}
         <div
           className={cn(
             "relative rounded-2xl border-2 border-dashed transition-all overflow-hidden mb-6",
-            coverImageUrl
+            coverImageUrl || coverVideoUrl
               ? "border-transparent"
               : "border-king-orange/40 hover:border-king-orange bg-gradient-to-br from-king-orange/5 to-amber-500/5 cursor-pointer"
           )}
@@ -548,25 +579,42 @@ function EditorContent() {
           onDrop={(e) => {
             e.preventDefault();
             const file = e.dataTransfer.files[0];
-            if (file?.type.startsWith("image/")) handleCoverUpload(file);
+            if (
+              file?.type.startsWith("image/") ||
+              file?.type.startsWith("video/")
+            )
+              handleCoverUpload(file);
           }}
-          onClick={() => !coverImageUrl && fileInputRef.current?.click()}
+          onClick={() =>
+            !(coverImageUrl || coverVideoUrl) && fileInputRef.current?.click()
+          }
         >
-          {coverImageUrl ? (
+          {coverImageUrl || coverVideoUrl ? (
             <div className="relative aspect-[21/9]">
-              <Image
-                src={coverImageUrl}
-                alt="Cover"
-                fill
-                className="object-cover"
-              />
+              {coverVideoUrl ? (
+                <video
+                  src={coverVideoUrl}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  controls
+                  playsInline
+                  muted
+                />
+              ) : (
+                <Image
+                  src={coverImageUrl!}
+                  alt="Cover"
+                  fill
+                  className="object-cover"
+                />
+              )}
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   setCoverImageUrl(null);
+                  setCoverVideoUrl(null);
                 }}
-                className="absolute top-3 right-3 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
+                className="absolute top-3 right-3 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors z-10"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -576,7 +624,7 @@ function EditorContent() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
@@ -591,10 +639,10 @@ function EditorContent() {
                     <ImageIcon className="h-8 w-8 text-king-orange" />
                   </div>
                   <span className="text-base font-semibold text-foreground/80 mb-1">
-                    Add Cover Image
+                    Add Cover Media
                   </span>
                   <span className="text-sm text-foreground/50">
-                    Tap or drag & drop
+                    Image or Video • Tap or drag & drop
                   </span>
                 </>
               )}

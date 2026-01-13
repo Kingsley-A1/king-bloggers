@@ -48,8 +48,7 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Tech",
     description: "AI, gadgets, startups & innovation",
     icon: Zap,
-    imageUrl:
-      "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=400&fit=crop",
+    imageUrl: "/images/interests/tech.png",
     gradient: "from-blue-500 to-cyan-400",
   },
   {
@@ -57,8 +56,7 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Art & Culture",
     description: "Music, fashion, design & creativity",
     icon: Palette,
-    imageUrl:
-      "https://images.unsplash.com/photo-1547891654-e66ed7ebb968?w=400&h=400&fit=crop",
+    imageUrl: "/images/interests/art_culture.png",
     gradient: "from-purple-500 to-pink-400",
   },
   {
@@ -66,8 +64,7 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Entertainment",
     description: "Movies, celebrities, gaming & pop culture",
     icon: Mic,
-    imageUrl:
-      "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=400&fit=crop",
+    imageUrl: "/images/interests/entertainment.png",
     gradient: "from-orange-500 to-red-400",
   },
   {
@@ -75,8 +72,7 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Sport",
     description: "Football, athletics, sports news & highlights",
     icon: Activity,
-    imageUrl:
-      "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400&h=400&fit=crop",
+    imageUrl: "/images/interests/sport.png",
     gradient: "from-green-500 to-emerald-400",
   },
   {
@@ -84,8 +80,7 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Health",
     description: "Wellness, fitness, nutrition & mental health",
     icon: Heart,
-    imageUrl:
-      "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&h=400&fit=crop",
+    imageUrl: "/images/interests/health.png",
     gradient: "from-pink-500 to-rose-400",
   },
   {
@@ -93,8 +88,7 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Self Growth",
     description: "Productivity, mindset, habits & self-improvement",
     icon: Sprout,
-    imageUrl:
-      "https://images.unsplash.com/photo-1499728603263-13726abce5fd?w=400&h=400&fit=crop",
+    imageUrl: "/images/interests/self_growth.png",
     gradient: "from-violet-500 to-purple-400",
   },
   {
@@ -102,8 +96,7 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Finances",
     description: "Investing, saving, budgeting & wealth building",
     icon: Wallet,
-    imageUrl:
-      "https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=400&h=400&fit=crop",
+    imageUrl: "/images/interests/finances.png",
     gradient: "from-cyan-500 to-blue-400",
   },
   {
@@ -111,8 +104,7 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Politics",
     description: "Government, policies & current affairs",
     icon: Scale,
-    imageUrl:
-      "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=400&h=400&fit=crop",
+    imageUrl: "/images/interests/politics.png",
     gradient: "from-red-500 to-orange-400",
   },
   {
@@ -120,8 +112,7 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Economics",
     description: "Finance, markets & business trends",
     icon: DollarSign,
-    imageUrl:
-      "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=400&fit=crop",
+    imageUrl: "/images/interests/economics.png",
     gradient: "from-emerald-500 to-teal-400",
   },
   {
@@ -129,8 +120,7 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     label: "Religion",
     description: "Faith, spirituality & philosophy",
     icon: Church,
-    imageUrl:
-      "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=400&h=400&fit=crop",
+    imageUrl: "/images/interests/religion.png",
     gradient: "from-amber-500 to-yellow-400",
   },
 ];

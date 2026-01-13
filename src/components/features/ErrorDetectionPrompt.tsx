@@ -18,7 +18,11 @@ type CapturedError = {
   stack?: string;
 };
 
-type ToastState = { open: boolean; message: string; variant?: "success" | "error" };
+type ToastState = {
+  open: boolean;
+  message: string;
+  variant?: "success" | "error";
+};
 
 const WHATSAPP_E164 = "2349036826272";
 const STORAGE_KEY_LAST = "kb_error_prompt_last";
@@ -69,7 +73,9 @@ async function uploadScreenshot(file: File): Promise<string | null> {
         format: "image/jpeg",
         maxFileSizeBytes: 600 * 1024,
       });
-      uploadFile = new File([res.blob], "screenshot.jpg", { type: "image/jpeg" });
+      uploadFile = new File([res.blob], "screenshot.jpg", {
+        type: "image/jpeg",
+      });
     } catch {
       // if compression fails, upload original
       uploadFile = file;
@@ -87,19 +93,18 @@ async function uploadScreenshot(file: File): Promise<string | null> {
   });
 
   if (!res.ok) return null;
-  const data = (await res.json().catch(() => null)) as { publicUrl?: string } | null;
+  const data = (await res.json().catch(() => null)) as {
+    publicUrl?: string;
+  } | null;
   return data?.publicUrl ?? null;
 }
 
 export function ErrorDetectionPrompt() {
   const pathname = usePathname();
-  const [sessionUser, setSessionUser] = React.useState<
-    | {
-        name?: string | null;
-        email?: string | null;
-      }
-    | null
-  >(null);
+  const [sessionUser, setSessionUser] = React.useState<{
+    name?: string | null;
+    email?: string | null;
+  } | null>(null);
 
   const [open, setOpen] = React.useState(false);
   const [kind, setKind] = React.useState<PromptKind>("manual");
@@ -107,7 +112,10 @@ export function ErrorDetectionPrompt() {
   const [message, setMessage] = React.useState("");
   const [screenshot, setScreenshot] = React.useState<File | null>(null);
   const [busy, setBusy] = React.useState(false);
-  const [toast, setToast] = React.useState<ToastState>({ open: false, message: "" });
+  const [toast, setToast] = React.useState<ToastState>({
+    open: false,
+    message: "",
+  });
 
   const userName = sessionUser?.name ?? "";
   const userEmail = sessionUser?.email ?? "";
@@ -118,9 +126,9 @@ export function ErrorDetectionPrompt() {
       try {
         const res = await fetch("/api/auth/session", { cache: "no-store" });
         if (!res.ok) return;
-        const json = (await res.json().catch(() => null)) as
-          | { user?: { name?: string | null; email?: string | null } }
-          | null;
+        const json = (await res.json().catch(() => null)) as {
+          user?: { name?: string | null; email?: string | null };
+        } | null;
         if (!alive) return;
         setSessionUser(json?.user ?? null);
       } catch {
@@ -176,7 +184,9 @@ export function ErrorDetectionPrompt() {
               name: (reason as { name?: string }).name ?? "UnhandledRejection",
               message:
                 (reason as { message?: string }).message ??
-                (typeof reason === "string" ? reason : "Unhandled promise rejection"),
+                (typeof reason === "string"
+                  ? reason
+                  : "Unhandled promise rejection"),
               stack: (reason as { stack?: string }).stack,
             }
           : { name: "UnhandledRejection", message: String(reason) };
@@ -212,21 +222,28 @@ export function ErrorDetectionPrompt() {
     if (busy) return;
     const trimmed = message.trim();
     if (trimmed.length < 4) {
-      setToast({ open: true, message: "Please describe the issue.", variant: "error" });
+      setToast({
+        open: true,
+        message: "Please describe the issue.",
+        variant: "error",
+      });
       return;
     }
 
     setBusy(true);
 
     const url =
-      typeof window !== "undefined" ? window.location.href : `https://kingbloggers.com${pathname}`;
+      typeof window !== "undefined"
+        ? window.location.href
+        : `https://kingbloggers.com${pathname}`;
 
     let screenshotUrl: string | null = null;
     let screenshotNote: string | null = null;
     if (screenshot) {
       screenshotUrl = await uploadScreenshot(screenshot);
       if (!screenshotUrl) {
-        screenshotNote = "Screenshot selected, but upload failed (try signing in or retry).";
+        screenshotNote =
+          "Screenshot selected, but upload failed (try signing in or retry).";
       }
     }
 
@@ -235,7 +252,8 @@ export function ErrorDetectionPrompt() {
       message: trimmed,
       url,
       screenshotUrl: screenshotUrl ?? undefined,
-      userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+      userAgent:
+        typeof navigator !== "undefined" ? navigator.userAgent : undefined,
       errorName: captured?.name,
       errorMessage: captured?.message,
       errorStack: captured?.stack,
@@ -248,18 +266,28 @@ export function ErrorDetectionPrompt() {
       body: JSON.stringify(payload),
     });
 
-    const data = (await res.json().catch(() => null)) as
-      | { ok?: boolean; reportId?: string; error?: string }
-      | null;
+    const data = (await res.json().catch(() => null)) as {
+      ok?: boolean;
+      reportId?: string;
+      error?: string;
+    } | null;
 
     const reportId = data?.reportId ?? "";
 
     const composed = [
       "King Bloggers — Issue Report",
       reportId ? `Report ID: ${reportId}` : null,
-      userName || userEmail ? `User: ${userName || "(no name)"}${userEmail ? ` <${userEmail}>` : ""}` : "User: (not signed in)",
+      userName || userEmail
+        ? `User: ${userName || "(no name)"}${
+            userEmail ? ` <${userEmail}>` : ""
+          }`
+        : "User: (not signed in)",
       `Page: ${url}`,
-      kind === "error" ? "Type: Runtime error" : kind === "slow" ? "Type: Slow load" : "Type: User report",
+      kind === "error"
+        ? "Type: Runtime error"
+        : kind === "slow"
+        ? "Type: Slow load"
+        : "Type: User report",
       captured?.message ? `Error: ${captured.message}` : null,
       screenshotUrl ? `Screenshot: ${screenshotUrl}` : null,
       screenshotNote ? `Note: ${screenshotNote}` : null,
@@ -273,7 +301,9 @@ export function ErrorDetectionPrompt() {
     if (!res.ok) {
       setToast({
         open: true,
-        message: data?.error ? `Saved locally, backend error: ${data.error}` : "Backend error. Sending via WhatsApp anyway…",
+        message: data?.error
+          ? `Saved locally, backend error: ${data.error}`
+          : "Backend error. Sending via WhatsApp anyway…",
         variant: "error",
       });
     }
@@ -281,7 +311,11 @@ export function ErrorDetectionPrompt() {
     // Open WhatsApp with prefilled message.
     try {
       window.open(waMeUrl(composed), "_blank", "noopener,noreferrer");
-      setToast({ open: true, message: "WhatsApp opened. Tap send.", variant: "success" });
+      setToast({
+        open: true,
+        message: "WhatsApp opened. Tap send.",
+        variant: "success",
+      });
     } catch {
       // ignore
     }
@@ -291,10 +325,17 @@ export function ErrorDetectionPrompt() {
   }
 
   async function handleCopy() {
-    const url = typeof window !== "undefined" ? window.location.href : `https://kingbloggers.com${pathname}`;
+    const url =
+      typeof window !== "undefined"
+        ? window.location.href
+        : `https://kingbloggers.com${pathname}`;
     const composed = [
       "King Bloggers — Issue Report",
-      userName || userEmail ? `User: ${userName || "(no name)"}${userEmail ? ` <${userEmail}>` : ""}` : "User: (not signed in)",
+      userName || userEmail
+        ? `User: ${userName || "(no name)"}${
+            userEmail ? ` <${userEmail}>` : ""
+          }`
+        : "User: (not signed in)",
       `Page: ${url}`,
       "---",
       message.trim() || "(no message)",
@@ -302,7 +343,11 @@ export function ErrorDetectionPrompt() {
 
     try {
       await navigator.clipboard.writeText(composed);
-      setToast({ open: true, message: "Copied report text.", variant: "success" });
+      setToast({
+        open: true,
+        message: "Copied report text.",
+        variant: "success",
+      });
     } catch {
       setToast({ open: true, message: "Copy failed.", variant: "error" });
     }
@@ -363,7 +408,8 @@ export function ErrorDetectionPrompt() {
                     </h3>
                   </div>
                   <p className="mt-1 text-sm text-foreground/60">
-                    Tell us what happened. We’ll route it to support on WhatsApp.
+                    Tell us what happened. We’ll route it to support on
+                    WhatsApp.
                   </p>
                 </div>
                 <button
@@ -379,7 +425,7 @@ export function ErrorDetectionPrompt() {
               <div className="mt-4 space-y-3">
                 {(userName || userEmail) && (
                   <div className="text-xs text-foreground/60">
-                    Reporting as {" "}
+                    Reporting as{" "}
                     <span className="text-king-orange font-semibold">
                       {userName || userEmail}
                     </span>
@@ -388,7 +434,9 @@ export function ErrorDetectionPrompt() {
 
                 {captured?.message ? (
                   <div className="rounded-2xl border border-foreground/10 bg-foreground/5 p-3">
-                    <div className="text-xs font-mono text-foreground/60">Captured error</div>
+                    <div className="text-xs font-mono text-foreground/60">
+                      Captured error
+                    </div>
                     <div className="mt-1 text-sm text-foreground/80 line-clamp-3">
                       {captured.message}
                     </div>
@@ -396,7 +444,9 @@ export function ErrorDetectionPrompt() {
                 ) : null}
 
                 <label className="block">
-                  <span className="text-sm font-semibold">Describe the problem</span>
+                  <span className="text-sm font-semibold">
+                    Describe the problem
+                  </span>
                   <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
@@ -413,12 +463,16 @@ export function ErrorDetectionPrompt() {
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-semibold">Screenshot (optional)</span>
+                  <span className="text-sm font-semibold">
+                    Screenshot (optional)
+                  </span>
                   <div className="mt-2 flex items-center gap-3">
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => setScreenshot(e.target.files?.[0] ?? null)}
+                      onChange={(e) =>
+                        setScreenshot(e.target.files?.[0] ?? null)
+                      }
                       className="block w-full text-sm text-foreground/60 file:mr-4 file:rounded-xl file:border-0 file:bg-foreground/10 file:px-4 file:py-2 file:text-sm file:font-bold file:text-foreground hover:file:bg-foreground/15"
                     />
                   </div>
@@ -460,7 +514,8 @@ export function ErrorDetectionPrompt() {
                 </GlassButton>
 
                 <p className="text-xs text-foreground/50 text-center">
-                  Note: WhatsApp can’t auto-attach images from links; we include a screenshot link if uploaded.
+                  Note: WhatsApp can’t auto-attach images from links; we include
+                  a screenshot link if uploaded.
                 </p>
               </div>
             </GlassCard>

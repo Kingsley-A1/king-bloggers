@@ -27,6 +27,44 @@ type PageProps = {
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://kingbloggers.com";
 
+const VIDEO_EXT_RE = /\.(mp4|webm|mov|ogg)(\?.*)?$/i;
+
+function decodeHtmlEntitiesLoose(input: string) {
+  let out = input;
+  for (let i = 0; i < 3; i++) {
+    const next = out.replace(/&amp;/g, "&");
+    if (next === out) break;
+    out = next;
+  }
+
+  out = out
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) =>
+      String.fromCharCode(parseInt(hex, 16))
+    )
+    .replace(/&#([0-9]+);/g, (_, num) => String.fromCharCode(parseInt(num, 10)))
+    .replace(/&nbsp;/g, " ");
+
+  return out;
+}
+
+function sanitizeMediaSrc(raw: string): string | null {
+  const decoded = decodeHtmlEntitiesLoose(raw);
+  const compact = decoded.replace(/\s+/g, "").trim();
+  if (!compact) return null;
+  if (compact.startsWith("//")) return `https:${compact}`;
+  if (compact.startsWith("http://") || compact.startsWith("https://"))
+    return compact;
+  if (compact.startsWith("/")) return compact;
+  return null;
+}
+
+function extractFirstImageSrcFromHtml(html: string): string | null {
+  // minimal, server-safe extraction
+  const match = html.match(/<img[^>]+src\s*=\s*['"]([^'"]+)['"][^>]*>/i);
+  if (!match?.[1]) return null;
+  return sanitizeMediaSrc(match[1]);
+}
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -42,7 +80,17 @@ export async function generateMetadata({
   const title = `${post.title} — King Bloggers`;
   const description =
     post.excerpt ?? "A sovereign feed for Tech, Art, Culture, and Power.";
-  const ogImage = post.coverImageUrl || `${APP_URL}/icons/og.png`;
+
+  const cover = post.coverImageUrl
+    ? sanitizeMediaSrc(post.coverImageUrl)
+    : null;
+  const coverIsVideo = cover ? VIDEO_EXT_RE.test(cover) : false;
+  const firstContentImage = extractFirstImageSrcFromHtml(post.content);
+
+  const ogImage =
+    (cover && !coverIsVideo ? cover : null) ??
+    firstContentImage ??
+    `${APP_URL}/icons/og.png`;
 
   return {
     title,
@@ -92,7 +140,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "https";
   const url = host
-    ? `${proto}://${host}/blog/${post.slug}`  
+    ? `${proto}://${host}/blog/${post.slug}`
     : `/blog/${post.slug}`;
 
   // Prepare initial post for infinite scroll

@@ -38,7 +38,11 @@ export function MobileMenu({
   if (!open) return null;
 
   type NavLike = {
-    share?: (data: { title?: string; text?: string; url?: string }) => Promise<void>;
+    share?: (data: {
+      title?: string;
+      text?: string;
+      url?: string;
+    }) => Promise<void>;
     clipboard?: { writeText?: (text: string) => Promise<void> };
   };
 
@@ -154,7 +158,8 @@ export function MobileMenu({
           </button>
 
           <p className="text-xs text-foreground/50">
-            Share app uses the main OG preview. Reporting opens a secure WhatsApp flow.
+            Share app uses the main OG preview. Reporting opens a secure
+            WhatsApp flow.
           </p>
         </div>
       </div>
