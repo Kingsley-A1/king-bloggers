@@ -8,6 +8,7 @@ import {
   formatCount,
   type PostCategory,
 } from "@/lib/queries/posts";
+import type { BadgeVariant } from "@/components/ui/Badge";
 
 // ============================================
 // 👑 KING BLOGGERS V2 - Feed Actions
@@ -31,14 +32,7 @@ export interface FeedPostItem {
   reactionCount: number;
   badge: {
     label: string;
-    variant:
-      | "tech"
-      | "art"
-      | "politics"
-      | "draft"
-      | "published"
-      | "gold"
-      | "secondary";
+    variant: BadgeVariant;
   };
   readTime: string;
 }

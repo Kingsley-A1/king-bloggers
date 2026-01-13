@@ -4,18 +4,17 @@ import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import {
-  Zap,
   X,
   Bold,
   Italic,
   Link2,
   Heading2,
   Image as ImageIcon,
+  Camera,
   Video,
   Send,
   Save,
   Trash2,
-  Plus,
   ArrowLeft,
 } from "lucide-react";
 
@@ -30,6 +29,7 @@ import {
   safeLocalStorageSet,
 } from "@/lib/safe-storage";
 import { cn } from "@/lib/utils";
+import { compressContentImage, formatBytes } from "@/lib/image-compression";
 
 // ============================================
 // 👑 KING BLOGGERS - TikTok-Speed Editor
@@ -43,6 +43,10 @@ const CATEGORIES = [
   { value: "tech", label: "Tech", emoji: "💻" },
   { value: "art_culture", label: "Art & Culture", emoji: "🎨" },
   { value: "entertainment", label: "Entertainment", emoji: "🎬" },
+  { value: "sport", label: "Sport", emoji: "⚽" },
+  { value: "health", label: "Health", emoji: "🏥" },
+  { value: "self_growth", label: "Self Growth", emoji: "🌱" },
+  { value: "finances", label: "Finances", emoji: "💰" },
   { value: "politics", label: "Politics", emoji: "🏛️" },
   { value: "economics", label: "Economics", emoji: "📈" },
   { value: "religion", label: "Religion", emoji: "🙏" },
@@ -120,6 +124,7 @@ function EditorContent() {
   const [html, setHtml] = React.useState("");
   const [category, setCategory] = React.useState<Category>("tech");
   const [coverImageUrl, setCoverImageUrl] = React.useState<string | null>(null);
+  const [inlineImages, setInlineImages] = React.useState<string[]>([]);
   const [uploading, setUploading] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [loading, setLoading] = React.useState(!!editPostId);
@@ -212,6 +217,7 @@ function EditorContent() {
   }
 
   // Upload image/video via server proxy (avoids CORS issues)
+  // 👑 Images are compressed client-side for faster uploads
   async function uploadImage(file: File) {
     setUploading(true);
     try {
@@ -235,11 +241,36 @@ function EditorContent() {
         throw new Error("File too large. Maximum size is 50MB.");
       }
 
+      let fileToUpload: File | Blob = file;
+      let contentType = file.type;
+
+      // 📸 Compress images before upload (not videos)
+      if (file.type.startsWith("image/") && file.type !== "image/gif") {
+        const originalSize = file.size;
+        const compressedBlob = await compressContentImage(file);
+        fileToUpload = compressedBlob;
+        contentType = compressedBlob.type;
+
+        // Show compression toast if significant reduction
+        const savedPercent = Math.round(
+          ((originalSize - compressedBlob.size) / originalSize) * 100
+        );
+        if (savedPercent > 20) {
+          setToast({
+            open: true,
+            message: `Compressed: ${formatBytes(originalSize)} → ${formatBytes(
+              compressedBlob.size
+            )} (${savedPercent}% saved)`,
+            variant: "success",
+          });
+        }
+      }
+
       // Use server-side proxy to avoid CORS issues
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", fileToUpload);
       formData.append("fileName", file.name);
-      formData.append("contentType", file.type);
+      formData.append("contentType", contentType);
 
       const response = await fetch("/api/upload", {
         method: "PUT",
@@ -281,13 +312,6 @@ function EditorContent() {
     setCoverImageUrl(null);
     setIsEditing(false);
     if (editorRef.current) editorRef.current.innerHTML = "";
-  }
-
-  // Start new blog
-  function startNewBlog() {
-    clearDraft();
-    router.push("/blogger/editor?new=true");
-    setToast({ open: true, message: "Starting fresh!", variant: "success" });
   }
 
   // Quick Publish (single action)
@@ -427,7 +451,7 @@ function EditorContent() {
   return (
     <main className="min-h-screen py-6 md:py-10">
       <Container className="max-w-4xl">
-        {/* Header */}
+        {/* Header - Clean & Focused */}
         <div className="flex items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3">
             {isEditing && (
@@ -438,65 +462,62 @@ function EditorContent() {
                 <ArrowLeft className="h-5 w-5" />
               </button>
             )}
-            <Zap className="h-6 w-6 text-king-orange" />
-            <span className="font-black text-lg">
-              {isEditing ? "Edit Post" : "Quick Post"}
+            <span className="font-black text-lg md:text-xl">
+              {isEditing ? "✏️ Edit Post" : "✨ Create Post"}
             </span>
           </div>
+
+          {/* Action Buttons - Redesigned Hierarchy */}
           <div className="flex items-center gap-2">
-            {/* New Blog Button - Always visible */}
-            {!isNewMode && (
-              <GlassButton
-                variant="ghost"
-                size="sm"
-                onClick={startNewBlog}
-                className="gap-2 text-king-orange border-king-orange/30 hover:bg-king-orange/10"
-              >
-                <Plus className="h-4 w-4" />
-                New Blog
-              </GlassButton>
-            )}
+            {/* Clear/Trash - Ghost */}
             <GlassButton
               variant="ghost"
               size="sm"
               onClick={clearDraft}
               disabled={busy}
+              className="hidden md:flex"
             >
               <Trash2 className="h-4 w-4" />
             </GlassButton>
+
+            {/* Save Draft - Secondary Glass */}
             <GlassButton
               variant="glass"
               size="sm"
               onClick={saveDraft}
               disabled={busy || !title.trim()}
+              className="hidden sm:flex"
             >
               {busy ? <Spinner size={14} /> : <Save className="h-4 w-4 mr-1" />}
-              Save
+              <span className="hidden md:inline">Save</span>
             </GlassButton>
+
+            {/* 👑 PUBLISH - Primary CTA (Most Prominent) */}
             <GlassButton
               variant="primary"
               onClick={quickPublish}
               disabled={busy || !canPublish}
+              className="px-4 md:px-6 shadow-lg shadow-king-orange/30"
             >
               {busy ? (
                 <Spinner size={16} />
               ) : (
                 <>
                   <Send className="h-4 w-4 mr-2" />
-                  {isEditing ? "Update & Publish" : "Publish Now"}
+                  {isEditing ? "Update" : "Publish"}
                 </>
               )}
             </GlassButton>
           </div>
         </div>
 
-        {/* Cover Image - Drag & Drop Zone */}
+        {/* 👑 CAMERA-FIRST: Cover Image Upload Zone (Made More Prominent) */}
         <div
           className={cn(
             "relative rounded-2xl border-2 border-dashed transition-all overflow-hidden mb-6",
             coverImageUrl
               ? "border-transparent"
-              : "border-foreground/20 hover:border-king-orange/50 bg-foreground/5"
+              : "border-king-orange/40 hover:border-king-orange bg-gradient-to-br from-king-orange/5 to-amber-500/5 cursor-pointer"
           )}
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
@@ -504,6 +525,7 @@ function EditorContent() {
             const file = e.dataTransfer.files[0];
             if (file?.type.startsWith("image/")) handleCoverUpload(file);
           }}
+          onClick={() => !coverImageUrl && fileInputRef.current?.click()}
         >
           {coverImageUrl ? (
             <div className="relative aspect-[21/9]">
@@ -515,14 +537,17 @@ function EditorContent() {
               />
               <button
                 type="button"
-                onClick={() => setCoverImageUrl(null)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCoverImageUrl(null);
+                }}
                 className="absolute top-3 right-3 p-2 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
           ) : (
-            <label className="flex flex-col items-center justify-center py-10 cursor-pointer">
+            <label className="flex flex-col items-center justify-center py-12 md:py-16 cursor-pointer">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -534,12 +559,17 @@ function EditorContent() {
                 }}
               />
               {uploading ? (
-                <Spinner size={24} />
+                <Spinner size={32} className="text-king-orange" />
               ) : (
                 <>
-                  <ImageIcon className="h-8 w-8 text-foreground/40 mb-2" />
-                  <span className="text-sm text-foreground/60">
-                    Drop cover image or click to upload
+                  <div className="w-16 h-16 rounded-full bg-king-orange/20 flex items-center justify-center mb-3">
+                    <ImageIcon className="h-8 w-8 text-king-orange" />
+                  </div>
+                  <span className="text-base font-semibold text-foreground/80 mb-1">
+                    Add Cover Image
+                  </span>
+                  <span className="text-sm text-foreground/50">
+                    Tap or drag & drop
                   </span>
                 </>
               )}
@@ -614,14 +644,15 @@ function EditorContent() {
             <Link2 className="h-4 w-4" />
           </button>
 
-          {/* Inline Image Upload (Multiple) */}
+          {/* 📸 CAMERA BUTTON - Prominent for Mobile */}
           <button
             type="button"
             onClick={() => {
               const input = document.createElement("input");
               input.type = "file";
               input.accept = "image/*";
-              input.multiple = true; // Allow multiple images
+              input.capture = "environment"; // Opens camera on mobile
+              input.multiple = true;
               input.onchange = async (e) => {
                 const files = Array.from(
                   (e.target as HTMLInputElement).files || []
@@ -638,41 +669,26 @@ function EditorContent() {
 
                 setUploading(false);
 
-                if (uploadedUrls.length === 1) {
-                  // Single image
-                  exec(
-                    "insertHTML",
-                    `<img src="${uploadedUrls[0]}" alt="Image" style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;" />`
-                  );
-                } else if (uploadedUrls.length > 1) {
-                  // Multiple images - create a gallery grid
-                  const galleryHtml = `
-                    <div style="display: grid; grid-template-columns: repeat(${
-                      uploadedUrls.length <= 2 ? uploadedUrls.length : 2
-                    }, 1fr); gap: 8px; margin: 16px 0;">
-                      ${uploadedUrls
-                        .map(
-                          (url) =>
-                            `<img src="${url}" alt="Gallery image" style="width: 100%; height: auto; border-radius: 8px; object-fit: cover; aspect-ratio: 1;" />`
-                        )
-                        .join("")}
-                    </div>
-                  `;
-                  exec("insertHTML", galleryHtml);
+                // Add images to inlineImages state for displaying below textarea
+                if (uploadedUrls.length > 0) {
+                  setInlineImages((prev) => [...prev, ...uploadedUrls]);
                   setToast({
                     open: true,
-                    message: `${uploadedUrls.length} images added as gallery`,
+                    message: `${uploadedUrls.length} image${
+                      uploadedUrls.length > 1 ? "s" : ""
+                    } added`,
                     variant: "success",
                   });
                 }
               };
               input.click();
             }}
-            className="p-2 rounded-lg hover:bg-foreground/10 transition-colors"
-            title="Insert Images (select multiple)"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-sm transition-all hover:from-blue-500/90 hover:to-cyan-500/90 active:scale-95 shadow-lg shadow-blue-500/25"
+            title="Take Photo / Add Images"
             disabled={uploading}
           >
-            <ImageIcon className="h-4 w-4" />
+            <Camera className="h-4 w-4" />
+            <span className="hidden sm:inline">Photo</span>
           </button>
 
           {/* Inline Video Upload - PROMINENT BUTTON */}
@@ -770,6 +786,87 @@ function EditorContent() {
             )}
           />
         </div>
+
+        {/* 📸 Uploaded Images Gallery - Below Text Area */}
+        {inlineImages.length > 0 && (
+          <div className="mt-4 p-4 rounded-xl border border-foreground/10 bg-foreground/5">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-foreground/80">
+                📸 Uploaded Images ({inlineImages.length})
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  // Insert all images into the editor content
+                  const imagesHtml = inlineImages
+                    .map(
+                      (url) =>
+                        `<img src="${url}" alt="Image" style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;" />`
+                    )
+                    .join("");
+                  exec("insertHTML", imagesHtml);
+                  setInlineImages([]);
+                  setToast({
+                    open: true,
+                    message: "Images added to content",
+                    variant: "success",
+                  });
+                }}
+                className="text-xs font-semibold text-king-orange hover:underline"
+              >
+                Insert All to Content
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {inlineImages.map((url, idx) => (
+                <div
+                  key={url}
+                  className="relative group rounded-lg overflow-hidden aspect-square bg-foreground/5"
+                >
+                  <Image
+                    src={url}
+                    alt={`Uploaded image ${idx + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                  {/* Delete button overlay */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setInlineImages((prev) =>
+                        prev.filter((_, i) => i !== idx)
+                      )
+                    }
+                    className="absolute top-1 right-1 p-1.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                  {/* Insert single image */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      exec(
+                        "insertHTML",
+                        `<img src="${url}" alt="Image" style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;" />`
+                      );
+                      setInlineImages((prev) =>
+                        prev.filter((_, i) => i !== idx)
+                      );
+                      setToast({
+                        open: true,
+                        message: "Image added to content",
+                        variant: "success",
+                      });
+                    }}
+                    className="absolute bottom-1 left-1 right-1 py-1.5 text-[10px] font-bold uppercase tracking-wider text-center bg-king-orange text-black rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    Insert
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Upload / Publish Actions - Sticky on Mobile */}
         <div className="mt-6 p-4 rounded-xl bg-foreground/5 border border-foreground/10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">

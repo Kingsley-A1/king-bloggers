@@ -3,6 +3,7 @@ import { Suspense } from "react";
 
 import "../../global.css";
 import { ExitShareModal } from "@/components/features/ExitShareModal";
+import { ErrorDetectionPrompt } from "@/components/features/ErrorDetectionPrompt";
 import { InstallAppPrompt } from "@/components/features/InstallAppPrompt";
 import { PwaRouteRestore } from "@/components/features/PwaRouteRestore";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -96,6 +97,9 @@ export default function RootLayout({
             <PwaRouteRestore />
           </Suspense>
           {children}
+          <Suspense fallback={null}>
+            <ErrorDetectionPrompt />
+          </Suspense>
           <Suspense fallback={null}>
             <InstallAppPrompt />
           </Suspense>

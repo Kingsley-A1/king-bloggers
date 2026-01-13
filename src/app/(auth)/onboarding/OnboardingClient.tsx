@@ -18,6 +18,8 @@ import {
   Church,
   Activity,
   Heart,
+  Sprout,
+  Wallet,
 } from "lucide-react";
 
 import { GlassButton } from "@/components/ui/GlassButton";
@@ -85,6 +87,24 @@ const INTEREST_CATEGORIES: InterestCategory[] = [
     imageUrl:
       "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&h=400&fit=crop",
     gradient: "from-pink-500 to-rose-400",
+  },
+  {
+    id: "self_growth",
+    label: "Self Growth",
+    description: "Productivity, mindset, habits & self-improvement",
+    icon: Sprout,
+    imageUrl:
+      "https://images.unsplash.com/photo-1499728603263-13726abce5fd?w=400&h=400&fit=crop",
+    gradient: "from-violet-500 to-purple-400",
+  },
+  {
+    id: "finances",
+    label: "Finances",
+    description: "Investing, saving, budgeting & wealth building",
+    icon: Wallet,
+    imageUrl:
+      "https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=400&h=400&fit=crop",
+    gradient: "from-cyan-500 to-blue-400",
   },
   {
     id: "politics",

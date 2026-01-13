@@ -144,7 +144,8 @@ export default function DocsPage() {
                 <ol className="list-decimal pl-5 space-y-2">
                   <li>
                     Browse the homepage or category feeds (Tech, Art & Culture,
-                    Entertainment, Politics, Economics, Religion)
+                    Entertainment, Sport, Health, Self Growth, Finances,
+                    Politics, Economics, Religion)
                   </li>
                   <li>Click any post card to read the full article</li>
                   <li>
@@ -240,7 +241,8 @@ export default function DocsPage() {
                   </li>
                   <li>
                     Select a <strong>Category</strong> (Tech, Art & Culture,
-                    Entertainment, Politics, Economics, or Religion)
+                    Entertainment, Sport, Health, Self Growth, Finances,
+                    Politics, Economics, or Religion)
                   </li>
                   <li>
                     Upload a <strong>Cover Image</strong> (recommended:
@@ -266,32 +268,48 @@ export default function DocsPage() {
             <GlassCard className="p-6 md:p-10">
               <DocSection id="categories" title="Categories Explained">
                 <p>
-                  King Bloggers organizes content into six sovereign categories:
+                  King Bloggers organizes content into ten sovereign categories:
                 </p>
-                <div className="grid gap-4 sm:grid-cols-2 mt-6">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
                   {[
                     {
-                      name: "Tech",
+                      name: "💻 Tech",
                       desc: "Technology, startups, software, gadgets, and digital innovation.",
                     },
                     {
-                      name: "Art & Culture",
+                      name: "🎨 Art & Culture",
                       desc: "Visual arts, music, literature, fashion, and cultural movements.",
                     },
                     {
-                      name: "Entertainment",
+                      name: "🎬 Entertainment",
                       desc: "Film, TV, celebrity news, events, and pop culture.",
                     },
                     {
-                      name: "Politics",
+                      name: "⚽ Sport",
+                      desc: "Football, athletics, sports news, and game highlights.",
+                    },
+                    {
+                      name: "🏥 Health",
+                      desc: "Wellness, fitness, nutrition, and mental health.",
+                    },
+                    {
+                      name: "🌱 Self Growth",
+                      desc: "Productivity, mindset, habits, and self-improvement.",
+                    },
+                    {
+                      name: "💰 Finances",
+                      desc: "Investing, saving, budgeting, and wealth building.",
+                    },
+                    {
+                      name: "🏛️ Politics",
                       desc: "Governance, policy, elections, and political analysis.",
                     },
                     {
-                      name: "Economics",
+                      name: "📈 Economics",
                       desc: "Finance, business, markets, and economic trends.",
                     },
                     {
-                      name: "Religion",
+                      name: "🙏 Religion",
                       desc: "Faith, spirituality, religious events, and interfaith dialogue.",
                     },
                   ].map((cat) => (

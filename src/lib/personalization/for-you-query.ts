@@ -91,7 +91,10 @@ export async function getForYouFeed(input?: {
       .select({ postId: readingHistory.postId })
       .from(readingHistory)
       .where(
-        and(eq(readingHistory.userId, userId), eq(readingHistory.completed, true))
+        and(
+          eq(readingHistory.userId, userId),
+          eq(readingHistory.completed, true)
+        )
       );
     excludeIds = readPostIds.map((r) => r.postId);
 
@@ -103,7 +106,10 @@ export async function getForYouFeed(input?: {
     followedIds = new Set(followedRows.map((r) => r.followingId));
   } catch (error) {
     // Log but continue - personalization will be less accurate but feed still works
-    console.warn("[For You] Personalization query failed, using defaults:", error);
+    console.warn(
+      "[For You] Personalization query failed, using defaults:",
+      error
+    );
   }
 
   // Build cursor condition

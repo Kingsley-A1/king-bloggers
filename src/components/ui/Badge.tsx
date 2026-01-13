@@ -15,7 +15,11 @@ export type BadgeVariant =
   | "draft"
   | "published"
   | "gold"
-  | "secondary";
+  | "secondary"
+  | "sport"
+  | "health"
+  | "growth"
+  | "finance";
 
 export type BadgeProps = React.HTMLAttributes<HTMLSpanElement> & {
   variant?: BadgeVariant;
@@ -35,6 +39,14 @@ export function Badge({ className, variant = "tech", ...props }: BadgeProps) {
       ? "border-king-gold/40 bg-king-gold/15 text-king-gold"
       : variant === "secondary"
       ? "border-foreground/20 bg-foreground/10 text-foreground/70"
+      : variant === "sport"
+      ? "border-emerald-500/30 bg-emerald-500/10 text-foreground"
+      : variant === "health"
+      ? "border-rose-500/30 bg-rose-500/10 text-foreground"
+      : variant === "growth"
+      ? "border-violet-500/30 bg-violet-500/10 text-foreground"
+      : variant === "finance"
+      ? "border-cyan-500/30 bg-cyan-500/10 text-foreground"
       : "border-king-orange/30 bg-king-orange/10 text-foreground";
 
   return (

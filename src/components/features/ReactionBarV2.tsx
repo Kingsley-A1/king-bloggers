@@ -133,9 +133,16 @@ export function ReactionBar({
     );
   }
 
-  // Full view for post pages - all reactions visible inline
+  // Full view for post pages - all reactions in ONE unified glass container
   return (
-    <div className="flex items-center gap-1 flex-wrap">
+    <div
+      className={cn(
+        "flex flex-wrap items-center gap-0.5",
+        "max-w-full",
+        "px-2 py-1.5 rounded-2xl",
+        "bg-foreground/5 backdrop-blur-sm border border-foreground/10"
+      )}
+    >
       {POSITIVE_REACTIONS.map((type) => {
         const count = counts[type];
         const isActive = myValue === type;
@@ -146,11 +153,10 @@ export function ReactionBar({
             onClick={() => void handleReaction(type)}
             disabled={busy}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-2 rounded-full transition-all duration-200",
-              "border hover:bg-foreground/10 active:scale-95",
-              isActive
-                ? "border-king-orange/50 bg-king-orange/15 shadow-sm shadow-king-orange/20"
-                : "border-foreground/10 bg-foreground/5",
+              "flex items-center gap-1 rounded-full transition-all duration-200",
+              "px-1.5 py-1 sm:px-2 sm:py-1.5",
+              "hover:bg-foreground/10 active:scale-95",
+              isActive && "bg-king-orange/15",
               popType === type && "animate-bounce",
               "disabled:pointer-events-none"
             )}
@@ -159,7 +165,7 @@ export function ReactionBar({
           >
             <span
               className={cn(
-                "text-xl transition-transform duration-200",
+                "text-lg transition-transform duration-200",
                 popType === type && "scale-125",
                 isActive && "drop-shadow-sm"
               )}
@@ -168,7 +174,7 @@ export function ReactionBar({
             </span>
             <span
               className={cn(
-                "text-sm font-bold tabular-nums",
+                "text-xs font-bold tabular-nums",
                 isActive ? "text-king-orange" : "text-foreground/60"
               )}
             >
@@ -180,7 +186,7 @@ export function ReactionBar({
 
       {/* Total indicator */}
       {total > 0 && (
-        <div className="ml-2 px-3 py-2 text-xs text-foreground/50 font-medium">
+        <div className="w-full sm:w-auto sm:ml-2 px-3 py-2 text-xs text-foreground/50 font-medium">
           {total} reaction{total !== 1 ? "s" : ""}
         </div>
       )}

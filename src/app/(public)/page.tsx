@@ -28,7 +28,12 @@ export default async function HomePage() {
         <div className="glass-card p-8 md:p-12">
           <SectionHeader
             title="King Bloggers"
-            subtitle={`Built for ${name} -- A sovereign feed for Tech, Art, Culture, and Power and more...`}
+            subtitle={
+              <>
+                Built for <span className="text-king-orange font-semibold">{name}</span>
+                {" -- A sovereign feed for Tech, Art, Culture, and Power and more..."}
+              </>
+            }
           />
         </div>
 

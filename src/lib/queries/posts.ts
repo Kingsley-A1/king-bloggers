@@ -236,21 +236,45 @@ export function labelForCategory(category: PostCategory) {
       return "Economics";
     case "religion":
       return "Religion";
+    case "sport":
+      return "Sport";
+    case "health":
+      return "Health";
+    case "self_growth":
+      return "Self Growth";
+    case "finances":
+      return "Finances";
     default:
       return category;
   }
 }
 
-export function badgeVariantForCategory(category: PostCategory) {
+import type { BadgeVariant } from "@/components/ui/Badge";
+
+export function badgeVariantForCategory(category: PostCategory): BadgeVariant {
   switch (category) {
     case "tech":
-      return "tech" as const;
+      return "tech";
     case "politics":
-      return "politics" as const;
+      return "politics";
     case "art_culture":
-      return "art" as const;
+      return "art";
+    case "sport":
+      return "sport";
+    case "health":
+      return "health";
+    case "self_growth":
+      return "growth";
+    case "finances":
+      return "finance";
+    case "entertainment":
+      return "secondary";
+    case "economics":
+      return "secondary";
+    case "religion":
+      return "gold";
     default:
-      return "tech" as const;
+      return "tech";
   }
 }
 

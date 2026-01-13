@@ -21,7 +21,9 @@ type CategoryFeedCategory =
   | "art_culture"
   | "entertainment"
   | "sport"
-  | "health";
+  | "health"
+  | "self_growth"
+  | "finances";
 
 export function CategoryInfiniteFeed({
   category,

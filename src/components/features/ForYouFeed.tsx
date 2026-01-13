@@ -244,6 +244,7 @@ export function ForYouFeed({
           {posts.map((post) => (
             <PostCard
               key={post.id}
+              postId={post.id}
               href={`/blog/${post.slug}`}
               title={post.title}
               excerpt={post.excerpt ?? undefined}

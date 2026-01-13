@@ -75,18 +75,7 @@ export default async function middleware(req: NextRequest) {
     return loginRedirect(req, pathname + search);
   }
 
-  // Check role for dashboard (bloggers only)
-  const role = typeof token.role === "string" ? token.role : "reader";
-  const isDashboard = pathname.includes("/dashboard");
-
-  if (isDashboard && role !== "blogger") {
-    // Readers cannot access dashboard, redirect to editor
-    const url = req.nextUrl.clone();
-    url.pathname = "/blogger/editor";
-    url.search = "";
-    return NextResponse.redirect(url);
-  }
-
+  // Allow readers to access dashboard - they will see upgrade prompt there
   // User is authenticated → allow access
   return NextResponse.next();
 }

@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 
 import { PostCard } from "@/components/features/PostCard";
 import { PostCardSkeleton } from "@/components/features/PostCardSkeleton";
+import type { BadgeVariant } from "@/components/ui/Badge";
 
 // ============================================
 // 👑 KING BLOGGERS V2 - Infinite Scroll Feed
@@ -29,14 +30,7 @@ export interface InfinitePostItem {
   reactionCount: number;
   badge: {
     label: string;
-    variant:
-      | "tech"
-      | "art"
-      | "politics"
-      | "draft"
-      | "published"
-      | "gold"
-      | "secondary";
+    variant: BadgeVariant;
   };
   readTime: string;
 }

@@ -9,6 +9,7 @@ import {
   Send,
   PenTool,
   Users,
+  Crown,
 } from "lucide-react";
 
 import { AnalyticsChart } from "@/components/features/AnalyticsChart";
@@ -20,6 +21,7 @@ import { GlassButton } from "@/components/ui/GlassButton";
 import { db } from "@/db";
 import { comments, posts, follows, users } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { UpgradeButton } from "./UpgradeButton";
 
 function isoDay(d: Date) {
   const yyyy = d.getUTCFullYear();
@@ -53,15 +55,69 @@ export default async function BloggerDashboardPage() {
     );
   }
 
-  // Get user info
+  // Get user info including role
   const [userInfo] = await db
-    .select({ name: users.name, email: users.email })
+    .select({ name: users.name, email: users.email, role: users.role })
     .from(users)
     .where(eq(users.id, userId))
     .limit(1);
 
   const userName =
     userInfo?.name || userInfo?.email?.split("@")[0] || "Blogger";
+  const isReader = userInfo?.role === "reader";
+
+  // 👑 Show upgrade prompt for readers
+  if (isReader) {
+    return (
+      <main className="min-h-screen py-10 md:py-14">
+        <Container>
+          <GlassCard className="p-8 md:p-12 text-center">
+            <div className="max-w-md mx-auto">
+              {/* Crown Icon */}
+              <div className="w-20 h-20 mx-auto rounded-full bg-king-orange/20 flex items-center justify-center mb-6">
+                <Crown className="h-10 w-10 text-king-orange" />
+              </div>
+
+              <h1 className="text-2xl md:text-3xl font-black tracking-tight mb-3">
+                Become a Blogger
+              </h1>
+
+              <p className="text-foreground/60 mb-6 leading-relaxed">
+                Hey {userName}! 👋 You&apos;re currently a{" "}
+                <strong>Reader</strong>. Upgrade to <strong>Blogger</strong>{" "}
+                status to unlock the full studio experience — publish posts,
+                track analytics, and build your audience.
+              </p>
+
+              {/* Benefits */}
+              <div className="grid gap-3 text-left mb-8">
+                {[
+                  "📝 Publish unlimited blog posts",
+                  "📊 Access analytics dashboard",
+                  "👥 Build your follower base",
+                  "✓ Get verified blogger badge",
+                ].map((benefit) => (
+                  <div
+                    key={benefit}
+                    className="flex items-center gap-3 text-sm text-foreground/80 bg-foreground/5 rounded-lg px-4 py-3"
+                  >
+                    <span>{benefit}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Upgrade Button */}
+              <UpgradeButton />
+
+              <p className="mt-4 text-xs text-foreground/40">
+                Free forever. No credit card required.
+              </p>
+            </div>
+          </GlassCard>
+        </Container>
+      </main>
+    );
+  }
 
   // Aggregate stats
   const [totals] = await db

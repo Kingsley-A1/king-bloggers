@@ -11,7 +11,6 @@ import {
   Eye,
   Heart,
   MessageCircle,
-  MoreVertical,
   ExternalLink,
   Image as ImageIcon,
 } from "lucide-react";
@@ -51,7 +50,6 @@ export default function MyBlogsPage() {
   const [posts, setPosts] = React.useState<BlogPost[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [deleting, setDeleting] = React.useState<string | null>(null);
-  const [activeMenu, setActiveMenu] = React.useState<string | null>(null);
   const [toast, setToast] = React.useState<{
     open: boolean;
     message: string;
@@ -91,7 +89,6 @@ export default function MyBlogsPage() {
     }
 
     setDeleting(postId);
-    setActiveMenu(null);
 
     try {
       const res = await fetch(`/api/my-posts/${postId}`, { method: "DELETE" });
@@ -113,7 +110,6 @@ export default function MyBlogsPage() {
   }
 
   function handleEdit(postId: string) {
-    setActiveMenu(null);
     router.push(`/bloggers/editor?edit=${postId}`);
   }
 
@@ -234,47 +230,31 @@ export default function MyBlogsPage() {
                         )}
                       </div>
 
-                      {/* Actions Menu */}
-                      <div className="relative">
+                      {/* Action Buttons - Always Visible */}
+                      <div className="flex items-center gap-1 shrink-0">
                         <button
-                          onClick={() =>
-                            setActiveMenu(
-                              activeMenu === post.id ? null : post.id
-                            )
-                          }
-                          className="p-2 rounded-lg hover:bg-foreground/10 transition-colors"
+                          onClick={() => handleEdit(post.id)}
+                          className="p-2 rounded-lg hover:bg-foreground/10 transition-colors text-foreground/70 hover:text-foreground"
+                          title="Edit"
                         >
-                          <MoreVertical className="h-5 w-5" />
+                          <Edit3 className="h-4 w-4" />
                         </button>
-
-                        {activeMenu === post.id && (
-                          <div className="absolute right-0 top-full mt-1 z-50 min-w-[160px] py-2 rounded-xl border border-foreground/10 bg-background/95 backdrop-blur-xl shadow-xl">
-                            <button
-                              onClick={() => handleEdit(post.id)}
-                              className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-foreground/10"
-                            >
-                              <Edit3 className="h-4 w-4" />
-                              Edit
-                            </button>
-                            {post.status === "published" && (
-                              <Link
-                                href={`/blog/${post.slug}`}
-                                className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-foreground/10"
-                                onClick={() => setActiveMenu(null)}
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                                View Post
-                              </Link>
-                            )}
-                            <button
-                              onClick={() => handleDelete(post.id)}
-                              className="w-full px-4 py-2 text-left text-sm flex items-center gap-2 hover:bg-foreground/10 text-red-500"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                              Delete
-                            </button>
-                          </div>
+                        {post.status === "published" && (
+                          <Link
+                            href={`/blog/${post.slug}`}
+                            className="p-2 rounded-lg hover:bg-foreground/10 transition-colors text-foreground/70 hover:text-foreground"
+                            title="View Post"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Link>
                         )}
+                        <button
+                          onClick={() => handleDelete(post.id)}
+                          className="p-2 rounded-lg hover:bg-red-500/20 transition-colors text-foreground/70 hover:text-red-500"
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
 

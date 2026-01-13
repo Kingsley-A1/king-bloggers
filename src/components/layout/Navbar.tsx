@@ -3,7 +3,7 @@
 import Link from "next/link";
 import * as React from "react";
 import { useSession } from "next-auth/react";
-import { Bell, PenSquare } from "lucide-react";
+import { Bell, Plus, Menu as MenuIcon } from "lucide-react";
 
 import { cn } from "../../lib/utils";
 import { GlassButton } from "../ui/GlassButton";
@@ -16,11 +16,11 @@ import { NavSearch } from "../features/NavSearch";
 import { getUnreadCount } from "@/lib/actions/notifications";
 
 // ============================================
-// 👑 KING BLOGGERS - Mobile-First Navbar
+// 👑 KING BLOGGERS - Mobile-First Navbar V3
 // ============================================
-// Clean, compact, app-like header
-// Mobile: Logo, NavSearch, Bell, Profile, Menu
+// Mobile: Logo, Search, Bell, +Create, Hamburger
 // Desktop: Full nav with all links
+// Profile moved to menu on mobile
 // ============================================
 
 const LINKS = [
@@ -72,7 +72,11 @@ export function Navbar() {
         <Container className="flex items-center justify-between gap-2">
           {/* Logo - Always full with text, bigger on mobile */}
           <Link href="/" className="flex items-center gap-1.5 flex-shrink-0">
-            <Logo variant="full" size={32} className="scale-105 sm:scale-100 origin-left" />
+            <Logo
+              variant="full"
+              size={32}
+              className="scale-105 sm:scale-100 origin-left"
+            />
           </Link>
 
           {/* Desktop Nav - Hidden on mobile */}
@@ -90,8 +94,8 @@ export function Navbar() {
 
           {/* Right Actions - Optimized for mobile */}
           <div className="flex items-center gap-1 md:gap-2">
-            {/* Theme Toggle - Hidden on small mobile */}
-            <div className="hidden xs:block">
+            {/* Theme Toggle - Hidden on mobile */}
+            <div className="hidden md:block">
               <ThemeToggle />
             </div>
 
@@ -117,35 +121,51 @@ export function Navbar() {
               </Link>
             )}
 
-            {/* Upload Button - Desktop only, mobile in menu */}
+            {/* 👑 MOBILE: Quick Create "+" Button */}
             {signedIn && (
               <Link
                 href="/blogger/editor"
                 className={cn(
-                  "hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full",
-                  "bg-king-orange/10 border border-king-orange/30",
-                  "text-king-orange hover:bg-king-orange/20",
+                  "md:hidden flex items-center justify-center w-9 h-9 rounded-full",
+                  "bg-king-orange text-black",
                   "transition-all active:scale-95",
-                  "text-sm font-bold"
+                  "shadow-lg shadow-king-orange/30"
                 )}
-                aria-label="Upload Blog"
+                aria-label="Create Post"
               >
-                <PenSquare className="w-4 h-4" />
-                <span>Upload</span>
+                <Plus className="w-5 h-5 stroke-[3]" />
               </Link>
             )}
 
-            {/* Profile / Login */}
+            {/* Desktop Upload Button */}
+            {signedIn && (
+              <Link
+                href="/blogger/editor"
+                className={cn(
+                  "hidden md:flex items-center gap-1.5 px-4 py-2 rounded-full",
+                  "bg-king-orange text-black font-bold",
+                  "transition-all active:scale-95",
+                  "shadow-lg shadow-king-orange/30",
+                  "text-sm"
+                )}
+                aria-label="Upload Blog"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" />
+                <span>Create</span>
+              </Link>
+            )}
+
+            {/* Desktop Profile - Hidden on mobile (moved to menu) */}
             {loading ? (
               <div
                 aria-label="Loading session"
-                className="h-8 w-8 rounded-full border border-foreground/10 bg-foreground/5 animate-pulse"
+                className="hidden md:block h-8 w-8 rounded-full border border-foreground/10 bg-foreground/5 animate-pulse"
               />
             ) : signedIn ? (
               <Link
                 href="/profile"
                 aria-label="Profile"
-                className="inline-flex items-center justify-center rounded-full border border-foreground/10 bg-foreground/5 p-0.5 active:scale-95 transition-all hover:bg-foreground/10"
+                className="hidden md:inline-flex items-center justify-center rounded-full border border-foreground/10 bg-foreground/5 p-0.5 active:scale-95 transition-all hover:bg-foreground/10"
               >
                 <Avatar
                   src={session?.user?.image}
@@ -159,20 +179,32 @@ export function Navbar() {
                 as="a"
                 href="/login"
                 variant="glass"
-                className="px-3 py-1.5 text-xs"
+                className="hidden md:inline-flex px-3 py-1.5 text-xs"
               >
                 Log In
               </GlassButton>
             )}
 
-            {/* Mobile Menu Toggle */}
+            {/* Not signed in - mobile login */}
+            {!signedIn && !loading && (
+              <GlassButton
+                as="a"
+                href="/login"
+                variant="primary"
+                className="md:hidden px-3 py-1.5 text-xs"
+              >
+                Log In
+              </GlassButton>
+            )}
+
+            {/* 👑 HAMBURGER MENU - Mobile only */}
             <button
               type="button"
               aria-label="Open menu"
               onClick={() => setOpen(true)}
-              className="md:hidden rounded-lg border border-foreground/10 bg-foreground/5 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-foreground/80 active:scale-95 transition-all hover:bg-foreground/10"
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg border border-foreground/10 bg-foreground/5 active:scale-95 transition-all hover:bg-foreground/10"
             >
-              Menu
+              <MenuIcon className="w-5 h-5" />
             </button>
           </div>
         </Container>

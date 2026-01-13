@@ -8,11 +8,11 @@ import { Logo } from "@/components/ui/Logo";
 export const metadata = {
   title: "About — King Bloggers",
   description:
-    "Learn about King Bloggers: a sovereign Nigerian media platform for Tech, Art, Culture, Politics, Economics, and Religion.",
+    "Learn about King Bloggers: a sovereign Nigerian media platform for Tech, Art, Culture, Entertainment, Sport, Health, Self Growth, Finances, Politics, Economics, and Religion.",
   openGraph: {
     title: "About — King Bloggers",
     description:
-      "A sovereign Nigerian media platform for Tech, Art, Culture, Politics, Economics, and Religion.",
+      "A sovereign Nigerian media platform across 10 categories for world-class African storytelling.",
     images: ["/icons/og.png"],
   },
 };
@@ -41,12 +41,12 @@ export default function AboutPage() {
           </div>
           <SectionHeader
             title="About King Bloggers"
-            subtitle="A sovereign Nigerian-first media platform for Tech, Art & Culture, Entertainment, Politics, Economics, and Religion — built for speed, clarity, and mobile-first reading."
+            subtitle="A sovereign Nigerian-first media platform across 10 categories — Tech, Art & Culture, Entertainment, Sport, Health, Self Growth, Finances, Politics, Economics, and Religion — built for speed, clarity, and mobile-first reading."
             centered
           />
 
           <div className="mt-10 flex flex-wrap justify-center gap-6 md:gap-12">
-            <StatBox value="6" label="Categories" />
+            <StatBox value="10" label="Categories" />
             <StatBox value="37" label="States Covered" />
             <StatBox value="774" label="Nigerian LGAs" />
             <StatBox value="PWA" label="Mobile-Ready" />
@@ -104,8 +104,8 @@ export default function AboutPage() {
               </div>
               <div className="font-bold">Editorial</div>
               <p className="text-sm text-foreground/60 mt-1">
-                Curating quality content across Tech, Culture, Politics, and
-                more
+                Curating quality content across 10 categories including Tech,
+                Culture, Sport, and Health
               </p>
             </div>
             <div className="text-center p-4">
@@ -165,7 +165,7 @@ export default function AboutPage() {
         {/* CTA */}
         <div className="mt-10 text-center">
           <Link
-            href="/bloggers/editor"
+            href="/blogger/editor"
             className="inline-flex items-center gap-2 rounded-full bg-king-orange px-8 py-3 text-sm font-bold uppercase tracking-widest text-white shadow-lg hover:opacity-90 transition-all active:scale-95"
           >
             Start Publishing

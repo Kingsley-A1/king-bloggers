@@ -29,6 +29,8 @@ export const postCategoryEnum = pgEnum("post_category", [
   "religion",
   "sport",
   "health",
+  "self_growth",
+  "finances",
 ]);
 
 // V2: Expanded reactions for more engagement
