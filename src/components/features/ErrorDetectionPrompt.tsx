@@ -145,6 +145,18 @@ export function ErrorDetectionPrompt() {
     []
   );
 
+  // Allow manual open via global event (e.g., menu link)
+  React.useEffect(() => {
+    function onOpen() {
+      setKind("manual");
+      setCaptured(null);
+      setOpen(true);
+    }
+
+    window.addEventListener("kb:open-report-issue", onOpen);
+    return () => window.removeEventListener("kb:open-report-issue", onOpen);
+  }, []);
+
   // Auto-detect JS errors
   React.useEffect(() => {
     function onError(event: ErrorEvent) {

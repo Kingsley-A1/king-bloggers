@@ -113,6 +113,8 @@ function EditorContent() {
   const searchParams = useSearchParams();
   const editorRef = React.useRef<HTMLDivElement | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const inlineImageInputRef = React.useRef<HTMLInputElement | null>(null);
+  const cameraImageInputRef = React.useRef<HTMLInputElement | null>(null);
 
   // Check if we're editing an existing post or creating new
   const editPostId = searchParams.get("edit");
@@ -214,6 +216,29 @@ function EditorContent() {
     editorRef.current?.focus();
     document.execCommand(cmd, false, value);
     setHtml(editorRef.current?.innerHTML ?? "");
+  }
+
+  async function handleInlineImagesSelected(files: File[]) {
+    if (files.length === 0) return;
+
+    setUploading(true);
+    const uploadedUrls: string[] = [];
+
+    for (const file of files) {
+      const url = await uploadImage(file);
+      if (url) uploadedUrls.push(url);
+    }
+
+    setUploading(false);
+
+    if (uploadedUrls.length > 0) {
+      setInlineImages((prev) => [...prev, ...uploadedUrls]);
+      setToast({
+        open: true,
+        message: `${uploadedUrls.length} image${uploadedUrls.length > 1 ? "s" : ""} added`,
+        variant: "success",
+      });
+    }
   }
 
   // Upload image/video via server proxy (avoids CORS issues)
@@ -644,52 +669,55 @@ function EditorContent() {
             <Link2 className="h-4 w-4" />
           </button>
 
-          {/* 📸 CAMERA BUTTON - Prominent for Mobile */}
-          <button
-            type="button"
-            onClick={() => {
-              const input = document.createElement("input");
-              input.type = "file";
-              input.accept = "image/*";
-              input.capture = "environment"; // Opens camera on mobile
-              input.multiple = true;
-              input.onchange = async (e) => {
-                const files = Array.from(
-                  (e.target as HTMLInputElement).files || []
-                );
-                if (files.length === 0) return;
-
-                setUploading(true);
-                const uploadedUrls: string[] = [];
-
-                for (const file of files) {
-                  const url = await uploadImage(file);
-                  if (url) uploadedUrls.push(url);
-                }
-
-                setUploading(false);
-
-                // Add images to inlineImages state for displaying below textarea
-                if (uploadedUrls.length > 0) {
-                  setInlineImages((prev) => [...prev, ...uploadedUrls]);
-                  setToast({
-                    open: true,
-                    message: `${uploadedUrls.length} image${
-                      uploadedUrls.length > 1 ? "s" : ""
-                    } added`,
-                    variant: "success",
-                  });
-                }
-              };
-              input.click();
+          {/* 📸 PHOTO: Choose from device OR use camera */}
+          <input
+            ref={inlineImageInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              const files = Array.from(e.target.files ?? []);
+              e.target.value = "";
+              void handleInlineImagesSelected(files);
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-sm transition-all hover:from-blue-500/90 hover:to-cyan-500/90 active:scale-95 shadow-lg shadow-blue-500/25"
-            title="Take Photo / Add Images"
-            disabled={uploading}
-          >
-            <Camera className="h-4 w-4" />
-            <span className="hidden sm:inline">Photo</span>
-          </button>
+          />
+          <input
+            ref={cameraImageInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              const files = Array.from(e.target.files ?? []);
+              e.target.value = "";
+              void handleInlineImagesSelected(files);
+            }}
+          />
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => inlineImageInputRef.current?.click()}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-sm transition-all hover:from-blue-500/90 hover:to-cyan-500/90 active:scale-95 shadow-lg shadow-blue-500/25"
+              title="Add images from device"
+              disabled={uploading}
+            >
+              <ImageIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">Upload</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => cameraImageInputRef.current?.click()}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-foreground/10 bg-foreground/5 text-foreground/80 font-semibold text-sm transition-all hover:bg-foreground/10 active:scale-95"
+              title="Capture with camera"
+              disabled={uploading}
+            >
+              <Camera className="h-4 w-4 text-king-orange" />
+              <span className="hidden sm:inline">Camera</span>
+            </button>
+          </div>
 
           {/* Inline Video Upload - PROMINENT BUTTON */}
           <button

@@ -4,7 +4,7 @@ import * as React from "react";
 import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Loader2, Eye, Calendar, ArrowUp } from "lucide-react";
+import { Loader2, Eye, Calendar, ArrowUp, Heart } from "lucide-react";
 
 import { Container } from "@/components/layout/Container";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -17,6 +17,8 @@ import { BookmarkButton } from "@/components/features/BookmarkButton";
 import { FollowButton } from "@/components/features/FollowButton";
 import { CommentSection } from "@/components/features/CommentSection";
 import { cn } from "@/lib/utils";
+import { setReaction } from "@/app/actions/reactions";
+import { REACTION_CONFIG } from "@/lib/reactions";
 import type { ReactionCounts, ReactionValue } from "@/lib/reactions";
 
 // ============================================
@@ -100,6 +102,369 @@ function getBadgeVariant(category: string): "tech" | "art" | "politics" {
   }
 }
 
+type MediaItem =
+  | { type: "image"; src: string }
+  | { type: "video"; src: string };
+
+// ============================================
+// 👑 PREMIUM SWIPEABLE MEDIA CAROUSEL
+// ============================================
+// IG-style: swipe left/right, dot indicators
+// Double-tap to like, long-press for reactions
+// ============================================
+
+const POSITIVE_REACTIONS: ReactionValue[] = [
+  "fire",
+  "crown",
+  "gem",
+  "insightful",
+  "lol",
+  "up",
+];
+
+interface SwipeableMediaCarouselProps {
+  media: MediaItem[];
+  postTitle: string;
+  postId: string;
+  initialReactionCounts: ReactionCounts;
+  initialMyReaction: ReactionValue | null;
+  isFirst: boolean;
+  onReactionChange?: (counts: ReactionCounts, myValue: ReactionValue | null) => void;
+}
+
+function SwipeableMediaCarousel({
+  media,
+  postTitle,
+  postId,
+  initialReactionCounts,
+  initialMyReaction,
+  isFirst,
+  onReactionChange,
+}: SwipeableMediaCarouselProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const [counts, setCounts] = useState(initialReactionCounts);
+  const [myValue, setMyValue] = useState(initialMyReaction);
+  const [busy, setBusy] = useState(false);
+  
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const lastTapRef = useRef(0);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  // Sync with parent if controlled
+  useEffect(() => {
+    setCounts(initialReactionCounts);
+    setMyValue(initialMyReaction);
+  }, [initialReactionCounts, initialMyReaction]);
+
+  // Handle scroll to update active index
+  const handleScroll = useCallback(() => {
+    if (!carouselRef.current) return;
+    const scrollLeft = carouselRef.current.scrollLeft;
+    const width = carouselRef.current.offsetWidth;
+    const newIndex = Math.round(scrollLeft / width);
+    if (newIndex !== activeIndex && newIndex >= 0 && newIndex < media.length) {
+      setActiveIndex(newIndex);
+    }
+  }, [activeIndex, media.length]);
+
+  // Scroll to specific slide
+  const scrollToIndex = useCallback((index: number) => {
+    if (!carouselRef.current) return;
+    const width = carouselRef.current.offsetWidth;
+    carouselRef.current.scrollTo({ left: width * index, behavior: "smooth" });
+  }, []);
+
+  // Handle reaction
+  const handleReaction = useCallback(async (nextValue: ReactionValue) => {
+    if (busy) return;
+    
+    const prev = myValue;
+    const prevCounts = { ...counts };
+    
+    let nextMy: ReactionValue | null = nextValue;
+    if (prev === nextValue) nextMy = null;
+    
+    const newCounts = { ...counts };
+    if (prev) newCounts[prev] = Math.max(0, newCounts[prev] - 1);
+    if (nextMy) newCounts[nextMy] = newCounts[nextMy] + 1;
+    
+    setCounts(newCounts);
+    setMyValue(nextMy);
+    onReactionChange?.(newCounts, nextMy);
+    
+    setBusy(true);
+    const res = await setReaction({ postId, value: nextMy ?? "none" });
+    setBusy(false);
+    
+    if (!res.ok) {
+      setCounts(prevCounts);
+      setMyValue(prev);
+      onReactionChange?.(prevCounts, prev);
+    }
+  }, [busy, counts, myValue, postId, onReactionChange]);
+
+  // Double-tap to like
+  const handleDoubleTap = useCallback(() => {
+    setShowLikeAnimation(true);
+    setTimeout(() => setShowLikeAnimation(false), 800);
+    
+    // If not already liked with fire, add fire reaction
+    if (myValue !== "fire") {
+      void handleReaction("fire");
+    }
+  }, [myValue, handleReaction]);
+
+  // Handle touch/click events for double-tap and long-press
+  const handleTouchStart = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+    const now = Date.now();
+    const pos = "touches" in e ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+    touchStartRef.current = pos;
+    
+    // Double-tap detection
+    if (now - lastTapRef.current < 300) {
+      handleDoubleTap();
+      lastTapRef.current = 0;
+      return;
+    }
+    lastTapRef.current = now;
+    
+    // Long-press detection
+    longPressTimerRef.current = setTimeout(() => {
+      setShowReactionPicker(true);
+    }, 500);
+  }, [handleDoubleTap]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    // Cancel long-press if user moves finger significantly (swiping)
+    if (touchStartRef.current && longPressTimerRef.current) {
+      const dx = Math.abs(e.touches[0].clientX - touchStartRef.current.x);
+      const dy = Math.abs(e.touches[0].clientY - touchStartRef.current.y);
+      if (dx > 10 || dy > 10) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+    }
+  }, []);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+    };
+  }, []);
+
+  if (media.length === 0) return null;
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden border border-foreground/10 bg-foreground/5 select-none">
+      {/* Carousel Container */}
+      <div
+        ref={carouselRef}
+        onScroll={handleScroll}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchMove}
+        onMouseDown={handleTouchStart}
+        onMouseUp={handleTouchEnd}
+        className={cn(
+          "w-full overflow-x-auto overscroll-x-contain",
+          "flex snap-x snap-mandatory scroll-smooth",
+          "touch-pan-x",
+          "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        )}
+        aria-label="Post media carousel"
+      >
+        {media.map((m, idx) => (
+          <div
+            key={`${m.type}:${m.src}:${idx}`}
+            className="relative min-w-full flex-shrink-0 snap-center"
+          >
+            <div className="relative aspect-[4/5] sm:aspect-[16/10] md:aspect-[16/9] w-full bg-black/20">
+              {m.type === "image" ? (
+                <Image
+                  src={m.src}
+                  alt={`${postTitle} - image ${idx + 1}`}
+                  fill
+                  priority={isFirst && idx === 0}
+                  sizes="(max-width: 768px) 100vw, 1200px"
+                  className="object-contain"
+                  draggable={false}
+                />
+              ) : (
+                <video
+                  src={m.src}
+                  controls
+                  playsInline
+                  preload={isFirst && idx === 0 ? "metadata" : "none"}
+                  className="absolute inset-0 h-full w-full object-contain"
+                />
+              )}
+              {/* Subtle gradient for legibility */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/10" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Like Animation Overlay */}
+      {showLikeAnimation && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+          <Heart
+            className="h-24 w-24 text-red-500 fill-red-500 animate-ping"
+            style={{ animationDuration: "0.6s" }}
+          />
+        </div>
+      )}
+
+      {/* Reaction Picker Overlay */}
+      {showReactionPicker && (
+        <div
+          className="absolute inset-0 bg-black/60 flex items-center justify-center z-30"
+          onClick={() => setShowReactionPicker(false)}
+        >
+          <div
+            className={cn(
+              "flex items-center gap-2 p-3 rounded-full",
+              "bg-black/80 backdrop-blur-xl border border-white/20",
+              "animate-in zoom-in-75 duration-200"
+            )}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {POSITIVE_REACTIONS.map((type) => {
+              const isActive = myValue === type;
+              return (
+                <button
+                  key={type}
+                  onClick={() => {
+                    void handleReaction(type);
+                    setShowReactionPicker(false);
+                  }}
+                  disabled={busy}
+                  className={cn(
+                    "p-2 rounded-full transition-all duration-200",
+                    "hover:bg-white/20 active:scale-90",
+                    isActive && "bg-king-orange/30 ring-2 ring-king-orange"
+                  )}
+                  title={REACTION_CONFIG[type].label}
+                  aria-label={REACTION_CONFIG[type].label}
+                >
+                  <span className="text-3xl">{REACTION_CONFIG[type].emoji}</span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="absolute bottom-8 text-white/60 text-sm">
+            Tap outside to close
+          </p>
+        </div>
+      )}
+
+      {/* Dot Indicators */}
+      {media.length > 1 && (
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 z-10">
+          {media.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => scrollToIndex(idx)}
+              className={cn(
+                "w-2 h-2 rounded-full transition-all duration-300",
+                idx === activeIndex
+                  ? "bg-white w-6"
+                  : "bg-white/40 hover:bg-white/60"
+              )}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Slide Counter */}
+      {media.length > 1 && (
+        <div className="absolute top-4 right-4 z-10 px-3 py-1 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-mono">
+          {activeIndex + 1} / {media.length}
+        </div>
+      )}
+
+      {/* Hint Text */}
+      <div className="absolute bottom-12 left-4 z-10 flex flex-col gap-0.5 text-[10px] text-white/50">
+        <span>Double-tap to like</span>
+        <span>Hold for reactions</span>
+      </div>
+    </div>
+  );
+}
+
+function normalizeText(input: string) {
+  return input
+    .replace(/\s+/g, " ")
+    .replace(/\u00A0/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function dedupeExactDoubleHtml(html: string): string {
+  const trimmed = html.trim();
+  if (trimmed.length < 40) return html;
+  if (trimmed.length % 2 !== 0) return html;
+  const half = trimmed.slice(0, trimmed.length / 2);
+  const other = trimmed.slice(trimmed.length / 2);
+  if (normalizeText(half) === normalizeText(other)) return half;
+  return html;
+}
+
+function extractMediaBlocksFromHtml(html: string): {
+  cleanedHtml: string;
+  media: MediaItem[];
+} {
+  if (typeof window === "undefined") return { cleanedHtml: html, media: [] };
+  try {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const body = doc.body;
+    const media: MediaItem[] = [];
+
+    const candidates = Array.from(body.querySelectorAll("img, video"));
+    for (const el of candidates) {
+      const parent = el.parentElement;
+      if (!parent) continue;
+      const tag = parent.tagName.toLowerCase();
+      if (tag !== "p" && tag !== "div") continue;
+
+      // Only extract standalone media blocks (e.g., <p><img/></p>)
+      const parentText = normalizeText(parent.textContent ?? "");
+      const hasOnlyThisMedia =
+        parentText.length === 0 &&
+        parent.querySelectorAll("img, video").length === 1 &&
+        parent.children.length === 1;
+
+      if (!hasOnlyThisMedia) continue;
+
+      if (el.tagName.toLowerCase() === "img") {
+        const src = (el as HTMLImageElement).getAttribute("src");
+        if (src) media.push({ type: "image", src });
+      } else {
+        const src = (el as HTMLVideoElement).getAttribute("src");
+        if (src) media.push({ type: "video", src });
+      }
+
+      parent.remove();
+    }
+
+    return { cleanedHtml: body.innerHTML, media };
+  } catch {
+    return { cleanedHtml: html, media: [] };
+  }
+}
+
 function PostView({
   post,
   currentUrl,
@@ -113,21 +478,46 @@ function PostView({
 }) {
   const url = currentUrl.replace(/\/blog\/[^/]+/, `/blog/${post.slug}`);
 
+  // Track reaction state locally for sync between carousel and reaction bar
+  const [reactionCounts, setReactionCounts] = useState(post.reactionCounts);
+  const [myReaction, setMyReaction] = useState(post.myReaction);
+
+  const contentOnce = React.useMemo(() => dedupeExactDoubleHtml(post.content), [post.content]);
+  const extracted = React.useMemo(() => extractMediaBlocksFromHtml(contentOnce), [contentOnce]);
+
+  const heroMedia = React.useMemo(() => {
+    const items: MediaItem[] = [];
+    if (post.coverImageUrl) items.push({ type: "image", src: post.coverImageUrl });
+    if (post.videoUrl) items.push({ type: "video", src: post.videoUrl });
+
+    // Add extracted content media, but avoid duplicates (esp. cover image)
+    for (const m of extracted.media) {
+      if (items.some((x) => x.type === m.type && x.src === m.src)) continue;
+      items.push(m);
+    }
+    return items;
+  }, [post.coverImageUrl, post.videoUrl, extracted.media]);
+
+  // Handle reaction sync from carousel
+  const handleReactionChange = useCallback((counts: ReactionCounts, myValue: ReactionValue | null) => {
+    setReactionCounts(counts);
+    setMyReaction(myValue);
+  }, []);
+
   return (
     <article className="mb-8 md:mb-12">
-      {/* 👑 HERO MEDIA FIRST */}
-      {post.coverImageUrl && (
-        <div className="rounded-2xl overflow-hidden mb-4 md:mb-6">
-          <div className="relative aspect-[16/9] md:aspect-[21/9] w-full bg-foreground/5">
-            <Image
-              src={post.coverImageUrl}
-              alt={post.title}
-              fill
-              priority={isFirst}
-              sizes="(max-width: 768px) 100vw, 1200px"
-              className="object-cover"
-            />
-          </div>
+      {/* 👑 PREMIUM SWIPEABLE MEDIA CAROUSEL */}
+      {heroMedia.length > 0 && (
+        <div className="mb-4 md:mb-6">
+          <SwipeableMediaCarousel
+            media={heroMedia}
+            postTitle={post.title}
+            postId={post.id}
+            initialReactionCounts={reactionCounts}
+            initialMyReaction={myReaction}
+            isFirst={isFirst}
+            onReactionChange={handleReactionChange}
+          />
         </div>
       )}
 
@@ -181,27 +571,32 @@ function PostView({
           )}
         </div>
 
-        {/* Reactions & Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mt-6 pt-6 border-t border-foreground/10">
-          <div className="flex items-center gap-2 md:gap-3">
-            <ReactionBar
-              postId={post.id}
-              initialCounts={post.reactionCounts}
-              initialMyValue={post.myReaction}
-            />
-            <BookmarkButton
-              postId={post.id}
-              initialBookmarked={post.bookmarked}
-            />
-          </div>
-          <ShareBar title={post.title} url={url} />
-        </div>
-
         {/* Post Content */}
         <div
           className="mt-8 md:mt-10 post-content"
-          dangerouslySetInnerHTML={{ __html: post.content }}
+          dangerouslySetInnerHTML={{ __html: extracted.cleanedHtml }}
         />
+
+        {/* Reactions & Actions (End of reading) */}
+        <div className="flex flex-col gap-3 mt-8 pt-6 border-t border-foreground/10">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
+              <ReactionBar
+                postId={post.id}
+                initialCounts={reactionCounts}
+                initialMyValue={myReaction}
+              />
+              <BookmarkButton
+                postId={post.id}
+                initialBookmarked={post.bookmarked}
+              />
+            </div>
+            <ShareBar title={post.title} url={url} />
+          </div>
+          <p className="text-xs text-foreground/50">
+            Share is most powerful after reading.
+          </p>
+        </div>
       </GlassCard>
 
       {/* Comments - Collapsed for infinite scroll */}

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Breadcrumb } from "@/components/features/Breadcrumb";
 import {
   InfinitePostScroll,
@@ -23,6 +24,44 @@ export const dynamic = "force-dynamic";
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://kingbloggers.com";
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPublishedPostBySlug(slug);
+  if (!post) {
+    return {
+      title: "Post not found — King Bloggers",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const title = `${post.title} — King Bloggers`;
+  const description =
+    post.excerpt ?? "A sovereign feed for Tech, Art, Culture, and Power.";
+  const ogImage = post.coverImageUrl || `${APP_URL}/icons/og.png`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      type: "article",
+      url: `/blog/${post.slug}`,
+      title,
+      description,
+      images: [{ url: ogImage }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
+    },
+  };
+}
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
@@ -53,7 +92,7 @@ export default async function BlogPostPage({ params }: PageProps) {
   const host = h.get("x-forwarded-host") ?? h.get("host");
   const proto = h.get("x-forwarded-proto") ?? "https";
   const url = host
-    ? `${proto}://${host}/blog/${post.slug}`
+    ? `${proto}://${host}/blog/${post.slug}`  
     : `/blog/${post.slug}`;
 
   // Prepare initial post for infinite scroll
