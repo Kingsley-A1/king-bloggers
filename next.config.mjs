@@ -45,6 +45,29 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Allow manifest.json and PWA assets to be fetched without restrictions
+        source: "/manifest.json",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=3600",
+          },
+        ],
+      },
+      {
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
+          {
+            key: "Service-Worker-Allowed",
+            value: "/",
+          },
+        ],
+      },
+      {
         source: "/:path*",
         headers: [
           {

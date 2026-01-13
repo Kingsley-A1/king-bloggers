@@ -81,5 +81,15 @@ export default async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/blogger/:path*", "/bloggers/:path*", "/reader/:path*"],
+  matcher: [
+    /*
+     * Match only protected routes, explicitly excluding:
+     * - Static files (manifest.json, sw.js, icons, etc.)
+     * - API auth routes
+     * - Public assets
+     */
+    "/blogger/:path*",
+    "/bloggers/:path*", 
+    "/reader/:path*",
+  ],
 };
