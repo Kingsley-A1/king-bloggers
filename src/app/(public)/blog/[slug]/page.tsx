@@ -25,7 +25,7 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://kingbloggers.com";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://king-bloggers.vercel.app";
 
 const VIDEO_EXT_RE = /\.(mp4|webm|mov|ogg)(\?.*)?$/i;
 

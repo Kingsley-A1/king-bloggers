@@ -348,7 +348,7 @@ function SwipeableMediaCarousel({
         className={cn(
           "w-full overflow-x-auto overscroll-x-contain",
           "flex snap-x snap-mandatory scroll-smooth",
-          "touch-pan-x",
+          "touch-pan-x touch-pan-y",
           "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         )}
         aria-label="Post media carousel"
@@ -599,6 +599,7 @@ function PostView({
   // Track reaction state locally for sync between carousel and reaction bar
   const [reactionCounts, setReactionCounts] = useState(post.reactionCounts);
   const [myReaction, setMyReaction] = useState(post.myReaction);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const contentOnce = React.useMemo(
     () => dedupeExactDoubleHtml(post.content),
@@ -673,11 +674,8 @@ function PostView({
           </div>
         </div>
 
-        {/* Title & Excerpt */}
-        <SectionHeader
-          title={post.title}
-          subtitle={post.excerpt ?? undefined}
-        />
+        {/* Title Only - No excerpt duplication */}
+        <SectionHeader title={post.title} />
 
         {/* Author Info */}
         <div className="flex flex-wrap items-center justify-between gap-4 mt-6 pt-6 border-t border-foreground/10">
@@ -704,11 +702,26 @@ function PostView({
           )}
         </div>
 
-        {/* Post Content */}
-        <div
-          className="mt-8 md:mt-10 post-content"
-          dangerouslySetInnerHTML={{ __html: extracted.cleanedHtml }}
-        />
+        {/* Post Content - Collapsible with Read More */}
+        {isExpanded ? (
+          <div
+            className="mt-8 md:mt-10 post-content"
+            dangerouslySetInnerHTML={{ __html: extracted.cleanedHtml }}
+          />
+        ) : (
+          <div className="mt-8 md:mt-10">
+            <div
+              className="post-content line-clamp-6 overflow-hidden"
+              dangerouslySetInnerHTML={{ __html: extracted.cleanedHtml }}
+            />
+            <button
+              onClick={() => setIsExpanded(true)}
+              className="mt-4 text-king-orange font-semibold text-sm hover:underline flex items-center gap-1"
+            >
+              Read more →
+            </button>
+          </div>
+        )}
 
         {/* Reactions & Actions (End of reading) */}
         <div className="flex flex-col gap-3 mt-8 pt-6 border-t border-foreground/10">
