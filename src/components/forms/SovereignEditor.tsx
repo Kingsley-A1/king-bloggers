@@ -36,6 +36,10 @@ const CATEGORIES = [
   "politics",
   "economics",
   "religion",
+  "sports",
+  "health",
+  "finances",
+  
 ] as const;
 type Category = (typeof CATEGORIES)[number];
 

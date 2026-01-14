@@ -192,15 +192,24 @@ export function sanitizeText(dirty: string): string {
     // Remove all HTML tags
     const noTags = dirty.replace(/<[^>]*>/g, "");
 
-    // Decode common entities and re-escape
+    // Decode common entities (including numeric forms) but DO NOT re-escape.
+    // We want stored text to remain plain (e.g. "&" should not become "&#38;" or "&amp;").
     const decoded = noTags
         .replace(/&amp;/g, "&")
+        .replace(/&#38;/g, "&")
         .replace(/&lt;/g, "<")
         .replace(/&gt;/g, ">")
         .replace(/&quot;/g, '"')
-        .replace(/&#x27;/g, "'");
+        .replace(/&#x27;/g, "'")
+        .replace(/&#39;/g, "'")
+        .replace(/&#x([0-9a-fA-F]+);/g, (_m, hex) =>
+            String.fromCharCode(parseInt(hex, 16))
+        )
+        .replace(/&#([0-9]+);/g, (_m, num) =>
+            String.fromCharCode(parseInt(num, 10))
+        );
 
-    return escapeHtml(decoded).trim();
+    return decoded.replace(/\s+/g, " ").trim();
 }
 
 /**

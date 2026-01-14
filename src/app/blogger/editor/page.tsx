@@ -5,13 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import {
   X,
-  Bold,
-  Italic,
-  Link2,
-  Heading2,
-  Image as ImageIcon,
-  Camera,
-  Video,
   Send,
   Save,
   Trash2,
@@ -61,6 +54,7 @@ type Draft = {
   category: Category;
   coverImageUrl?: string;
   videoUrl?: string;
+  inlineImages?: string[];
 };
 
 function safeParseDraft(raw: string | null): Draft {
@@ -74,10 +68,36 @@ function safeParseDraft(raw: string | null): Draft {
       category: parsed.category ?? "tech",
       coverImageUrl: parsed.coverImageUrl,
       videoUrl: parsed.videoUrl,
+      inlineImages: Array.isArray(parsed.inlineImages)
+        ? parsed.inlineImages.filter((x) => typeof x === "string")
+        : undefined,
     };
   } catch {
     return { title: "", html: "", category: "tech" };
   }
+}
+
+function escapeHtmlAttribute(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function buildContentWithInlineImages(html: string, inlineImages: string[]) {
+  if (!inlineImages.length) return html;
+
+  const extras = inlineImages
+    .filter((url) => url && !html.includes(url))
+    .map((url) => {
+      const safeUrl = escapeHtmlAttribute(url);
+      return `<img src="${safeUrl}" alt="" style="max-width: 100%; height: auto; border-radius: 12px; margin: 16px 0;" />`;
+    })
+    .join("");
+
+  if (!extras) return html;
+  return `${html}\n${extras}`;
 }
 
 function textFromHtml(html: string) {
@@ -190,6 +210,7 @@ function EditorContent() {
       setCategory(draft.category);
       setCoverImageUrl(draft.coverImageUrl ?? null);
       setCoverVideoUrl(draft.videoUrl ?? null);
+      setInlineImages(draft.inlineImages ?? []);
     }
   }, [editPostId, isNewMode, loadPostForEdit]);
 
@@ -211,6 +232,7 @@ function EditorContent() {
         category,
         coverImageUrl: coverImageUrl ?? undefined,
         videoUrl: coverVideoUrl ?? undefined,
+        inlineImages,
       };
       safeLocalStorageSet(STORAGE_KEY, JSON.stringify(payload));
     }, 1500);
@@ -222,6 +244,7 @@ function EditorContent() {
     category,
     coverImageUrl,
     coverVideoUrl,
+    inlineImages,
     isEditing,
     editPostId,
   ]);
@@ -362,8 +385,14 @@ function EditorContent() {
     setCategory("tech");
     setCoverImageUrl(null);
     setCoverVideoUrl(null);
+    setInlineImages([]);
     setIsEditing(false);
     if (editorRef.current) editorRef.current.innerHTML = "";
+  }
+
+  function startNewBlog() {
+    clearDraft();
+    router.replace("/blogger/editor?new=true");
   }
 
   // Quick Publish (single action)
@@ -386,12 +415,16 @@ function EditorContent() {
     try {
       let id = postId;
 
+      // Attach any uploaded inline images to the post content automatically
+      // (These are the images shown in the gallery before "Upload Blog")
+      const contentToSave = buildContentWithInlineImages(html, inlineImages);
+
       // Create or update post
       if (!id) {
-        const excerpt = textFromHtml(html).slice(0, 220);
+        const excerpt = textFromHtml(contentToSave).slice(0, 220);
         const created = await createPost({
           title: title.trim(),
-          content: html,
+          content: contentToSave,
           category,
           excerpt: excerpt || undefined,
           coverImageUrl: coverImageUrl ?? undefined,
@@ -405,11 +438,11 @@ function EditorContent() {
         setPostId(id);
       } else if (isEditing) {
         // Update existing post
-        const excerpt = textFromHtml(html).slice(0, 220);
+        const excerpt = textFromHtml(contentToSave).slice(0, 220);
         const updated = await updatePost({
           postId: id,
           title: title.trim(),
-          content: html,
+          content: contentToSave,
           category,
           excerpt: excerpt || undefined,
           coverImageUrl: coverImageUrl ?? undefined,
@@ -430,6 +463,7 @@ function EditorContent() {
 
       // Clear draft and redirect
       safeLocalStorageRemove(STORAGE_KEY);
+  setInlineImages([]);
       setToast({ open: true, message: "🚀 Published!", variant: "success" });
 
       setTimeout(() => {
@@ -450,14 +484,19 @@ function EditorContent() {
 
     setBusy(true);
     try {
-      const excerpt = textFromHtml(html).slice(0, 220);
+      // Save drafts with uploaded inline images included so they always show up later.
+      const contentToSave = buildContentWithInlineImages(
+        html || "<p></p>",
+        inlineImages
+      );
+      const excerpt = textFromHtml(contentToSave).slice(0, 220);
 
       if (isEditing && postId) {
         // Update existing
         const updated = await updatePost({
           postId,
           title: title.trim(),
-          content: html || "<p></p>",
+          content: contentToSave,
           category,
           excerpt: excerpt || undefined,
           coverImageUrl: coverImageUrl ?? undefined,
@@ -472,7 +511,7 @@ function EditorContent() {
         // Create new
         const created = await createPost({
           title: title.trim(),
-          content: html || "<p></p>",
+          content: contentToSave,
           category,
           excerpt: excerpt || undefined,
           coverImageUrl: coverImageUrl ?? undefined,
@@ -489,6 +528,10 @@ function EditorContent() {
           variant: "success",
         });
       }
+
+      // Once saved, the images are attached to content.
+      // Keep the UI clean by clearing the gallery.
+      if (inlineImages.length > 0) setInlineImages([]);
     } finally {
       setBusy(false);
     }
@@ -518,9 +561,24 @@ function EditorContent() {
                 <ArrowLeft className="h-5 w-5" />
               </button>
             )}
-            <span className="font-black text-lg md:text-xl">
-              {isEditing ? "✏️ Edit Post" : "✨ Create Post"}
-            </span>
+            {isEditing ? (
+              <span className="font-black text-lg md:text-xl">✏️ Edit Post</span>
+            ) : null}
+
+            <GlassButton
+              type="button"
+              variant={isEditing ? "glass" : "primary"}
+              size="sm"
+              onClick={startNewBlog}
+              className={cn(
+                "whitespace-nowrap",
+                isEditing
+                  ? "px-3"
+                  : "px-4 shadow-lg shadow-king-orange/25"
+              )}
+            >
+              New Blog
+            </GlassButton>
           </div>
 
           {/* Action Buttons - Redesigned Hierarchy */}
@@ -585,10 +643,24 @@ function EditorContent() {
             )
               handleCoverUpload(file);
           }}
-          onClick={() =>
-            !(coverImageUrl || coverVideoUrl) && fileInputRef.current?.click()
-          }
+          onClick={() => {
+            if (coverImageUrl || coverVideoUrl) return;
+            if (fileInputRef.current) fileInputRef.current.value = "";
+            fileInputRef.current?.click();
+          }}
         >
+          {/* Keep the input always mounted so first-click works reliably */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (file) void handleCoverUpload(file);
+            }}
+          />
           {coverImageUrl || coverVideoUrl ? (
             <div className="relative aspect-[21/9]">
               {coverVideoUrl ? (
@@ -620,24 +692,11 @@ function EditorContent() {
               </button>
             </div>
           ) : (
-            <label className="flex flex-col items-center justify-center py-12 md:py-16 cursor-pointer">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,video/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleCoverUpload(file);
-                }}
-              />
+            <div className="flex flex-col items-center justify-center py-12 md:py-16">
               {uploading ? (
                 <Spinner size={32} className="text-king-orange" />
               ) : (
                 <>
-                  <div className="w-16 h-16 rounded-full bg-king-orange/20 flex items-center justify-center mb-3">
-                    <ImageIcon className="h-8 w-8 text-king-orange" />
-                  </div>
                   <span className="text-base font-semibold text-foreground/80 mb-1">
                     Add Cover Media
                   </span>
@@ -646,7 +705,7 @@ function EditorContent() {
                   </span>
                 </>
               )}
-            </label>
+            </div>
           )}
         </div>
 
@@ -675,46 +734,36 @@ function EditorContent() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Your headline..."
-          className="w-full bg-transparent text-3xl md:text-4xl font-black tracking-tight placeholder:text-foreground/30 outline-none mb-4"
+          className={cn(
+            "w-full bg-transparent text-3xl md:text-4xl font-black tracking-tight",
+            "placeholder:text-foreground/30 outline-none mb-4",
+            "rounded-xl border border-foreground/10 px-4 py-3",
+            "focus:border-king-orange/40 focus:ring-2 focus:ring-king-orange/10"
+          )}
           autoFocus
         />
 
         {/* Formatting Toolbar */}
-        <div className="flex items-center gap-1 mb-3 pb-3 border-b border-foreground/10">
+        <div className={cn(
+          "flex items-center gap-2 mb-3 pb-3 border-b border-foreground/10",
+          "flex-nowrap overflow-x-auto",
+          "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        )}>
           <button
             type="button"
             onClick={() => exec("bold")}
-            className="p-2 rounded-lg hover:bg-foreground/10 transition-colors"
+            className="shrink-0 px-3 py-2 rounded-lg border border-foreground/10 bg-foreground/5 hover:bg-foreground/10 transition-colors text-sm font-semibold"
             title="Bold"
           >
-            <Bold className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => exec("italic")}
-            className="p-2 rounded-lg hover:bg-foreground/10 transition-colors"
-            title="Italic"
-          >
-            <Italic className="h-4 w-4" />
+            Bold
           </button>
           <button
             type="button"
             onClick={() => exec("formatBlock", "h2")}
-            className="p-2 rounded-lg hover:bg-foreground/10 transition-colors"
+            className="shrink-0 px-3 py-2 rounded-lg border border-foreground/10 bg-foreground/5 hover:bg-foreground/10 transition-colors text-sm font-semibold"
             title="Heading"
           >
-            <Heading2 className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              const url = window.prompt("Enter URL");
-              if (url) exec("createLink", url);
-            }}
-            className="p-2 rounded-lg hover:bg-foreground/10 transition-colors"
-            title="Link"
-          >
-            <Link2 className="h-4 w-4" />
+            H2
           </button>
 
           {/* 📸 PHOTO: Choose from device OR use camera */}
@@ -744,28 +793,25 @@ function EditorContent() {
             }}
           />
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => inlineImageInputRef.current?.click()}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-sm transition-all hover:from-blue-500/90 hover:to-cyan-500/90 active:scale-95 shadow-lg shadow-blue-500/25"
-              title="Add images from device"
-              disabled={uploading}
-            >
-              <ImageIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Upload</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => cameraImageInputRef.current?.click()}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-foreground/10 bg-foreground/5 text-foreground/80 font-semibold text-sm transition-all hover:bg-foreground/10 active:scale-95"
-              title="Capture with camera"
-              disabled={uploading}
-            >
-              <Camera className="h-4 w-4 text-king-orange" />
-              <span className="hidden sm:inline">Camera</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => inlineImageInputRef.current?.click()}
+            className="shrink-0 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-sm transition-all hover:from-blue-500/90 hover:to-cyan-500/90 active:scale-95 shadow-lg shadow-blue-500/25"
+            title="Add images from device"
+            disabled={uploading}
+          >
+            Add Image
+          </button>
+
+          <button
+            type="button"
+            onClick={() => cameraImageInputRef.current?.click()}
+            className="shrink-0 px-4 py-2 rounded-lg border border-foreground/10 bg-foreground/5 text-foreground/80 font-semibold text-sm transition-all hover:bg-foreground/10 active:scale-95"
+            title="Capture with camera"
+            disabled={uploading}
+          >
+            OPEN CAMERA
+          </button>
 
           {/* Inline Video Upload - PROMINENT BUTTON */}
           <button
@@ -822,12 +868,11 @@ function EditorContent() {
               };
               input.click();
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-king-orange to-amber-500 text-black font-semibold text-sm transition-all hover:from-king-orange/90 hover:to-amber-500/90 active:scale-95 shadow-lg shadow-king-orange/25"
+            className="shrink-0 px-4 py-2 rounded-lg bg-gradient-to-r from-king-orange to-amber-500 text-black font-semibold text-sm transition-all hover:from-king-orange/90 hover:to-amber-500/90 active:scale-95 shadow-lg shadow-king-orange/25"
             title="Insert Video (max 10 min)"
             disabled={uploading}
           >
-            <Video className="h-4 w-4" />
-            <span className="hidden sm:inline">Video</span>
+            Add Video
           </button>
 
           <div className="flex-1" />
@@ -836,9 +881,6 @@ function EditorContent() {
               Uploading...
             </span>
           )}
-          <span className="text-xs text-foreground/40 font-mono">
-            {textFromHtml(html).length} chars
-          </span>
         </div>
 
         {/* Content Editor */}
@@ -870,28 +912,9 @@ function EditorContent() {
               <span className="text-sm font-semibold text-foreground/80">
                 📸 Uploaded Images ({inlineImages.length})
               </span>
-              <button
-                type="button"
-                onClick={() => {
-                  // Insert all images into the editor content
-                  const imagesHtml = inlineImages
-                    .map(
-                      (url) =>
-                        `<img src="${url}" alt="Image" style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;" />`
-                    )
-                    .join("");
-                  exec("insertHTML", imagesHtml);
-                  setInlineImages([]);
-                  setToast({
-                    open: true,
-                    message: "Images added to content",
-                    variant: "success",
-                  });
-                }}
-                className="text-xs font-semibold text-king-orange hover:underline"
-              >
-                Insert All to Content
-              </button>
+              <span className="text-xs text-foreground/50">
+                These will be attached on publish.
+              </span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {inlineImages.map((url, idx) => (
@@ -918,26 +941,6 @@ function EditorContent() {
                     <X className="h-3 w-3" />
                   </button>
                   {/* Insert single image */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      exec(
-                        "insertHTML",
-                        `<img src="${url}" alt="Image" style="max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0;" />`
-                      );
-                      setInlineImages((prev) =>
-                        prev.filter((_, i) => i !== idx)
-                      );
-                      setToast({
-                        open: true,
-                        message: "Image added to content",
-                        variant: "success",
-                      });
-                    }}
-                    className="absolute bottom-1 left-1 right-1 py-1.5 text-[10px] font-bold uppercase tracking-wider text-center bg-king-orange text-black rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    Insert
-                  </button>
                 </div>
               ))}
             </div>
