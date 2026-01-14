@@ -1,9 +1,9 @@
 "use server";
 
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, notInArray, sql } from "drizzle-orm";
 
 import { db } from "@/db";
-import { follows, notifications, users } from "@/db/schema";
+import { follows, notifications, posts, userInterests, users } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 // ============================================
@@ -56,25 +56,107 @@ export async function toggleFollow(
 
   // Create notification
   try {
-    const [actor] = await db
-      .select({ name: users.name, email: users.email })
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
-
     await db.insert(notifications).values({
       userId: targetUserId,
       type: "follow",
       actorId: userId,
-      message: `${
-        actor?.name ?? actor?.email ?? "Someone"
-      } started following you`,
+      // Message should not include actor identity; UI already has actor details.
+      message: "started following you",
     });
   } catch {
     // Don't fail the follow if notification fails
   }
 
   return { ok: true, action: "followed" };
+}
+
+export type SuggestedUser = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  imageUrl: string | null;
+  role: string;
+};
+
+/**
+ * Suggested users to follow for the current user.
+ * Uses interest categories when available; falls back to popular recent authors.
+ */
+export async function getSuggestedUsersToFollow(
+  limit = 6
+): Promise<SuggestedUser[]> {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) return [];
+
+  const followedRows = await db
+    .select({ followingId: follows.followingId })
+    .from(follows)
+    .where(eq(follows.followerId, userId));
+  const followedIds = followedRows.map((r) => r.followingId);
+
+  const interests = await db
+    .select({ category: userInterests.category })
+    .from(userInterests)
+    .where(eq(userInterests.userId, userId))
+    .orderBy(desc(userInterests.score))
+    .limit(3);
+  const categories = interests.map((r) => r.category);
+
+  const baseWhere = and(
+    sql`${users.id} <> ${userId}`,
+    followedIds.length > 0 ? notInArray(users.id, followedIds) : sql`1=1`
+  );
+
+  // Interest-based: authors who publish in your top categories
+  if (categories.length > 0) {
+    const rows = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        imageUrl: users.imageUrl,
+        role: users.role,
+        postCount: sql<number>`COUNT(${posts.id})`.mapWith(Number),
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.authorId, users.id))
+      .where(
+        and(
+          baseWhere,
+          eq(posts.status, "published"),
+          inArray(posts.category, categories)
+        )
+      )
+      .groupBy(users.id)
+      .orderBy(desc(sql`COUNT(${posts.id})`))
+      .limit(limit);
+
+    return rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      email: r.email,
+      imageUrl: r.imageUrl,
+      role: r.role,
+    }));
+  }
+
+  // Fallback: recent bloggers / users with published posts
+  const fallback = await db
+    .select({
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      imageUrl: users.imageUrl,
+      role: users.role,
+    })
+    .from(users)
+    .where(baseWhere)
+    .orderBy(desc(users.createdAt))
+    .limit(limit);
+
+  return fallback;
 }
 
 /**

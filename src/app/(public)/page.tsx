@@ -16,6 +16,9 @@ export const revalidate = 30;
 export default async function HomePage() {
   const session = await auth();
   const name = session?.user?.name ?? "you";
+  const viewerFirstName = session?.user?.name
+    ? session.user.name.trim().split(/\s+/)[0] || null
+    : null;
 
   // Load initial posts using the personalization engine
   const { items, nextCursor, hasMore } = await loadFeed("for-you");
@@ -61,6 +64,7 @@ export default async function HomePage() {
               initialHasMore={hasMore}
               initialFeedType="for-you"
               loadMoreAction={loadFeed}
+              viewerFirstName={viewerFirstName}
             />
           </section>
         )}

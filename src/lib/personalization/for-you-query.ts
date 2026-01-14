@@ -121,7 +121,8 @@ export async function getForYouFeed(input?: {
       .where(eq(posts.id, input.cursor))
       .limit(1);
     if (cursorPost) {
-      cursorCondition = sql`${posts.createdAt} < ${cursorPost.createdAt}`;
+      // Some DB drivers (e.g. postgres-js) don't accept Date params.
+      cursorCondition = sql`${posts.createdAt} < ${cursorPost.createdAt.toISOString()}`;
     }
   }
 
@@ -266,7 +267,8 @@ export async function getFollowingFeed(input?: {
       .where(eq(posts.id, input.cursor))
       .limit(1);
     if (cursorPost) {
-      cursorCondition = sql`${posts.createdAt} < ${cursorPost.createdAt}`;
+      // Some DB drivers (e.g. postgres-js) don't accept Date params.
+      cursorCondition = sql`${posts.createdAt} < ${cursorPost.createdAt.toISOString()}`;
     }
   }
 

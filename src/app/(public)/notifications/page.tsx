@@ -25,6 +25,7 @@ import {
   deleteNotification,
   type NotificationWithDetails,
 } from "@/lib/actions/notifications";
+import { formatNotificationDisplay } from "@/lib/notifications/format";
 import { cn } from "@/lib/utils";
 
 // ============================================
@@ -70,6 +71,13 @@ function NotificationCard({
   const Icon = NOTIFICATION_ICONS[notification.type] ?? Bell;
   const router = useRouter();
 
+  const { actorText, messageText } = formatNotificationDisplay({
+    actorName: notification.actor?.name,
+    actorEmail: notification.actor?.email,
+    message: notification.message,
+    fallbackMessage: getDefaultMessage(notification.type),
+  });
+
   function handleClick() {
     if (!notification.read) onRead(notification.id);
     if (notification.post?.slug) {
@@ -110,12 +118,8 @@ function NotificationCard({
       {/* Content */}
       <div className="flex-1 min-w-0">
         <p className="text-sm leading-snug">
-          {notification.actor?.name && (
-            <span className="font-semibold">{notification.actor.name} </span>
-          )}
-          <span className="text-foreground/70">
-            {notification.message ?? getDefaultMessage(notification.type)}
-          </span>
+          {actorText && <span className="font-semibold">{actorText} </span>}
+          <span className="text-foreground/70">{messageText}</span>
         </p>
 
         {notification.post?.title && (

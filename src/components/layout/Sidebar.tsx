@@ -5,11 +5,14 @@ import * as React from "react";
 import {
   Menu,
   Home,
+  Bookmark,
   LayoutDashboard,
   FileText,
   PenSquare,
   Share2,
+  LogOut,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 import { cn } from "../../lib/utils";
 import { Logo } from "../ui/Logo";
@@ -20,6 +23,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://kingbloggers.com";
 
 const SIDEBAR_LINKS = [
   { label: "Home", href: "/", icon: Home },
+  { label: "Saved", href: "/saved", icon: Bookmark },
   { label: "Dashboard", href: "/blogger/dashboard", icon: LayoutDashboard },
   { label: "My Blogs", href: "/blogger/my-blogs", icon: FileText },
   { label: "New Blog", href: "/blogger/editor?new=true", icon: PenSquare },
@@ -130,6 +134,19 @@ export function Sidebar() {
                 <Share2 className="h-5 w-5" />
                 Share App
               </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  void signOut({ callbackUrl: "/" });
+                }}
+                className="w-full flex items-center gap-3 rounded-2xl border border-foreground/10 bg-foreground/5 px-4 py-3 text-sm font-bold text-foreground/80 hover:bg-foreground/10"
+                aria-label="Log out"
+              >
+                <LogOut className="h-5 w-5" />
+                Log Out
+              </button>
             </nav>
           </aside>
         </div>
@@ -169,6 +186,16 @@ export function Sidebar() {
           >
             <Share2 className="h-5 w-5" />
             Share App
+          </button>
+
+          <button
+            type="button"
+            onClick={() => void signOut({ callbackUrl: "/" })}
+            className="w-full flex items-center gap-3 rounded-2xl border border-foreground/10 bg-foreground/5 px-4 py-3 text-sm font-bold text-foreground/80 hover:bg-foreground/10 transition-colors"
+            aria-label="Log out"
+          >
+            <LogOut className="h-5 w-5" />
+            Log Out
           </button>
         </nav>
       </aside>

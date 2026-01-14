@@ -424,10 +424,39 @@ function SwipeableMediaCarousel({
       {/* Like Animation Overlay */}
       {showLikeAnimation && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-          <Heart
-            className="h-24 w-24 text-red-500 fill-red-500 animate-ping"
-            style={{ animationDuration: "0.6s" }}
-          />
+          <div className="relative">
+            {/* Ring */}
+            <div
+              className="absolute inset-0 -m-6 rounded-full border-2 border-red-500/70 king-like-ring"
+              style={{ boxShadow: "0 0 40px rgba(239,68,68,0.35)" }}
+            />
+
+            {/* Main heart */}
+            <Heart
+              className="h-32 w-32 text-red-500 fill-red-500 king-like-pop"
+              style={{ filter: "drop-shadow(0 10px 30px rgba(239,68,68,0.55))" }}
+            />
+
+            {/* Soft glow layer */}
+            <Heart
+              className="absolute inset-0 h-32 w-32 text-red-500 fill-red-500 opacity-40 blur-sm king-like-pop"
+              style={{ animationDelay: "40ms" }}
+            />
+
+            {/* Sparks */}
+            <Heart
+              className="absolute -top-6 left-2 h-6 w-6 text-red-400 fill-red-400 king-like-spark"
+              style={{ animationDelay: "0ms" }}
+            />
+            <Heart
+              className="absolute -top-8 right-1 h-5 w-5 text-red-400 fill-red-400 king-like-spark"
+              style={{ animationDelay: "60ms" }}
+            />
+            <Heart
+              className="absolute -bottom-2 left-10 h-4 w-4 text-red-300 fill-red-300 king-like-spark"
+              style={{ animationDelay: "110ms" }}
+            />
+          </div>
         </div>
       )}
 

@@ -111,6 +111,21 @@ export default withPWA({
   workboxOptions: {
     runtimeCaching: [
       {
+        // Avoid noisy Workbox errors for /favicon.ico
+        urlPattern: /\/favicon\.ico$/i,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "favicon",
+          expiration: {
+            maxEntries: 1,
+            maxAgeSeconds: 365 * 24 * 60 * 60,
+          },
+          cacheableResponse: {
+            statuses: [0, 200],
+          },
+        },
+      },
+      {
         // App router navigations (/, /login, /blogger/editor, etc)
         urlPattern: ({ request }) => request.mode === "navigate",
         handler: "NetworkFirst",

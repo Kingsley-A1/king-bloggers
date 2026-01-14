@@ -54,7 +54,11 @@ export async function listPublishedPosts(input?: {
       .limit(1);
 
     if (cursorPost[0]) {
-      where = and(where, sql`${posts.createdAt} < ${cursorPost[0].createdAt}`);
+      // Some DB drivers (e.g. postgres-js) don't accept Date params.
+      where = and(
+        where,
+        sql`${posts.createdAt} < ${cursorPost[0].createdAt.toISOString()}`
+      );
     }
   }
 

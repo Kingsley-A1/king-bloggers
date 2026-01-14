@@ -2,11 +2,14 @@
 
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { Loader2, Sparkles, Users, TrendingUp, Clock } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 
 import { PostCard } from "@/components/features/PostCard";
 import { PostCardSkeleton } from "@/components/features/PostCardSkeleton";
 import { cn } from "@/lib/utils";
+import { getSuggestedUsersToFollow } from "@/lib/actions/follows";
+import { FollowButton } from "@/components/features/FollowButton";
+import { Avatar } from "@/components/ui/Avatar";
 
 import type { RankedPost, FeedType } from "@/lib/personalization/types";
 
@@ -16,16 +19,20 @@ import type { RankedPost, FeedType } from "@/lib/personalization/types";
 // Personalized infinite scroll with feed switching
 // ============================================
 
-const FEED_TABS: Array<{
-  type: FeedType;
-  label: string;
-  icon: React.ElementType;
-}> = [
-  { type: "for-you", label: "For You", icon: Sparkles },
-  { type: "following", label: "Following", icon: Users },
-  { type: "trending", label: "Trending", icon: TrendingUp },
-  { type: "latest", label: "Latest", icon: Clock },
+const FEED_TABS: Array<{ type: FeedType; label: string }> = [
+  { type: "for-you", label: "For you" },
+  { type: "following", label: "Following" },
+  { type: "trending", label: "Trending" },
+  { type: "latest", label: "Latest" },
 ];
+
+type SuggestedUser = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  imageUrl: string | null;
+  role: string;
+};
 
 function getBadgeVariant(category: string): "tech" | "art" | "politics" {
   switch (category) {
@@ -84,6 +91,8 @@ export interface ForYouFeedProps {
   ) => Promise<{ items: RankedPost[]; nextCursor?: string; hasMore: boolean }>;
   /** Show feed type switcher */
   showTabs?: boolean;
+  /** Used to label the personalized tab, e.g. "For Ada" */
+  viewerFirstName?: string | null;
 }
 
 export function ForYouFeed({
@@ -93,6 +102,7 @@ export function ForYouFeed({
   initialFeedType = "for-you",
   loadMoreAction,
   showTabs = true,
+  viewerFirstName,
 }: ForYouFeedProps) {
   const [feedType, setFeedType] = useState<FeedType>(initialFeedType);
   const [posts, setPosts] = useState(initialPosts);
@@ -100,6 +110,8 @@ export function ForYouFeed({
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [isPending, startTransition] = useTransition();
   const [isChangingFeed, setIsChangingFeed] = useState(false);
+  const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const observerRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
 
@@ -169,14 +181,37 @@ export function ForYouFeed({
     };
   }, [loadMore, hasMore, isPending, isChangingFeed]);
 
+  // Load follow suggestions when the Following feed is empty
+  useEffect(() => {
+    const shouldLoad =
+      feedType === "following" &&
+      !isChangingFeed &&
+      !isPending &&
+      posts.length === 0;
+
+    if (!shouldLoad) return;
+    if (loadingSuggestions || suggestedUsers.length > 0) return;
+
+    setLoadingSuggestions(true);
+    getSuggestedUsersToFollow(6)
+      .then((users) => setSuggestedUsers(users as SuggestedUser[]))
+      .catch(() => {
+        // ignore
+      })
+      .finally(() => setLoadingSuggestions(false));
+  }, [feedType, isChangingFeed, isPending, posts.length, loadingSuggestions, suggestedUsers.length]);
+
   return (
     <div className="space-y-6">
       {/* Feed Type Tabs */}
       {showTabs && (
-        <div className="glass-card p-2 flex gap-1 overflow-x-auto scrollbar-hide">
+        <div className="glass-card p-1.5 flex gap-1 overflow-x-auto scrollbar-hide">
           {FEED_TABS.map((tab) => {
-            const Icon = tab.icon;
             const isActive = feedType === tab.type;
+            const label =
+              tab.type === "for-you" && viewerFirstName
+                ? `For ${viewerFirstName}`
+                : tab.label;
             return (
               <button
                 key={tab.type}
@@ -184,15 +219,14 @@ export function ForYouFeed({
                 onClick={() => changeFeed(tab.type)}
                 disabled={isChangingFeed}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all",
+                  "flex items-center px-3.5 py-2 rounded-lg text-sm font-bold transition-all",
                   "whitespace-nowrap active:scale-95",
                   isActive
                     ? "bg-king-orange text-black"
                     : "text-foreground/60 hover:text-foreground hover:bg-foreground/5"
                 )}
               >
-                <Icon className="w-4 h-4" />
-                {tab.label}
+                {label}
               </button>
             );
           })}
@@ -222,19 +256,62 @@ export function ForYouFeed({
       {/* Empty State */}
       {!isChangingFeed && posts.length === 0 && !isPending && (
         <div className="glass-card p-12 text-center">
-          <div className="text-4xl mb-4">
-            {feedType === "following" ? "👥" : "✨"}
-          </div>
+          <div className="text-4xl mb-4">{feedType === "following" ? "👥" : "✨"}</div>
           <h3 className="text-lg font-bold mb-2">
-            {feedType === "following"
-              ? "No posts from followed authors"
-              : "No posts yet"}
+            {feedType === "following" ? "Your Following feed is empty" : "No posts yet"}
           </h3>
           <p className="text-sm text-foreground/60">
             {feedType === "following"
-              ? "Follow some bloggers to see their posts here"
+              ? "Follow a few bloggers to start seeing their posts here."
               : "Be the first to post!"}
           </p>
+
+          {feedType === "following" && (
+            <div className="mt-8 text-left max-w-xl mx-auto">
+              <div className="text-sm font-bold mb-3">Suggested for you</div>
+
+              {loadingSuggestions ? (
+                <div className="text-sm text-foreground/60">Loading suggestions…</div>
+              ) : suggestedUsers.length === 0 ? (
+                <div className="text-sm text-foreground/60">
+                  Explore the feed to discover bloggers to follow.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {suggestedUsers.map((u) => {
+                    const displayName = u.name ?? u.email ?? "Blogger";
+                    return (
+                      <div
+                        key={u.id}
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-foreground/10 bg-foreground/5 px-4 py-3"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Avatar
+                            src={u.imageUrl ?? undefined}
+                            name={u.name ?? undefined}
+                            alt={displayName}
+                            size={40}
+                          />
+                          <div className="min-w-0">
+                            <div className="font-bold text-sm truncate">{displayName}</div>
+                            <div className="text-xs text-foreground/60 truncate">
+                              {u.role === "blogger" ? "Blogger" : "Creator"}
+                            </div>
+                          </div>
+                        </div>
+
+                        <FollowButton
+                          targetUserId={u.id}
+                          initialFollowing={false}
+                          className="shrink-0"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

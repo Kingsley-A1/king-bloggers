@@ -19,6 +19,7 @@ import {
   getUnreadCount,
   type NotificationWithDetails,
 } from "@/lib/actions/notifications";
+import { formatNotificationDisplay } from "@/lib/notifications/format";
 import { cn } from "@/lib/utils";
 
 // ============================================
@@ -44,6 +45,13 @@ function NotificationItem({
 }) {
   const Icon = NOTIFICATION_ICONS[notification.type] ?? Bell;
 
+  const { actorText, messageText } = formatNotificationDisplay({
+    actorName: notification.actor?.name,
+    actorEmail: notification.actor?.email,
+    message: notification.message,
+    fallbackMessage: getDefaultMessage(notification.type),
+  });
+
   return (
     <div
       className={cn(
@@ -59,14 +67,10 @@ function NotificationItem({
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm">
-          {notification.actor?.name && (
-            <span className="font-semibold text-foreground">
-              {notification.actor.name}
-            </span>
+          {actorText && (
+            <span className="font-semibold text-foreground">{actorText}</span>
           )}{" "}
-          <span className="text-foreground/70">
-            {notification.message ?? getDefaultMessage(notification.type)}
-          </span>
+          <span className="text-foreground/70">{messageText}</span>
         </div>
         {notification.post?.title && (
           <Link
