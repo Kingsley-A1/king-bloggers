@@ -436,7 +436,9 @@ function SwipeableMediaCarousel({
             {/* Main heart */}
             <Heart
               className="h-32 w-32 text-red-500 fill-red-500 king-like-pop"
-              style={{ filter: "drop-shadow(0 10px 30px rgba(239,68,68,0.55))" }}
+              style={{
+                filter: "drop-shadow(0 10px 30px rgba(239,68,68,0.55))",
+              }}
             />
 
             {/* Soft glow layer */}
@@ -707,7 +709,10 @@ function PostView({
 
   const handleShare = useCallback(async () => {
     try {
-      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      if (
+        typeof navigator !== "undefined" &&
+        typeof navigator.share === "function"
+      ) {
         await navigator.share({ title: post.title, url });
         return;
       }
@@ -831,10 +836,16 @@ function PostView({
             />
             <div>
               <div className="font-bold">{post.authorName ?? "Anonymous"}</div>
-              <div className={`text-sm ${post.authorRole === "blogger" ? "text-green-500" : "text-orange-500"}`}>
-  {post.authorRole === "blogger" ? "✓ Verified Blogger" : "Reader"}
-</div>
-
+              <div
+                className={`text-sm ${
+                  post.authorRole === "blogger"
+                    ? "text-green-500"
+                    : "text-orange-500"
+                }`}
+              >
+                {post.authorRole === "blogger"
+                  ? "✓ Verified Blogger"
+                  : "Reader"}
               </div>
             </div>
           </div>
@@ -1048,7 +1059,7 @@ export function InfinitePostScroll({
           currentUrl={currentUrl}
           canComment={canComment}
           isFirst={index === 0}
-            userId={userId}
+          userId={userId}
         />
       ))}
 
