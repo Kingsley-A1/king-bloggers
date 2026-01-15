@@ -217,6 +217,7 @@ export function Navbar() {
           ...LINKS,
           ...(signedIn
             ? [
+                { label: "Saved", href: "/saved" },
                 { label: "Dashboard", href: "/blogger/dashboard" },
                 { label: "Upload Blog", href: "/blogger/editor" },
                 { label: "My Blogs", href: "/blogger/my-blogs" },

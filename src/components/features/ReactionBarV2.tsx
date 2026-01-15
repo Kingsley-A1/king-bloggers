@@ -133,14 +133,15 @@ export function ReactionBar({
     );
   }
 
-  // Full view for post pages - all reactions in ONE unified glass container
+  // Full view for post pages - single row on mobile, minimal background
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-0.5",
+        "flex items-center gap-1",
         "max-w-full",
-        "px-2 py-1.5 rounded-2xl",
-        "bg-foreground/5 backdrop-blur-sm border border-foreground/10"
+        "flex-nowrap sm:flex-wrap",
+        "overflow-x-auto sm:overflow-visible",
+        "scrollbar-hide"
       )}
     >
       {POSITIVE_REACTIONS.map((type) => {
@@ -155,8 +156,8 @@ export function ReactionBar({
             className={cn(
               "flex items-center gap-1 rounded-full transition-all duration-200",
               "px-1.5 py-1 sm:px-2 sm:py-1.5",
-              "hover:bg-foreground/10 active:scale-95",
-              isActive && "bg-king-orange/15",
+              "hover:bg-foreground/5 active:scale-95",
+              isActive && "bg-king-orange/10",
               popType === type && "animate-bounce",
               "disabled:pointer-events-none"
             )}
@@ -165,9 +166,10 @@ export function ReactionBar({
           >
             <span
               className={cn(
-                "text-lg transition-transform duration-200",
+                "text-[22px] sm:text-2xl transition-transform duration-200",
                 popType === type && "scale-125",
-                isActive && "drop-shadow-sm"
+                isActive && "drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]",
+                "filter saturate-125"
               )}
             >
               {REACTION_CONFIG[type].emoji}
@@ -186,7 +188,7 @@ export function ReactionBar({
 
       {/* Total indicator */}
       {total > 0 && (
-        <div className="w-full sm:w-auto sm:ml-2 px-3 py-2 text-xs text-foreground/50 font-medium">
+        <div className="hidden sm:block sm:ml-2 px-3 py-2 text-xs text-foreground/50 font-medium">
           {total} reaction{total !== 1 ? "s" : ""}
         </div>
       )}

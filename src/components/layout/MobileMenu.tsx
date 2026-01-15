@@ -15,7 +15,10 @@ import {
   LogIn,
   Share2,
   Bug,
+  Bookmark,
+  LogOut,
 } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
 
 import { cn } from "../../lib/utils";
 import { GlassButton } from "../ui/GlassButton";
@@ -35,6 +38,7 @@ export function MobileMenu({
   links,
   className,
 }: MobileMenuProps) {
+  const { status } = useSession();
   if (!open) return null;
 
   type NavLike = {
@@ -52,6 +56,7 @@ export function MobileMenu({
 
   function iconForLink(label: string, href: string) {
     if (href === "/") return Home;
+    if (href === "/saved") return Bookmark;
     if (href === "/about") return Info;
     if (href === "/docs") return BookOpen;
     if (href === "/contact") return Mail;
@@ -69,7 +74,7 @@ export function MobileMenu({
   async function shareApp() {
     const nav = (globalThis as unknown as { navigator?: NavLike }).navigator;
     const title = "King Bloggers";
-    const text = "King Bloggers — Tech, Art & Culture & Power. Tap to open:";
+    const text = "King Bloggers — The Sovereign Media. Tap to open:";
     try {
       if (nav?.share) {
         await nav.share({ title, text, url: shareUrl });
@@ -157,6 +162,21 @@ export function MobileMenu({
             <Bug className="h-5 w-5 text-king-orange" />
             Report issue
           </button>
+
+          {status === "authenticated" && (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                signOut();
+              }}
+              className="w-full flex items-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm font-bold text-red-500 hover:bg-red-500/10 active:scale-95 transition"
+              aria-label="Log Out"
+            >
+              <LogOut className="h-5 w-5" />
+              Log Out
+            </button>
+          )}
 
           <p className="text-xs text-foreground/50">
             Share app uses the main OG preview. Reporting opens a secure

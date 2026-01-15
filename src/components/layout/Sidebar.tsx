@@ -47,7 +47,7 @@ export function Sidebar() {
     const shareUrl = origin || APP_URL;
 
     const title = "King Bloggers";
-    const text = "King Bloggers — Tech, Art & Culture & Power. Tap to open:";
+    const text = "King Bloggers — The Sovereign Media. Tap to open:";
 
     const nav = (globalThis as unknown as { navigator?: NavLike }).navigator;
 

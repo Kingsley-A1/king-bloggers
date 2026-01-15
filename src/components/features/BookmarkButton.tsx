@@ -15,6 +15,7 @@ type BookmarkButtonProps = {
   initialBookmarked: boolean;
   className?: string;
   showLabel?: boolean;
+  variant?: "pill" | "icon";
 };
 
 export function BookmarkButton({
@@ -22,6 +23,7 @@ export function BookmarkButton({
   initialBookmarked,
   className,
   showLabel = false,
+  variant = "pill",
 }: BookmarkButtonProps) {
   const [bookmarked, setBookmarked] = React.useState(initialBookmarked);
   const [busy, setBusy] = React.useState(false);
@@ -55,11 +57,15 @@ export function BookmarkButton({
       onClick={handleClick}
       disabled={busy}
       className={cn(
-        "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
-        "border bg-foreground/5 hover:bg-foreground/10",
+        "flex items-center gap-2 rounded-full transition-all duration-300",
+        variant === "pill"
+          ? "px-3 py-2 border bg-foreground/5 hover:bg-foreground/10"
+          : "p-2 border border-foreground/10 hover:border-foreground/20",
         bookmarked
-          ? "border-king-gold/50 bg-king-gold/10 text-king-gold"
-          : "border-foreground/10 text-foreground/70 hover:text-foreground",
+          ? variant === "pill"
+            ? "border-king-gold/50 bg-king-gold/10 text-king-gold"
+            : "border-king-gold/40 text-king-gold"
+          : "text-foreground/70 hover:text-foreground",
         "disabled:opacity-50 disabled:pointer-events-none",
         className
       )}

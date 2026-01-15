@@ -11,8 +11,10 @@ import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { SectionHeader } from "@/components/features/SectionHeader";
 import { ReactionBar } from "@/components/features/ReactionBarV2";
-import { ShareBar } from "@/components/features/ShareBar";
+import { Repeat2, Share2, Download } from "lucide-react";
 import { BookmarkButton } from "@/components/features/BookmarkButton";
+import { repostPost } from "@/lib/actions/reposts";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import { FollowButton } from "@/components/features/FollowButton";
 import { CommentSection } from "@/components/features/CommentSection";
 import { cn } from "@/lib/utils";
@@ -273,9 +275,9 @@ function SwipeableMediaCarousel({
     setShowLikeAnimation(true);
     setTimeout(() => setShowLikeAnimation(false), 800);
 
-    // If not already liked with fire, add fire reaction
-    if (myValue !== "fire") {
-      void handleReaction("fire");
+    // Double-tap counts as a "like" (up)
+    if (myValue !== "up") {
+      void handleReaction("up");
     }
   }, [myValue, handleReaction]);
 
@@ -642,11 +644,13 @@ function PostView({
   currentUrl,
   canComment,
   isFirst,
+  userId,
 }: {
   post: InfinitePost;
   currentUrl: string;
   canComment: boolean;
   isFirst: boolean;
+  userId?: string;
 }) {
   const url = currentUrl.replace(/\/blog\/[^/]+/, `/blog/${post.slug}`);
 
@@ -654,6 +658,13 @@ function PostView({
   const [reactionCounts, setReactionCounts] = useState(post.reactionCounts);
   const [myReaction, setMyReaction] = useState(post.myReaction);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [repostState, setRepostState] = useState<
+    "idle" | "loading" | "done" | "error"
+  >("idle");
+  const [downloadState, setDownloadState] = useState<
+    "idle" | "loading" | "done"
+  >("idle");
+  const [actionHint, setActionHint] = useState<string | null>(null);
 
   const contentOnce = React.useMemo(
     () => dedupeExactDoubleHtml(post.content),
@@ -683,6 +694,8 @@ function PostView({
     return items;
   }, [post.coverImageUrl, post.videoUrl, extracted.media]);
 
+  const commentsAnchorId = `comments-${post.id}`;
+
   // Handle reaction sync from carousel
   const handleReactionChange = useCallback(
     (counts: ReactionCounts, myValue: ReactionValue | null) => {
@@ -691,6 +704,83 @@ function PostView({
     },
     []
   );
+
+  const handleShare = useCallback(async () => {
+    try {
+      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+        await navigator.share({ title: post.title, url });
+        return;
+      }
+      await copyTextToClipboard(url);
+      setActionHint("Link copied.");
+      setTimeout(() => setActionHint(null), 2000);
+    } catch {
+      // ignore
+    }
+  }, [post.title, url]);
+
+  const handleRepost = useCallback(async () => {
+    if (!userId) {
+      setActionHint("Sign in to repost.");
+      setTimeout(() => setActionHint(null), 2000);
+      return;
+    }
+
+    if (repostState === "loading") return;
+    setRepostState("loading");
+    const res = await repostPost(post.id);
+    if (res.ok) {
+      setRepostState("done");
+      setActionHint("Reposted to your feed.");
+      setTimeout(() => setActionHint(null), 2000);
+    } else {
+      setRepostState("error");
+      setActionHint(res.error);
+      setTimeout(() => setActionHint(null), 2200);
+    }
+    setTimeout(() => setRepostState("idle"), 800);
+  }, [post.id, repostState, userId]);
+
+  const handleDownload = useCallback(async () => {
+    if (downloadState === "loading") return;
+    if (heroMedia.length === 0) return;
+
+    setDownloadState("loading");
+    try {
+      for (let i = 0; i < heroMedia.length; i += 1) {
+        const item = heroMedia[i];
+        const urlString = item.src;
+        const filenameBase = `${post.slug || "post"}-${i + 1}`;
+
+        let ext = item.type === "video" ? "mp4" : "jpg";
+        try {
+          const parsed = new URL(urlString);
+          const match = parsed.pathname.match(/\.([a-zA-Z0-9]+)$/);
+          if (match?.[1]) ext = match[1];
+        } catch {
+          const match = urlString.match(/\.([a-zA-Z0-9]+)(\?|#|$)/);
+          if (match?.[1]) ext = match[1];
+        }
+
+        const res = await fetch(urlString);
+        const blob = await res.blob();
+        const objectUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = `${filenameBase}.${ext}`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(objectUrl);
+      }
+      setDownloadState("done");
+      setActionHint("Download started.");
+      setTimeout(() => setActionHint(null), 2000);
+    } finally {
+      setDownloadState("idle");
+    }
+  }, [downloadState, heroMedia, post.slug]);
 
   return (
     <article className="mb-8 md:mb-12 border border-foreground/10 rounded-2xl overflow-hidden bg-background/50 backdrop-blur-sm">
@@ -741,10 +831,10 @@ function PostView({
             />
             <div>
               <div className="font-bold">{post.authorName ?? "Anonymous"}</div>
-              <div className="text-sm text-foreground/50">
-                {post.authorRole === "blogger"
-                  ? "✓ Verified Blogger"
-                  : "Reader"}
+              <div className={`text-sm ${post.authorRole === "blogger" ? "text-green-500" : "text-orange-500"}`}>
+  {post.authorRole === "blogger" ? "✓ Verified Blogger" : "Reader"}
+</div>
+
               </div>
             </div>
           </div>
@@ -779,28 +869,69 @@ function PostView({
 
         {/* Reactions & Actions (End of reading) */}
         <div className="flex flex-col gap-3 mt-8 pt-6 border-t border-foreground/10">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 md:gap-3">
-              <ReactionBar
-                postId={post.id}
-                initialCounts={reactionCounts}
-                initialMyValue={myReaction}
-              />
-              <BookmarkButton
-                postId={post.id}
-                initialBookmarked={post.bookmarked}
-              />
-            </div>
-            <ShareBar title={post.title} url={url} />
+          <ReactionBar
+            postId={post.id}
+            initialCounts={reactionCounts}
+            initialMyValue={myReaction}
+          />
+
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={() => void handleRepost()}
+              className="flex items-center gap-2 px-3 py-2 rounded-full border border-foreground/10 text-sm font-semibold text-foreground/80 hover:text-foreground hover:border-foreground/20"
+              aria-label="Repost"
+              disabled={repostState === "loading"}
+            >
+              <Repeat2 className="h-4 w-4" />
+              {repostState === "loading" ? "Reposting" : "Repost"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => void handleShare()}
+              className="flex items-center gap-2 px-3 py-2 rounded-full border border-foreground/10 text-sm font-semibold text-foreground/80 hover:text-foreground hover:border-foreground/20"
+              aria-label="Share"
+            >
+              <Share2 className="h-4 w-4" />
+              Share
+            </button>
+
+            <BookmarkButton
+              postId={post.id}
+              initialBookmarked={post.bookmarked}
+              variant="icon"
+              className="shrink-0"
+            />
+
+            <button
+              type="button"
+              onClick={() => void handleDownload()}
+              className="p-2 rounded-full border border-foreground/10 text-foreground/70 hover:text-foreground hover:border-foreground/20"
+              aria-label="Download media"
+              disabled={downloadState === "loading" || heroMedia.length === 0}
+            >
+              <Download className="h-5 w-5" />
+            </button>
           </div>
-          <p className="text-xs text-foreground/50">
-            Share is most powerful after reading.
-          </p>
+
+          {actionHint && (
+            <p className="text-xs text-foreground/60">{actionHint}</p>
+          )}
+          <a
+            href={`#${commentsAnchorId}`}
+            className="text-xs text-king-orange hover:underline"
+          >
+            Jump to comments
+          </a>
         </div>
       </div>
 
       {/* Comments - Collapsed for infinite scroll */}
-      <div className="p-4 md:p-6 border-t border-foreground/10">
+      <div
+        id={commentsAnchorId}
+        className="p-4 md:p-6 border-t border-foreground/10"
+      >
         <details className="group">
           <summary className="cursor-pointer flex items-center justify-between">
             <span className="font-bold">💬 Comments ({post.commentCount})</span>
@@ -917,6 +1048,7 @@ export function InfinitePostScroll({
           currentUrl={currentUrl}
           canComment={canComment}
           isFirst={index === 0}
+            userId={userId}
         />
       ))}
 

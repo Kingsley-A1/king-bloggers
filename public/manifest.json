@@ -2,7 +2,7 @@
   "id": "com.kingbloggers.app",
   "name": "King Bloggers",
   "short_name": "KingBloggers",
-  "description": "Tech, Art, Culture & Power — A sovereign Nigerian media platform.",
+  "description": "The Sovereign Media.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
